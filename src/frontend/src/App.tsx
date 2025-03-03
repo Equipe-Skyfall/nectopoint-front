@@ -1,10 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
 import Home from "./paginas/home";
-import NavBar from "./components/navbar";
+import NavBar from "./componentes/navbar";
 import PaginaUsuario from "./paginas/paginaUsuario";
-import RotasPrivadas from "./components/rotasPrivadas";
-import Footer from "./components/footer";
+import RotasPrivadas from "./componentes/rotasPrivadas";
+import Footer from "./componentes/footer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {

@@ -1,15 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
-// Informe a estrutura dos dados sendo puxados
-interface Dados {
-    id: string;
-    name: string;
-    data: {
-        color: string;
-        capacity: string;
-    };
-}
+import Dados from "../../../interfaces/interfaceDados";
 
 const BuscarDados = () => {
     const { data = [], isLoading, isError, refetch } = useQuery<Dados[]>({
