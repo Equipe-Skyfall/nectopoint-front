@@ -1,6 +1,85 @@
+
+
+.poppins {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.poppins-semibold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.poppins-bold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+
+.poppins-medium-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.poppins-semibold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.poppins-bold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+
+html,body {
+  min-height: 100vh;
+}
+
+input::placeholder {
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+}
+input[type="checkbox"] {
+  /* Limited direct styling; use custom solution below */
+  
+  appearance: none;
+  
+}
+input[type="checkbox"]:checked {
+  /* Limited direct styling; use custom solution below */
+  border: 0cap;
+  appearance: none;
+  margin-right: 5px;
+   margin: 2px 8px;
+  border-radius: 100%;
+ 
+  background-color: blue;
+}
+.custom-checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 2px 8px;
+  border: 1px solid #000;
+  border-radius: 100%;
+  background-color: rgb(255, 255, 255);
+  
+  
+  position: relative;
+  cursor: pointer;
+ 
+}
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0.5rem;
   text-align: center;
+   min-height: 100vh;
 }

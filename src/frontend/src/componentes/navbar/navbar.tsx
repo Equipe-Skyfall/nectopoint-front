@@ -7,7 +7,7 @@ export default function NavBar() {
         <nav>
             <div>
                 <img
-                    src="/"
+                    src="../assets/nectopoint.png"
                     width={120}
                     alt="Logo"
                 />
