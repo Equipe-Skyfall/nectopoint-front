@@ -7,7 +7,7 @@ export default function ConteudoPaginaUsuario() {
 
     return (
         <>
-        <div className="overflow-hidden">
+        <div className="overflow-hidden pt-20">
             <div className="flex">
                 Conteúdo da primeira página
             </div>
