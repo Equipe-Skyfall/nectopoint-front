@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import InputPadrao from "../../input/inputPadrao";
+
+
+import DisplayTempo from "../../displayTempo/displayTempo";
 export default function ConteudoHome() {
 
     useEffect(() => {
@@ -21,16 +22,15 @@ export default function ConteudoHome() {
            
         </div >
         <div className="flex text-white flex-col text-center self-center items-center justify-center my-auto top-1/4 left-0 w-full mx-auto absolute"> {/* 'bg-midnight' e 'text-white' são cores customizadas */}
-                    <h1 className=" poppins-semibold w-full text-[25px] text-center text-blue-800">Login</h1>
+                    <h1 className=" poppins-semibold w-full text-[25px] my-8 text-center text-blue-800">Bem vindo , Nome ! </h1>
 
-                    <InputPadrao placeholder="CPF" length={11} pattern="[0-9]" id="cpf"></InputPadrao>
-                    <InputPadrao placeholder="Senha" length={20} pattern="[0-9]A-Za-z" id="senha"></InputPadrao>                         {/* para montar palhetas customizadas vá para tailwind.config.js > theme > extend > colors */}
-                    <span className="text-center align-middle self-center items-center justify-center my-4">                    
-                        <input type="checkbox" id="checkbox" className="m-2 rounded-full custom-checkbox"></input>
-                        <label className="text-black text-center align-top my-auto">Lembrar-me</label>
-                    </span>
-                    <button className="bg-blue-800 w-24  my-4 rounded-full p-1 text-center poppins bg"> Acessar</button>
-                    <Link to='/' className="text-black my-8">Esqueceu sua senha?</Link>
+                    <DisplayTempo cor="primarygreen" img="./setadir.png" hora="0904"></DisplayTempo>
+                    <DisplayTempo cor="primaryorange" img="/almoco.png" hora="1204"></DisplayTempo>
+                    <DisplayTempo cor="primarybrown" img="/fimalmoco.png" hora="1304"></DisplayTempo>
+                    <DisplayTempo cor="primaryred" img="/setadir.png" hora="1604"></DisplayTempo>         {/* para montar palhetas customizadas vá para tailwind.config.js > theme > extend > colors */}
+                    
+                    <button className="bg-blue-800 w-24  my-4 rounded-full p-2 text-center poppins bg"> Botao</button>
+                  
 
         </div>
 

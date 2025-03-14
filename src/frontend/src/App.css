@@ -1,5 +1,16 @@
 
-
+.bg-primarygreen {
+  background-color: #6CA044 !important;
+}
+.bg-primaryorange {
+  background-color: #D19148 !important;
+}	
+.bg-primarybrown {
+  background-color: #95724C !important;
+}
+.bg-primaryred {
+  background-color: #853838 !important;
+}
 .poppins {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
