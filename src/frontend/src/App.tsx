@@ -3,6 +3,8 @@ import './App.css'
 import Home from "./paginas/home";
 import NavBar from "./componentes/navbar/navbar";
 import PaginaUsuario from "./paginas/paginaUsuario";
+import Solicitacoes from "./paginas/solicitacoes";
+
 
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,12 +16,12 @@ function App() {
 
   return (
     <>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
           <Routes>
             {/* Página inicial sem NavBar */}
             <Route path="/" element={<Home />} />
-            
+
             {/* Rotas com NavBar */}
             <Route
               path="*"
@@ -29,17 +31,18 @@ function App() {
                     {/* Usaremos 'RotasPrivadas' para validar se o usuário está logado ou não
                         antes de mostrar as páginas do app */}
                     {/* <Route element={<RotasPrivadas />}> */}
-                      <Route path="user-page" element={<PaginaUsuario />} />
-                        <Route path="gestor-page" element={<PaginaGestor />} />
+                    <Route path="user-page" element={<PaginaUsuario />} />
+                    <Route path="solicitacoes" element={<Solicitacoes />} />
+                    <Route path="gestor-page" element={<PaginaGestor />} />
                     {/* </Route> */}
                   </Routes>
                 </>
               }
             />
           </Routes>
-      </BrowserRouter>
-  
-    </QueryClientProvider>
+        </BrowserRouter>
+
+      </QueryClientProvider>
     </>
   )
 }
