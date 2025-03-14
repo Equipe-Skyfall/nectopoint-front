@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
 import PaginaUsuario from "./paginas/paginaUsuario";
+import Solicitacoes from "./paginas/solicitacoes";
+
 
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -30,6 +32,7 @@ function App() {
                         antes de mostrar as páginas do app */}
                     {/* <Route element={<RotasPrivadas />}> */}
                     <Route path="home" element={<PaginaUsuario />} />
+                    <Route path="solicitacoes" element={<Solicitacoes />} />
                     <Route path="gestor-page" element={<PaginaGestor />} />
                     {/* </Route> */}
                   </Routes>

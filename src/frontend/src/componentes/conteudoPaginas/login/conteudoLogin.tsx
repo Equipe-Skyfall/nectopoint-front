@@ -30,7 +30,7 @@ export default function ConteudoLogin() {
                         <label className="text-black text-center align-top my-auto">Lembrar-me</label>
                     </span>
                     <Link to='/home' className="">  {/*Coloquei isto apenas para acessar mais rapido o home*/ }
-                    <button className="bg-blue-800 w-24  my-4 rounded-full p-1 text-center poppins bg">
+                    <button className=" w-24 p-3  my-4 rounded-full bg-blue-600 text-center poppins bg">
                          <span>Acessar</span>
                     </button>
                     </Link>
