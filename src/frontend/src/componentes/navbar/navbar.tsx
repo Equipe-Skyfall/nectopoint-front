@@ -84,8 +84,8 @@ export default function NavBar() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700">Funcionário</span>
-                            <p className="text-sm text-gray-500">CPF: 000.000.000-00</p>
+                            <span className="text-lg font-semibold text-gray-700 flex">Funcionário</span> {/*Puxar nome do funcionario do Banco*/}
+                            <p className="text-sm text-gray-500">CPF: 000.000.000-00</p> {/*Puxar CPF do funcionario do Banco*/}
                         </div>
                     </div>
 
@@ -109,12 +109,13 @@ export default function NavBar() {
                             <span>Histórico</span>
                         </button>
                     </Link>
+                    <Link to="#" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-red-700 hover:bg-red-200 gap-3 flex  rounded-md" onClick={() => setShowLogoutModal(true)}
                             >
-                            
-                            <FaSignOutAlt className="w-5 h-5" />
+                            <FaSignOutAlt className="w-5 h-5 mt-1" />
                             <span>Sair</span>
                         </button>
+                    </Link>
                 </div>
             </div>
             {showLogoutModal && (
