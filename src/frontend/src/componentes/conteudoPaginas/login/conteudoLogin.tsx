@@ -29,7 +29,11 @@ export default function ConteudoLogin() {
                         <input type="checkbox" id="checkbox" className="m-2 rounded-full custom-checkbox"></input>
                         <label className="text-black text-center align-top my-auto">Lembrar-me</label>
                     </span>
-                    <button className="bg-blue-800 w-24  my-4 rounded-full p-1 text-center poppins bg"> Acessar</button>
+                    <Link to='/home' className="">  {/*Coloquei isto apenas para acessar mais rapido o home*/ }
+                    <button className="bg-blue-800 w-24  my-4 rounded-full p-1 text-center poppins bg">
+                         <span>Acessar</span>
+                    </button>
+                    </Link>
                     <Link to='/' className="text-black my-8">Esqueceu sua senha?</Link>
 
         </div>

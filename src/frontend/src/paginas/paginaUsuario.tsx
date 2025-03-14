@@ -1,5 +1,5 @@
-import ConteudoPaginaUsuario from "../componentes/conteudoPaginas/paginaUsuario/conteudoUsuario";
-import ListagemPaginaUsuario from "../componentes/conteudoPaginas/paginaUsuario/listagemUsuario";
+import ConteudoHome from "../componentes/conteudoPaginas/paginaUsuario/conteudoHome";
+
 import NavBar from "../componentes/navbar/navbar";
 
 export default function PaginaUsuario() {
@@ -7,8 +7,7 @@ export default function PaginaUsuario() {
     return (
         <div className="PaginaUsuarios">
             <NavBar />
-            <ConteudoPaginaUsuario />
-            <ListagemPaginaUsuario />
+            <ConteudoHome />
         </div>
     );
 }  

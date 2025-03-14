@@ -1,25 +1,25 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
-import Home from "./paginas/home";
-import NavBar from "./componentes/navbar/navbar";
 import PaginaUsuario from "./paginas/paginaUsuario";
 
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import layoutGestor from "./paginas/paginaGestor/layoutGestor";
+
 import PaginaGestor from "./paginas/paginaGestor";
+import Login from "./paginas/login";
 
 function App() {
   const queryClient = new QueryClient()
 
   return (
     <>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
           <Routes>
             {/* Página inicial sem NavBar */}
-            <Route path="/" element={<Home />} />
-            
+            <Route path="/" element={<Login />} /> {/* Esse caminho / sempre terá que ser login, por ser o primeiro passo, ajustei o home 
+            abaixo para que ficasse certo com as navbar, olhe o codigo inteiro depois de tudo adicionado para não cometer erros */}
+
             {/* Rotas com NavBar */}
             <Route
               path="*"
@@ -29,17 +29,17 @@ function App() {
                     {/* Usaremos 'RotasPrivadas' para validar se o usuário está logado ou não
                         antes de mostrar as páginas do app */}
                     {/* <Route element={<RotasPrivadas />}> */}
-                      <Route path="user-page" element={<PaginaUsuario />} />
-                        <Route path="gestor-page" element={<PaginaGestor />} />
+                    <Route path="home" element={<PaginaUsuario />} />
+                    <Route path="gestor-page" element={<PaginaGestor />} />
                     {/* </Route> */}
                   </Routes>
                 </>
               }
             />
           </Routes>
-      </BrowserRouter>
-  
-    </QueryClientProvider>
+        </BrowserRouter>
+
+      </QueryClientProvider>
     </>
   )
 }

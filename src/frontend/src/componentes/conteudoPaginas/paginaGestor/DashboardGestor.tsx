@@ -84,7 +84,7 @@ export default function DashboardGestor() {
             <div className="overflow-hidden pt-20 flex flex-col">
                 <Data />
                 <div className="flex justify-center">
-                    <div className="bg-slate-200 rounded-md shadow-sm h-[140vw] sm:h-[35vw] w-[80%]">
+                    <div className="bg-[#F1F1F1] rounded-md shadow-sm h-[140vw]  sm:h-[35vw] w-[80%]">
                         <h3 className="text-green-600 text-center text-lg font-bold mt-4">
                             0 Funcionários Trabalhando
                         </h3>

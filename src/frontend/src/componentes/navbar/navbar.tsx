@@ -89,7 +89,7 @@ export default function NavBar() {
                         </div>
                     </div>
 
-                    <Link to="/user-page" onClick={toggleSidebar}>
+                    <Link to="/home" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaHome className="w-5 h-5" />
                             <span>Página Inicial</span>
