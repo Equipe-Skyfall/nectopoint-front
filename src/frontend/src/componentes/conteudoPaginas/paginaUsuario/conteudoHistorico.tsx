@@ -21,9 +21,6 @@ export default function ConteudoHistorico() {
                     
 
                     <TabelaHistorico />
-                    <div>
-                        <button className="bg-blue-800 rounded-lg p-3 w-full mt-10 px-10 text-center poppins">Voltar</button>
-                    </div>
 
                 </div>
             </div >

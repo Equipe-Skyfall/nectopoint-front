@@ -1,4 +1,3 @@
-// componentes/conteudoPaginas/solicitacoes/conteudoSolicitacoes.tsx
 import React, { useState } from 'react';
 import { FaPaperclip, FaBell } from 'react-icons/fa';
 

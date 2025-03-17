@@ -1,5 +1,4 @@
 import ConteudoHistorico from "../componentes/conteudoPaginas/paginaUsuario/conteudoHistorico";
-
 import NavBar from "../componentes/navbar/navbar";
 
 export default function PaginaUsuario() {

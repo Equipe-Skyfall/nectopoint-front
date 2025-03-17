@@ -34,7 +34,7 @@ function App() {
                     <Route path="home" element={<PaginaUsuario />} />
                     <Route path="solicitacoes" element={<Solicitacoes />} />
                     <Route path="gestor-page" element={<PaginaGestor />} />
-                    <Route path="*" element={<PaginaHistorico/>} />
+                    <Route path="historico" element={<PaginaHistorico/>} />
                     {/* </Route> */}
                   </Routes>
                 </>
