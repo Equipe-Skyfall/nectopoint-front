@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 
 import DisplayTempo from "../../displayTempo/displayTempo";
-import DataUser from "./datausuario";
+import DataUser from "../../dataUsuario/datausuario";
 export default function ConteudoHome() {
 
     useEffect(() => {
@@ -21,7 +21,7 @@ export default function ConteudoHome() {
                     <DataUser />
 
                     <DisplayTempo cor="primarygreen" img="./setadir.png" hora="0904"></DisplayTempo>
-                    <DisplayTempo cor="primaryorange" img="/almoco.png" hora="1204"></DisplayTempo>
+                    <DisplayTempo cor="primaryorange" img="/public/almoco.png" hora="1204"></DisplayTempo>
                     <DisplayTempo cor="primarybrown" img="/fimalmoco.png" hora="1304"></DisplayTempo>
                     <DisplayTempo cor="primaryred" img="/setadir.png" hora="1604"></DisplayTempo>         {/* para montar palhetas customizadas vá para tailwind.config.js > theme > extend > colors */}
 

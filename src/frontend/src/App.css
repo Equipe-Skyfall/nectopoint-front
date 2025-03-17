@@ -11,6 +11,12 @@
 .bg-primaryred {
   background-color: #853838 !important;
 }
+.bg-primaryblue {
+  background-color: #1E398D !important;
+}
+.text-blue-600 {
+  color: #1E398D !important;
+}
 .poppins {
   font-family: "Poppins", sans-serif;
   font-weight: 500;

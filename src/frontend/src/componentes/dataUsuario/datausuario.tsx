@@ -1,4 +1,4 @@
-import React from "react";
+import  { JSX } from "react";
 
 export default function DataUser(): JSX.Element {
     const formatarData = () => {
@@ -16,9 +16,9 @@ export default function DataUser(): JSX.Element {
     //Setar para pegar a variavel do nome do gestor
     return (
         <>
-        <div className="overflow-hidden font-['Poppins']">
+        <div className="overflow-hidden poppins">
             <div className="text-center justify-center my-8">
-                <h2 className='text-blue-600  font-semibold'>Olá, Funcionário!</h2>
+                <h2 className='text-blue-600 poppins  font-semibold'>Olá, Funcionário!</h2>
                 <p className="text-gray-600">{formatarData()}</p>
             </div>
         </div>
