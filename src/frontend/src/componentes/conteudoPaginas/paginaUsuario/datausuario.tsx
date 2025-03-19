@@ -1,6 +1,37 @@
-import React from "react";
-
+import React, { useEffect } from "react";
+import { useAuthContext } from "../../../Provider/AuthProvider";
+import axios from "axios";
+const api = axios.create({
+    baseURL: '/usuario',
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
 export default function DataUser(): JSX.Element {
+    const { user, isAuthenticated } = useAuthContext();
+    useEffect(() => {
+            if (isAuthenticated) {
+                const fetchUsers = async () => {
+                    try {
+    
+                        const response = await api.get('/');
+    
+                        console.log('Users data:', response.data);
+                    } catch (error) {
+                        console.error('Error fetching users:', error);
+    
+                        if (error.response) {
+                            console.error('Response data:', error.response.data);
+                            console.error('Response status:', error.response.status);
+                        }
+                    }
+                };
+    
+                fetchUsers();
+            }
+        }, [isAuthenticated]);
+    
     const formatarData = () => {
         const meses: string[] = [
              'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -18,7 +49,7 @@ export default function DataUser(): JSX.Element {
         <>
         <div className="overflow-hidden font-['Poppins']">
             <div className="text-center justify-center my-8">
-                <h2 className='text-blue-600  font-semibold'>Olá, Funcionário!</h2>
+                <h2 className='text-blue-600  font-semibold'>Olá, {user?.nome}</h2>
                 <p className="text-gray-600">{formatarData()}</p>
             </div>
         </div>

@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaBell } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-
+import { useAuthContext } from "../../Provider/AuthProvider";
+import axios from 'axios';
+const api = axios.create({
+    baseURL: '/usuario', 
+    withCredentials: true, 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 function useOutsideClick(ref, callback) {
     useEffect(() => {
         function handleClickOutside(event) {
@@ -18,11 +26,36 @@ function useOutsideClick(ref, callback) {
 
 export default function NavBarGestor() {
     const [isOpen, setIsOpen] = useState(false);
+    const { logout, user, isAuthenticated } = useAuthContext();
     const sidebarRef = useRef(null);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+    useEffect(() => {
+        if (isAuthenticated) {
+          const fetchUsers = async () => {
+            try {
+              
+              const response = await api.get('/');
+              
+              console.log('Users data:', response.data);
+            } catch (error) {
+              console.error('Error fetching users:', error);
+             
+              if (error.response) {
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+              }
+            }
+          };
+    
+          fetchUsers();
+        }
+      }, [isAuthenticated]);
+
+
     const confirmLogout = () => {
         setShowLogoutModal(false);
+        logout();
         navigate("/"); 
     };
 
@@ -55,7 +88,7 @@ export default function NavBarGestor() {
 
                     <div className="flex items-center gap-2">
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">Gestor</span>
+                        <span className="text-gray-700 font-medium">{user?.nome}</span>
                     </div>
                 </div>
 
@@ -82,12 +115,12 @@ export default function NavBarGestor() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 flex">Gestor</span>
-                            <p className="text-sm text-gray-500">CPF: 123.456.789.00</p>
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span>
+                            <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p>
                         </div>
                     </div>
 
-                    <Link to="/pagina-inicial" onClick={toggleSidebar}>
+                    <Link to="/gestor-page" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaHome className="w-5 h-5" />
                             <span>Página Inicial</span>
