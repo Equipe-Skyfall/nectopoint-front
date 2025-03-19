@@ -21,9 +21,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuth();
+  const logout = async () => {
+    await auth.logout(); 
+    sessionStorage.removeItem("sessionAuth"); 
+    localStorage.removeItem("sessionAuth"); 
+  };
   
   return (
-    <AuthContext.Provider value={auth}>
+    <AuthContext.Provider value={ {...auth, logout}}>
       {children}
     </AuthContext.Provider>
   );

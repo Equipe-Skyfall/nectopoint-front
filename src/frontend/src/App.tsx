@@ -10,6 +10,8 @@ import PaginaGestor from "./paginas/paginaGestor";
 import Login from "./paginas/login";
 import { AuthProvider } from "./Provider/AuthProvider";
 import Teste from "./paginas/teste";
+import PontoGestor from "./paginas/pontoGestor";
+
 
 function App() {
   const queryClient = new QueryClient()
@@ -38,6 +40,7 @@ function App() {
                     <Route path="home" element={<PaginaUsuario />} />
                     <Route path="solicitacoes" element={<Solicitacoes />} />
                     <Route path="gestor-page" element={<PaginaGestor />} />
+                    <Route path="bater-ponto" element={<PontoGestor/>}/>
                     <Route path="teste" element={<Teste />} />
                     {/* </Route> */}
                   </Routes>

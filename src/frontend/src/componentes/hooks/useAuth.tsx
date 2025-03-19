@@ -33,6 +33,7 @@ interface LoginResponse {
 interface User {
   id: number;
   nome: string;
+  cpf: string;
   cargo: string;
   departamento: string;
   jornada_trabalho: JornadaTrabalho;
@@ -82,6 +83,7 @@ const useAuth = () => {
       const userData: User = {
         id: responseData.id_colaborador,
         nome: responseData.dados_usuario.nome,
+        cpf: responseData.dados_usuario.cpf,
         cargo: responseData.dados_usuario.cargo,
         departamento: responseData.dados_usuario.departamento,
         jornada_trabalho: responseData.jornada_trabalho,

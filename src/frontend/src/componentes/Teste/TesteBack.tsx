@@ -43,6 +43,7 @@ const UserListTest = () => {
       {isAuthenticated ? (
         <div>
           <p>Authenticated as: {user?.nome}</p>
+          <p>CPF: {user?.cpf}</p>
           <p>Role: {user?.cargo}</p>
           <p>Department: {user?.departamento}</p>
           <button onClick={() => api.get('/usuario').then(res => console.log(res.data))}>

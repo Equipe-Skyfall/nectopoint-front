@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-
+import axios from 'axios';
+import { useAuthContext } from "../../Provider/AuthProvider";
+const api = axios.create({
+    baseURL: '/usuario',
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
 function useOutsideClick(ref, callback) {
     useEffect(() => {
         function handleClickOutside(event) {
@@ -18,13 +26,39 @@ function useOutsideClick(ref, callback) {
 
 export default function NavBar() {
     const [isOpen, setIsOpen] = useState(false);
+    const { logout, user, isAuthenticated } = useAuthContext();
     const sidebarRef = useRef(null);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+    useEffect(() => {
+        if (isAuthenticated) {
+            const fetchUsers = async () => {
+                try {
+
+                    const response = await api.get('/');
+
+                    console.log('Users data:', response.data);
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+
+                    if (error.response) {
+                        console.error('Response data:', error.response.data);
+                        console.error('Response status:', error.response.status);
+                    }
+                }
+            };
+
+            fetchUsers();
+        }
+    }, [isAuthenticated]);
+
+
     const confirmLogout = () => {
         setShowLogoutModal(false);
-        navigate("/"); 
+        logout();
+        navigate("/");
     };
+
 
     // Aqui vai detectar se o click foi fora da sidebar
     useOutsideClick(sidebarRef, () => setIsOpen(false));
@@ -57,7 +91,7 @@ export default function NavBar() {
                     <div className="flex items-center gap-2">
                         {/* Aqui ta um icone estatico, mas no futuro deve ser implementado uma foto real do funcionario  */}
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">Funcionário</span>
+                        <span className="text-gray-700 font-medium">{user?.nome}</span>
                     </div>
                 </div>
 
@@ -84,8 +118,8 @@ export default function NavBar() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 flex">Funcionário</span> {/*Puxar nome do funcionario do Banco*/}
-                            <p className="text-sm text-gray-500">CPF: 000.000.000-00</p> {/*Puxar CPF do funcionario do Banco*/}
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span> {/*Puxar nome do funcionario do Banco*/}
+                            <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p> {/*Puxar CPF do funcionario do Banco*/}
                         </div>
                     </div>
 
@@ -111,7 +145,7 @@ export default function NavBar() {
                     </Link>
                     <Link to="#" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-red-700 hover:bg-red-200 gap-3 flex  rounded-md" onClick={() => setShowLogoutModal(true)}
-                            >
+                        >
                             <FaSignOutAlt className="w-5 h-5 mt-1" />
                             <span>Sair</span>
                         </button>
