@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@tanstack/react-query": "^5.69.0",
-    "axios": "^1.8.3",
-    "react-router-dom": "^7.3.0"
-  }
-}
