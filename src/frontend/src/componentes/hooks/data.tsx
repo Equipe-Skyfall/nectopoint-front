@@ -1,13 +1,6 @@
-import React, { useEffect } from "react";
-import { useAuthContext } from "../../../Provider/AuthProvider";
-import axios from "axios";
-const api = axios.create({
-    baseURL: '/usuario',
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+import React, { JSX, useEffect } from "react";
+import { useAuthContext } from "../../Provider/AuthProvider";
+import api from "./axios";
 export default function Data(): JSX.Element {
     const { user, isAuthenticated } = useAuthContext();
     useEffect(() => {
@@ -15,7 +8,7 @@ export default function Data(): JSX.Element {
                 const fetchUsers = async () => {
                     try {
     
-                        const response = await api.get('/');
+                        const response = await api.get('/sessao/usuario/me');
     
                         console.log('Users data:', response.data);
                     } catch (error) {
@@ -49,7 +42,7 @@ export default function Data(): JSX.Element {
         <>
         <div className="overflow-hidden font-['Poppins']">
             <div className="text-center justify-center my-8">
-                <h2 className='text-blue-600  font-semibold'>Olá, {user?.nome}</h2>
+                <h2 className='text-blue-600  font-semibold'>Olá, {user?.jornada_atual?.nome_colaborador}</h2>
                 <p className="text-gray-600">{formatarData()}</p>
             </div>
         </div>

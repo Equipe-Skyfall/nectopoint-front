@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+import api from './axios';
 
-// Update interfaces to match your actual response
+// Definição das interfaces com base no novo JSON
 interface UserData {
-  nome: string;
+  nome: string | null; // Nome pode ser null
   cpf: string;
   cargo: string;
   departamento: string;
@@ -15,10 +15,23 @@ interface JornadaTrabalho {
   tipo_jornada: string;
   banco_de_horas: number;
   horas_diarias: number;
-  jornada_atual: {
-    batida_atual: string;
-    ultima_entrada: string | null;
-  };
+}
+
+interface Ponto {
+  tipo_ponto: string; // "ENTRADA" ou "SAIDA"
+  data_hora: string;
+  tempo_entre_pontos: number | null;
+}
+
+interface JornadaAtual {
+  id_colaborador: number;
+  nome_colaborador: string;
+  id_registro: string;
+  inicio_turno: string;
+  status_turno: string;
+  tempo_trabalhado_min: number;
+  tempo_intervalo_min: number;
+  pontos_marcados: Ponto[];
 }
 
 interface LoginResponse {
@@ -26,17 +39,21 @@ interface LoginResponse {
   id_colaborador: number;
   dados_usuario: UserData;
   jornada_trabalho: JornadaTrabalho;
+  jornada_atual: JornadaAtual;
+  jornadas_historico: any[];
+  jornadas_irregulares: any[];
   alertas_usuario: any[];
 }
 
-// Updated User interface to include jornada_trabalho and alertas_usuario
 interface User {
   id: number;
-  nome: string;
+  nome: string | null; // Nome pode ser null
   cpf: string;
   cargo: string;
   departamento: string;
+  status: string | null;
   jornada_trabalho: JornadaTrabalho;
+  jornada_atual: JornadaAtual;
   alertas_usuario: any[];
 }
 
@@ -45,70 +62,67 @@ interface LoginCredentials {
   password: string;
 }
 
-const api = axios.create({
-  baseURL: '/', 
-  withCredentials: true, 
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
 const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const queryClient = useQueryClient();
 
-  // Check for existing user on hook initialization
+  // Verifica se há um usuário armazenado no localStorage ao inicializar o hook
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (e) {
-        console.log(e);
+        console.error('Erro ao analisar usuário do localStorage:', e);
         localStorage.removeItem('user');
       }
     }
-  }, []); 
+  }, []);
 
+  // Mutação para o login
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       const response = await api.post<LoginResponse>('/usuario/auth', credentials);
       return response;
     },
     onSuccess: (response) => {
-      // Handle the response format you shared
       const responseData = response.data;
-      
-      // Extract user data from the response, including jornada_trabalho and alertas_usuario
+
+      // Extrai os dados do usuário do novo JSON
       const userData: User = {
         id: responseData.id_colaborador,
-        nome: responseData.dados_usuario.nome,
+        nome: responseData.dados_usuario.nome, // Nome pode ser null
         cpf: responseData.dados_usuario.cpf,
         cargo: responseData.dados_usuario.cargo,
         departamento: responseData.dados_usuario.departamento,
+        status: responseData.dados_usuario.status, // Status pode ser null
         jornada_trabalho: responseData.jornada_trabalho,
-        alertas_usuario: responseData.alertas_usuario
+        jornada_atual: responseData.jornada_atual,
+        alertas_usuario: responseData.alertas_usuario,
       };
-      
+
+      // Atualiza o estado do usuário
       setUser(userData);
-      
-      // Store user data in localStorage
+
+      // Armazena os dados do usuário no localStorage
       localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Invalidate any queries that depend on authentication
+
+      // Invalida quaisquer queries que dependam da autenticação
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 
+  // Função para logout
   const logout = async () => {
     try {
       setUser(null);
       localStorage.removeItem('user');
       sessionStorage.removeItem('sessionAuth');
-      
+
+      // Limpa o cache de queries
       queryClient.clear();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Erro ao fazer logout:', error);
     }
   };
 

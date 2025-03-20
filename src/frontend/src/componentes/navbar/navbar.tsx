@@ -1,15 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import axios from 'axios';
 import { useAuthContext } from "../../Provider/AuthProvider";
-const api = axios.create({
-    baseURL: '/usuario',
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+import api from "../hooks/axios";
+
+// Hook para detectar cliques fora de um elemento
 function useOutsideClick(ref, callback) {
     useEffect(() => {
         function handleClickOutside(event) {
@@ -30,17 +25,16 @@ export default function NavBar() {
     const sidebarRef = useRef(null);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+
+    // Busca os dados do usuário logado
     useEffect(() => {
         if (isAuthenticated) {
-            const fetchUsers = async () => {
+            const fetchUserData = async () => {
                 try {
-
-                    const response = await api.get('/');
-
-                    console.log('Users data:', response.data);
+                    const response = await api.get('sessao/usuario/me');
+                    console.log('User data:', response.data);
                 } catch (error) {
-                    console.error('Error fetching users:', error);
-
+                    console.error('Error fetching user data:', error);
                     if (error.response) {
                         console.error('Response data:', error.response.data);
                         console.error('Response status:', error.response.status);
@@ -48,19 +42,18 @@ export default function NavBar() {
                 }
             };
 
-            fetchUsers();
+            fetchUserData();
         }
     }, [isAuthenticated]);
 
-
+    // Função para confirmar o logout
     const confirmLogout = () => {
         setShowLogoutModal(false);
         logout();
         navigate("/");
     };
 
-
-    // Aqui vai detectar se o click foi fora da sidebar
+    // Hook para detectar cliques fora da sidebar
     useOutsideClick(sidebarRef, () => setIsOpen(false));
 
     const toggleSidebar = () => setIsOpen(!isOpen);
@@ -89,9 +82,9 @@ export default function NavBar() {
                     </button>
 
                     <div className="flex items-center gap-2">
-                        {/* Aqui ta um icone estatico, mas no futuro deve ser implementado uma foto real do funcionario  */}
+                        {/* Ícone do usuário */}
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">{user?.nome}</span>
+                        <span className="text-gray-700 font-medium">{user?.jornada_atual?.nome_colaborador}</span>
                     </div>
                 </div>
 
@@ -100,6 +93,7 @@ export default function NavBar() {
                 </div>
             </nav>
 
+            {/* Overlay para fechar a sidebar ao clicar fora */}
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 z-30"
@@ -108,43 +102,46 @@ export default function NavBar() {
                 />
             )}
 
-            {/* Movimentação que deixa a sidebar abrir e fechar suave */}
+            {/* Sidebar */}
             <div
                 ref={sidebarRef}
-                className={`fixed top-0 left-0 md:w-96 w-64 h-full md:text-lg bg-white shadow-lg p-4 z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
-                    }`}
+                className={`fixed top-0 left-0 md:w-96 w-64 h-full md:text-lg bg-white shadow-lg p-4 z-40 transform transition-transform duration-300 ease-in-out ${
+                    isOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
             >
                 <div className="flex flex-col items-start space-y-4 mt-10">
+                    {/* Seção do usuário */}
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span> {/*Puxar nome do funcionario do Banco*/}
-                            <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p> {/*Puxar CPF do funcionario do Banco*/}
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.jornada_atual?.nome_colaborador}</span>
+                            <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p>
                         </div>
                     </div>
 
+                    {/* Links da sidebar */}
                     <Link to="/home" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaHome className="w-5 h-5" />
                             <span>Página Inicial</span>
                         </button>
                     </Link>
-                    {/* Rota Ficticia para Solicitações para apenas não ficar vazio */}
                     <Link to="/solicitacoes" onClick={toggleSidebar}>
-                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex  rounded-md">
+                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaClipboardList className="w-5 h-5" />
                             <span>Solicitações</span>
                         </button>
                     </Link>
-                    {/* Rota Ficticia para Histórico para apenas não ficar vazio */}
-                    <Link to="/historico" onClick={toggleSidebar}>
-                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex  rounded-md">
+                    <Link to="/historico-func" onClick={toggleSidebar}>
+                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaHistory className="w-5 h-5" />
                             <span>Histórico</span>
                         </button>
                     </Link>
                     <Link to="#" onClick={toggleSidebar}>
-                        <button className="w-full py-2 px-4 text-red-700 hover:bg-red-200 gap-3 flex  rounded-md" onClick={() => setShowLogoutModal(true)}
+                        <button
+                            className="w-full py-2 px-4 text-red-700 hover:bg-red-200 gap-3 flex rounded-md"
+                            onClick={() => setShowLogoutModal(true)}
                         >
                             <FaSignOutAlt className="w-5 h-5 mt-1" />
                             <span>Sair</span>
@@ -152,15 +149,23 @@ export default function NavBar() {
                     </Link>
                 </div>
             </div>
+
+            {/* Modal de confirmação de logout */}
             {showLogoutModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40">
                     <div className="bg-white p-6 rounded-lg shadow-lg text-center">
                         <p className="text-lg font-semibold text-gray-800 mb-4">Deseja realmente sair?</p>
                         <div className="flex justify-center gap-4">
-                            <button onClick={() => setShowLogoutModal(false)} className="px-4 py-2 bg-gray-300 rounded-md">
+                            <button
+                                onClick={() => setShowLogoutModal(false)}
+                                className="px-4 py-2 bg-gray-300 rounded-md"
+                            >
                                 Cancelar
                             </button>
-                            <button onClick={confirmLogout} className="px-4 py-2 bg-red-600 text-white rounded-md">
+                            <button
+                                onClick={confirmLogout}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md"
+                            >
                                 Sair
                             </button>
                         </div>

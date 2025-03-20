@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 
 import DisplayTempo from "../../displayTempo/displayTempo";
-import DataUser from "./datausuario";
+import Data from "../../hooks/data";
 export default function ConteudoHome() {
 
     useEffect(() => {
@@ -18,7 +18,7 @@ export default function ConteudoHome() {
             <div className="overflow-hidden">
 
                 <div className="flex text-white flex-col text-center self-center items-center justify-center my-auto top-1/4 left-0 w-full mx-auto absolute"> {/* 'bg-midnight' e 'text-white' são cores customizadas */}
-                    <DataUser />
+                    <Data />
 
                     <DisplayTempo cor="primarygreen" img="./setadir.png" hora="0904"></DisplayTempo>
                     <DisplayTempo cor="primaryorange" img="/almoco.png" hora="1204"></DisplayTempo>

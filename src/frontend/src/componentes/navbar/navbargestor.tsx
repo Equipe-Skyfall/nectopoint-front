@@ -2,14 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaBell, FaUserPlus } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
-import axios from 'axios';
-const api = axios.create({
-    baseURL: '/usuario', 
-    withCredentials: true, 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+import api from "../hooks/axios";
+
 function useOutsideClick(ref, callback) {
     useEffect(() => {
         function handleClickOutside(event) {
@@ -35,7 +29,7 @@ export default function NavBarGestor() {
           const fetchUsers = async () => {
             try {
               
-              const response = await api.get('/');
+              const response = await api.get('sessao/usuario/me');
               
               console.log('Users data:', response.data);
             } catch (error) {
@@ -88,7 +82,7 @@ export default function NavBarGestor() {
 
                     <div className="flex items-center gap-2">
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">{user?.nome}</span>
+                        <span className="text-gray-700 font-medium">{user?.jornada_atual?.nome_colaborador}</span>
                     </div>
                 </div>
 
@@ -115,7 +109,7 @@ export default function NavBarGestor() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span>
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.jornada_atual?.nome_colaborador}</span>
                             <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p>
                         </div>
                     </div>
@@ -141,7 +135,7 @@ export default function NavBarGestor() {
                         </button>
                     </Link>
 
-                    <Link to="/historico" onClick={toggleSidebar}>
+                    <Link to="/historico-gestor" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaHistory className="w-5 h-5" />
                             <span>Histórico</span>
@@ -155,7 +149,7 @@ export default function NavBarGestor() {
                         </button>
                     </Link>
 
-                    <Link to="/gestor-page/cadastrar" onClick={toggleSidebar}>
+                    <Link to="/cadastrar" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaUserPlus className="w-5 h-5" />
                             <span>Criar Funcionário</span>

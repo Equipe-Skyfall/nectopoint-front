@@ -12,6 +12,8 @@ import { AuthProvider } from "./Provider/AuthProvider";
 import Teste from "./paginas/teste";
 import PontoGestor from "./paginas/pontoGestor";
 import CadastrarFuncionario from "./paginas/gestorCadastrarFunc";
+import Historico from "./paginas/historico";
+import HistoricoFunc from "./paginas/historicoFunc";
 
 
 function App() {
@@ -41,7 +43,9 @@ function App() {
                     <Route path="home" element={<PaginaUsuario />} />
                     <Route path="solicitacoes" element={<Solicitacoes />} />
                     <Route path="gestor-page" element={<PaginaGestor />} />
-                    <Route path="gestor-page/cadastrar" element={<CadastrarFuncionario/>}></Route>
+                    <Route path="historico-gestor" element={<Historico/>}/>
+                    <Route path="historico-func" element={<HistoricoFunc/>}/>
+                    <Route path="cadastrar" element={<CadastrarFuncionario/>}/>
                     <Route path="bater-ponto" element={<PontoGestor/>}/>
                     <Route path="teste" element={<Teste />} />
                     {/* </Route> */}
