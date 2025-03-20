@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaBell } from "react-icons/fa";
+import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaBell, FaUserPlus } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
 import axios from 'axios';
@@ -152,6 +152,13 @@ export default function NavBarGestor() {
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaUser className="w-5 h-5" />
                             <span>Buscar Funcionário</span>
+                        </button>
+                    </Link>
+
+                    <Link to="/gestor-page/cadastrar" onClick={toggleSidebar}>
+                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
+                            <FaUserPlus className="w-5 h-5" />
+                            <span>Criar Funcionário</span>
                         </button>
                     </Link>
 
