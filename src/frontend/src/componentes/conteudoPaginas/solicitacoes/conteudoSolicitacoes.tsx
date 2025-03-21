@@ -1,21 +1,30 @@
-// componentes/conteudoPaginas/solicitacoes/conteudoSolicitacoes.tsx
 import React, { useState } from 'react';
 import { FaPaperclip, FaBell } from 'react-icons/fa';
+import axios from 'axios';
 
 const ConteudoSolicitacoes: React.FC = () => {
     const [selectedOption, setSelectedOption] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string>('');
+    const [successMessage, setSuccessMessage] = useState<string>('');
+
+    // Mapeamento de mensagens personalizadas por tipo de ticket
+    const ticketMessages: { [key: string]: string } = {
+        ferias: 'Solicitação de férias enviada com sucesso!',
+        abono: 'Solicitação de abono enviada com sucesso!',
+        atestado: 'Solicitação de atestado enviada com sucesso!',
+        folga: 'Solicitação de folga enviada com sucesso!',
+    };
 
     const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedOption(e.target.value);
-        setError(''); 
+        setError('');
     };
 
     const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setDescription(e.target.value);
-        setError(''); 
+        setError('');
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,7 +33,7 @@ const ConteudoSolicitacoes: React.FC = () => {
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!selectedOption) {
             setError('Por favor, selecione uma opção.');
             return;
@@ -34,23 +43,35 @@ const ConteudoSolicitacoes: React.FC = () => {
             return;
         }
 
-        console.log('Opção selecionada:', selectedOption);
-        console.log('Descrição:', description);
-        console.log('Arquivo anexado:', file);
-        alert('Solicitação enviada com sucesso!');
+        const ticketData = {
+            id_colaborador: 1, // Substitua pelo ID do colaborador logado
+            tipo_ticket: selectedOption, // Já é um valor válido do enum
+            mensagem: description,
+        };
 
-        setSelectedOption('');
-        setDescription('');
-        setFile(null);
-        setError('');
+        try {
+            console.log(ticketData); // Verifique o objeto no console
+            const response = await axios.post('/tickets/postar', ticketData);
+            console.log(response)
+            if (response.status === 200) {
+                setSuccessMessage(ticketMessages[selectedOption] || 'Solicitação enviada com sucesso!');
+                setSelectedOption('');
+                setDescription('');
+                setFile(null);
+                setError('');
+            }
+        } catch (error) {
+            setError('Erro ao enviar a solicitação. Tente novamente.');
+            console.error('Erro ao enviar solicitação:', error);
+        }
     };
 
     return (
-        <div className="flex flex-col md:flex-row pt-12"> 
+        <div className="flex flex-col md:flex-row pt-12">
             {/* Parte esquerda (apenas no desktop) */}
             <div className="hidden md:flex flex-col items-center justify-center w-1/3 p-8 -mt-8">
-                <FaBell className="w-32 h-32 mb-12 text-gray-600" /> 
-                <h1 className="text-4xl font-bold mb-12 text-[#6CA144]">SOLICITAÇÕES</h1> 
+                <FaBell className="w-32 h-32 mb-12 text-gray-600" />
+                <h1 className="text-4xl font-bold mb-12 text-[#6CA144]">SOLICITAÇÕES</h1>
                 <p className="text-center text-2xl font-semibold text-black">
                     Selecione uma das opções ao lado e faça uma justificativa para mandar sua solicitação ao
                     gerente.
@@ -69,6 +90,13 @@ const ConteudoSolicitacoes: React.FC = () => {
                         </div>
                     )}
 
+                    {/* Mensagem de sucesso */}
+                    {successMessage && (
+                        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                            {successMessage}
+                        </div>
+                    )}
+
                     {/* Dropdown para seleção de opções */}
                     <div className="mb-6">
                         <select
@@ -79,10 +107,10 @@ const ConteudoSolicitacoes: React.FC = () => {
                             <option value="" disabled>
                                 Selecione uma opção
                             </option>
-                            <option value="Solicitar Férias">Solicitar Férias</option>
-                            <option value="Solicitar Abono de Faltas">Solicitar Abono de Faltas</option>
-                            <option value="Solicitar Atestado">Solicitar Atestado</option>
-                            <option value="Solicitar Folga">Solicitar Folga</option>
+                            <option value="ferias">Solicitar Férias</option>
+                            <option value="abono">Solicitar Abono de Faltas</option>
+                            <option value="atestado">Solicitar Atestado</option>
+                            <option value="folga">Solicitar Folga</option>
                         </select>
                     </div>
 
@@ -93,14 +121,14 @@ const ConteudoSolicitacoes: React.FC = () => {
                             value={description}
                             onChange={handleDescriptionChange}
                             className="w-full p-4 border border-gray-300 rounded-lg resize-none"
-                            rows={8} 
+                            rows={8}
                         />
                         {/* Anexar arquivo */}
                         <label className="absolute bottom-4 right-4 cursor-pointer">
                             <input
                                 type="file"
                                 onChange={handleFileChange}
-                                className="hidden" 
+                                className="hidden"
                             />
                             <FaPaperclip className="text-gray-500 hover:text-blue-600 transition-colors" size={24} />
                         </label>
