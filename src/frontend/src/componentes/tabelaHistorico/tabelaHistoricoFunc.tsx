@@ -34,7 +34,7 @@ interface ApiResponse {
         horas_diarias: number;
     };
     jornada_atual: JornadaAtual;
-    jornadas_historico: any[];
+    jornadas_historico: JornadaAtual[];
     jornadas_irregulares: any[];
     alertas_usuario: any[];
 }
@@ -53,9 +53,49 @@ export default function ConteudoHistoricoFunc() {
             setErro(null);
 
             const response = await api.get<ApiResponse>('/sessao/usuario/me');
+            console.log('Resposta da API:', response.data); // Log da resposta
 
-            if (response.data && response.data.jornada_atual && Array.isArray(response.data.jornada_atual.pontos_marcados)) {
-                setPontosMarcados(response.data.jornada_atual.pontos_marcados);
+            if (response.data) {
+                let pontosMarcados: Ponto[] = [];
+
+                // Usa jornadas_historico se estiver disponível e não estiver vazio
+                // Adiciona pontos de jornada_atual
+                if (response.data.jornada_atual) {
+                    pontosMarcados = pontosMarcados.concat(
+                        response.data.jornada_atual.pontos_marcados.map((ponto) => ({
+                            ...ponto,
+                            tipo_jornada:"Atual"
+                        }))
+                    );
+                }
+                if (Array.isArray(response.data.jornadas_historico)) {
+                    pontosMarcados = pontosMarcados.concat(
+                        response.data.jornadas_historico.flatMap(
+                            (jornada) => jornada.pontos_marcados.map((ponto) => ({
+                                ...ponto,
+                                tipo_jornada:"Histórica"
+                            }))
+                        )
+                    );
+                }
+
+                // Adiciona pontos de jornadas_irregulares
+                if (Array.isArray(response.data.jornadas_irregulares)) {
+                    pontosMarcados = pontosMarcados.concat(
+                        response.data.jornadas_irregulares.flatMap(
+                            (jornada) => jornada.pontos_marcados.map((ponto) => ({
+                                ...ponto,
+                                tipo_jornada:"Irregular"
+                            }))
+                        )
+                    );
+                }
+                pontosMarcados.sort((a, b) => {
+                    const dataA = new Date(a.data_hora).getTime();
+                    const dataB = new Date(b.data_hora).getTime();
+                    return dataB - dataA; // Ordem decrescente
+                });
+                setPontosMarcados(pontosMarcados);
             } else {
                 setErro('Dados inválidos recebidos da API. A estrutura não é a esperada.');
             }
@@ -66,21 +106,17 @@ export default function ConteudoHistoricoFunc() {
         }
     };
 
-    // Executa a busca ao carregar o componente
     useEffect(() => {
         buscarPontosMarcados();
     }, []);
 
-    // Formata a data e hora para o formato brasileiro
     const formatarDataHora = (dataHora: string) => {
         const data = new Date(dataHora);
         return data.toLocaleString('pt-BR');
     };
 
-    // Calcula o total de páginas
-    const totalPaginas = Math.ceil(pontosMarcados.length / itensPorPagina);
 
-    // Obtém os itens da página atual
+    const totalPaginas = Math.ceil(pontosMarcados.length / itensPorPagina);
     const obterItensPaginaAtual = () => {
         const inicio = paginaAtual * itensPorPagina;
         const fim = inicio + itensPorPagina;
@@ -149,11 +185,10 @@ export default function ConteudoHistoricoFunc() {
                         <button
                             onClick={retrocederPagina}
                             disabled={paginaAtual === 0}
-                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${
-                                paginaAtual === 0
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
-                            }`}
+                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === 0
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-800"
+                                }`}
                         >
                             Anterior
                         </button>
@@ -165,11 +200,10 @@ export default function ConteudoHistoricoFunc() {
                         <button
                             onClick={avancarPagina}
                             disabled={paginaAtual === totalPaginas - 1}
-                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${
-                                paginaAtual === totalPaginas - 1
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
-                            }`}
+                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === totalPaginas - 1
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-800"
+                                }`}
                         >
                             Próxima
                         </button>

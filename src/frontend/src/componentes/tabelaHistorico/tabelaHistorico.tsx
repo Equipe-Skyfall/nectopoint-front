@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../hooks/axios'; 
+import api from '../hooks/axios';
 
 interface Ponto {
     tipo_ponto: string; // "ENTRADA" ou "SAIDA"
@@ -44,23 +44,38 @@ interface ApiResponse {
 }
 
 export default function ConteudoHistorico() {
-    const [historico, setHistorico] = useState<Turno[]>([]);
-    const [carregando, setCarregando] = useState(true); 
-    const [erro, setErro] = useState<string | null>(null); 
-    const [paginaAtual, setPaginaAtual] = useState(0); 
-    const itensPorPagina = 9; 
+    const [historico, setHistorico] = useState<Array<Ponto & { id_colaborador: number; nome_colaborador: string; status_turno: string }>>([]);
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState<string | null>(null);
+    const [paginaAtual, setPaginaAtual] = useState(0);
+    const itensPorPagina = 9;
 
-
+    // Busca o histórico de pontos
     const buscarHistorico = async () => {
         try {
             setCarregando(true);
             setErro(null);
 
-            const response = await api.get<ApiResponse>('turno/historico');
-
+            const response = await api.get<ApiResponse>('/turno/historico');
 
             if (response.data && Array.isArray(response.data.content)) {
-                setHistorico(response.data.content); 
+                // Combina todos os pontos de todos os turnos
+                const todosPontos = response.data.content.flatMap((turno) =>
+                    turno.pontos_marcados.map((ponto) => ({
+                        ...ponto,
+                        id_colaborador: turno.id_colaborador,
+                        nome_colaborador: turno.nome_colaborador,
+                    }))
+                );
+
+                // Ordena os pontos por data_hora em ordem decrescente
+                todosPontos.sort((a, b) => {
+                    const dataA = new Date(a.data_hora).getTime();
+                    const dataB = new Date(b.data_hora).getTime();
+                    return dataB - dataA; // Ordem decrescente
+                });
+
+                setHistorico(todosPontos);
             } else {
                 setErro('Dados inválidos recebidos da API. A estrutura não é a esperada.');
             }
@@ -71,49 +86,34 @@ export default function ConteudoHistorico() {
         }
     };
 
-    
     useEffect(() => {
         buscarHistorico();
     }, []);
 
-    
+    // Formata a data e hora para o formato brasileiro
     const formatarDataHora = (dataHora: string) => {
         const data = new Date(dataHora);
-        return data.toLocaleString('pt-BR'); 
+        return data.toLocaleString('pt-BR');
     };
 
-    
-    const totalPaginas = Math.ceil(
-        historico.reduce((total, turno) => total + turno.pontos_marcados.length, 0) / itensPorPagina
-    );
+    // Calcula o total de páginas
+    const totalPaginas = Math.ceil(historico.length / itensPorPagina);
 
-    
+    // Obtém os itens da página atual
     const obterItensPaginaAtual = () => {
         const inicio = paginaAtual * itensPorPagina;
         const fim = inicio + itensPorPagina;
-        let contador = 0;
-
-        const itens = [];
-        for (const turno of historico) {
-            for (const ponto of turno.pontos_marcados) {
-                if (contador >= inicio && contador < fim) {
-                    itens.push({ ...ponto, id_colaborador: turno.id_colaborador, nome_colaborador: turno.nome_colaborador });
-                }
-                contador++;
-            }
-        }
-
-        return itens;
+        return historico.slice(inicio, fim);
     };
 
-    
+    // Avança para a próxima página
     const avancarPagina = () => {
         if (paginaAtual < totalPaginas - 1) {
             setPaginaAtual(paginaAtual + 1);
         }
     };
 
-    
+    // Retrocede para a página anterior
     const retrocederPagina = () => {
         if (paginaAtual > 0) {
             setPaginaAtual(paginaAtual - 1);
@@ -122,8 +122,7 @@ export default function ConteudoHistorico() {
 
     return (
         <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
-            <h2 className=" poppins-semibold text-blue-600 mb-5 my-10">Histórico de Pontos</h2>
-
+            <h2 className="poppins-semibold text-blue-600 mb-5 my-10">Histórico de Pontos</h2>
 
             {erro ? (
                 <p className="text-red-600">{erro}</p>
@@ -133,29 +132,29 @@ export default function ConteudoHistorico() {
                 <p>Nenhum registro encontrado.</p>
             ) : (
                 <>
-                    <div className="w-[94vw] rounded-md !overflow-x-hidden">
-                        <table className="w-full border border-gray-300 text-center">
+                    <div className="w-[95vw] rounded-md !overflow-x-hidden shadow-md">
+                        <table className="w-full border border-gray-300 bg-[#f1f1f1] text-center">
                             <thead>
-                                <tr className="bg-blue-800 text-white">
-                                    <th className="p-1 sm:p-3 poppins text-sm sm:text-lg">ID Colaborador</th>
-                                    <th className="p-1 sm:p-3 poppins text-sm sm:text-lg">Nome</th>
-                                    <th className="p-1 sm:p-3 poppins text-sm sm:text-lg">Tipo</th>
-                                    <th className="p-1 sm:p-3 poppins text-sm sm:text-lg">Data e Hora</th>
+                                <tr className="bg-blue-800 text-white ">
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">ID Colaborador</th>
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Nome</th>
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Tipo</th>
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Data e Hora</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {obterItensPaginaAtual().map((item, index) => (
-                                    <tr key={`${item.id_colaborador}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
-                                        <td className="p-1 md:p-3 poppins text-sm md:text-base text-black">{item.id_colaborador}</td>
-                                        <td className="p-1 md:p-3 poppins text-sm md:text-base text-black">{item.nome_colaborador}</td>
-                                        <td className="p-1 md:p-3 poppins text-sm md:text-base text-black">
+                                    <tr key={`${item.id_colaborador}-${index}`} className="border-b border-gray-200  hover:bg-gray-50">
+                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">{item.id_colaborador}</td>
+                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">{item.nome_colaborador}</td>
+                                        <td className="p-1 sm:p-3 poppins text-xs  border-r sm:text-base text-black">
                                             {item.tipo_ponto === 'ENTRADA' ? (
                                                 <span className="text-green-600">Entrada</span>
                                             ) : (
                                                 <span className="text-red-600">Saída</span>
                                             )}
                                         </td>
-                                        <td className="p-1 md:p-3 poppins text-sm md:text-base text-black">
+                                        <td className="p-1 sm:p-3 poppins text-xs  border-r sm:text-base text-black">
                                             {formatarDataHora(item.data_hora)}
                                         </td>
                                     </tr>
@@ -164,7 +163,7 @@ export default function ConteudoHistorico() {
                         </table>
                     </div>
 
-                    
+                    {/* Paginação */}
                     <div className="mt-6 flex items-center gap-4">
                         <button
                             onClick={retrocederPagina}
