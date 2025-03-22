@@ -10,7 +10,7 @@ import PaginaGestor from "./paginas/paginaGestor";
 import Login from "./paginas/login";
 import { AuthProvider } from "./Provider/AuthProvider";
 import Teste from "./paginas/teste";
-import PontoGestor from "./paginas/pontoGestor";
+
 import CadastrarFuncionario from "./paginas/gestorCadastrarFunc";
 import Historico from "./paginas/historico";
 import HistoricoFunc from "./paginas/historicoFunc";
@@ -46,7 +46,7 @@ function App() {
                     <Route path="historico-gestor" element={<Historico/>}/>
                     <Route path="historico-func" element={<HistoricoFunc/>}/>
                     <Route path="cadastrar" element={<CadastrarFuncionario/>}/>
-                    <Route path="bater-ponto" element={<PontoGestor/>}/>
+                    <Route path="bater-ponto" element={<PaginaUsuario />}/>
                     <Route path="teste" element={<Teste />} />
                     {/* </Route> */}
                   </Routes>
