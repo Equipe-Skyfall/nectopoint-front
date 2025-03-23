@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import DisplayTempo from "../../displayTempo/displayTempo";
 import Data from "../../hooks/data";
+import baterPonto from "../../hooks/hooksChamarBackend/baterPonto";
 
 
 export default  function ConteudoHome() {
@@ -32,7 +33,7 @@ export default  function ConteudoHome() {
                     <DisplayTempo cor="primaryred" img="/setadir.png" hora="1604"></DisplayTempo>         {/* para montar palhetas customizadas vá para tailwind.config.js > theme > extend > colors */}
 
                     <div>
-                        <button className="bg-blue-800 rounded-lg p-3 w-full mt-10 px-10 text-center poppins">Botão Mutável</button>
+                        <button className="bg-blue-800 rounded-lg p-3 w-full mt-10 px-10 text-center poppins" onClick={baterPonto}>Botão Mutável</button>
                     </div>
 
                 </div>

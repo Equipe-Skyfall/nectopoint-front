@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../hooks/axios';
+import api from '../hooks/api';
 
 interface Ponto {
     tipo_ponto: string; // "ENTRADA" ou "SAIDA"

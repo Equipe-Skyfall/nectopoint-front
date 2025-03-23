@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
-import api from "../hooks/axios";
+import api from "../hooks/api";
 
 // Hook para detectar cliques fora de um elemento
 function useOutsideClick(ref, callback) {

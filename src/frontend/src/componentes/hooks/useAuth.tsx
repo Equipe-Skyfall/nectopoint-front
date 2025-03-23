@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import api from './axios';
+import api from './api';
 
 // Definição das interfaces com base no novo JSON
 interface UserData {

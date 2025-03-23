@@ -1,0 +1,9 @@
+enum TipoStatusTurno {
+    TRABALHANDO = "TRABALHANDO",
+    INTERVALO = "INTERVALO",
+    ENCERRADO = "ENCERRADO",
+    NAO_COMPARECEU = "NAO_COMPARECEU",
+    IRREGULAR = "IRREGULAR"
+}
+
+export default TipoStatusTurno;

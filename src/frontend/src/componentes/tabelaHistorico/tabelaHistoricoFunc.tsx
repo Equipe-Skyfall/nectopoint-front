@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../hooks/axios';
+import api from '../hooks/api';
 
 interface Ponto {
     tipo_ponto: string; // "ENTRADA" ou "SAIDA"
@@ -83,7 +83,7 @@ export default function ConteudoHistoricoFunc() {
                 if (Array.isArray(response.data.jornadas_irregulares)) {
                     pontosMarcados = pontosMarcados.concat(
                         response.data.jornadas_irregulares.flatMap(
-                            (jornada) => jornada.pontos_marcados.map((ponto) => ({
+                            (jornada) => jornada.pontos_marcados.map((ponto:any) => ({
                                 ...ponto,
                                 tipo_jornada:"Irregular"
                             }))
