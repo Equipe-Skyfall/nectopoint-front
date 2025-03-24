@@ -2,102 +2,126 @@ import React, { useState } from 'react';
 import { FaPaperclip, FaBell } from 'react-icons/fa';
 import axios, { AxiosError } from 'axios';
 
-enum TicketType {
-  PEDIR_FERIAS = 'PEDIR_FERIAS',
-  PEDIR_ABONO = 'PEDIR_ABONO'
-}
-
-enum TicketOption {
-  FERIAS = 'ferias',
-  ABONO = 'abono'
-}
-
-interface TicketData {
-  tipo_ticket: TicketType;
+// Type definitions
+interface TicketBase {
+  tipo_ticket: 'PEDIR_FERIAS' | 'PEDIR_ABONO';
   mensagem: string;
   id_colaborador: number;
-  data_inicio_ferias?: string;
-  dias_ferias?: number;
-  motivo_abono?: string;
-  dias_abono?: string[];
+}
+
+interface FeriasTicket extends TicketBase {
+  tipo_ticket: 'PEDIR_FERIAS';
+  data_inicio_ferias: string;
+  dias_ferias: number;
+}
+
+interface AbonoTicket extends TicketBase {
+  tipo_ticket: 'PEDIR_ABONO';
+  motivo_abono: string;
+  dias_abono: string[];
+}
+
+type TicketData = FeriasTicket | AbonoTicket;
+
+interface FormState {
+  selectedOption: 'ferias' | 'abono' | '';
+  description: string;
+  file: File | null;
+  error: string;
+  successMessage: string;
 }
 
 const ConteudoSolicitacoes: React.FC = () => {
-    const [selectedOption, setSelectedOption] = useState<TicketOption | ''>('');
-    const [description, setDescription] = useState<string>('');
-    const [file, setFile] = useState<File | null>(null);
-    const [error, setError] = useState<string>('');
-    const [successMessage, setSuccessMessage] = useState<string>('');
+    const [formState, setFormState] = useState<FormState>({
+        selectedOption: '',
+        description: '',
+        file: null,
+        error: '',
+        successMessage: ''
+    });
 
-    const ticketMessages: Record<TicketOption, string> = {
-        [TicketOption.FERIAS]: 'Solicitação de férias enviada com sucesso!',
-        [TicketOption.ABONO]: 'Solicitação de abono enviada com sucesso!',
-    };
-
-    const ticketTypeMapping: Record<TicketOption, TicketType> = {
-        [TicketOption.FERIAS]: TicketType.PEDIR_FERIAS,
-        [TicketOption.ABONO]: TicketType.PEDIR_ABONO,
+    const ticketMessages = {
+        ferias: 'Solicitação de férias enviada com sucesso!',
+        abono: 'Solicitação de abono enviada com sucesso!',
     };
 
     const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedOption(e.target.value as TicketOption);
-        setError('');
+        setFormState(prev => ({
+            ...prev,
+            selectedOption: e.target.value as 'ferias' | 'abono',
+            error: ''
+        }));
     };
 
     const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setDescription(e.target.value);
-        setError('');
+        setFormState(prev => ({
+            ...prev,
+            description: e.target.value,
+            error: ''
+        }));
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+        setFormState(prev => ({
+            ...prev,
+            file: e.target.files?.[0] || null
+        }));
+    };
+
+    const createTicketData = (): TicketData => {
+        const baseData = {
+            mensagem: formState.description,
+            id_colaborador: 1 // ID do colaborador logado
+        };
+
+        if (formState.selectedOption === 'ferias') {
+            return {
+                ...baseData,
+                tipo_ticket: 'PEDIR_FERIAS',
+                data_inicio_ferias: new Date().toISOString(),
+                dias_ferias: 10
+            };
+        } else {
+            return {
+                ...baseData,
+                tipo_ticket: 'PEDIR_ABONO',
+                motivo_abono: formState.description,
+                dias_abono: [new Date().toISOString()]
+            };
         }
     };
 
     const handleSubmit = async () => {
-        if (!selectedOption) {
-            setError('Por favor, selecione uma opção.');
+        if (!formState.selectedOption) {
+            setFormState(prev => ({ ...prev, error: 'Por favor, selecione uma opção.' }));
             return;
         }
-        if (!description.trim()) {
-            setError('Por favor, escreva uma descrição.');
+        if (!formState.description.trim()) {
+            setFormState(prev => ({ ...prev, error: 'Por favor, escreva uma descrição.' }));
             return;
-        }
-
-        const ticketData: TicketData = {
-            tipo_ticket: ticketTypeMapping[selectedOption],
-            mensagem: description,
-            id_colaborador: 1, // Substitua pelo ID real do colaborador logado
-        };
-
-        switch (ticketData.tipo_ticket) {
-            case TicketType.PEDIR_FERIAS:
-                ticketData.data_inicio_ferias = new Date().toISOString();
-                ticketData.dias_ferias = 10;
-                break;
-            case TicketType.PEDIR_ABONO:
-                ticketData.motivo_abono = description;
-                ticketData.dias_abono = [new Date().toISOString()];
-                break;
         }
 
         try {
+            const ticketData = createTicketData();
             const response = await axios.post('/tickets/postar', ticketData);
+            
             if (response.status === 200) {
-                setSuccessMessage(ticketMessages[selectedOption]);
-                setSelectedOption('');
-                setDescription('');
-                setFile(null);
-                setError('');
+                setFormState({
+                    selectedOption: '',
+                    description: '',
+                    file: null,
+                    error: '',
+                    successMessage: ticketMessages[formState.selectedOption]
+                });
             }
         } catch (error) {
             const axiosError = error as AxiosError;
-            if (axiosError.response) {
-                setError(`Erro ao enviar a solicitação: ${axiosError.response.data.message}`);
-            } else {
-                setError('Erro ao enviar a solicitação. Tente novamente.');
-            }
+            setFormState(prev => ({
+                ...prev,
+                error: axiosError.response 
+                    ? `Erro ao enviar a solicitação: ${axiosError.response.data.message}`
+                    : 'Erro ao enviar a solicitação. Tente novamente.'
+            }));
         }
     };
 
@@ -119,31 +143,31 @@ const ConteudoSolicitacoes: React.FC = () => {
                     <h1 className="text-2xl font-bold mb-4 md:hidden">Solicitações</h1>
 
                     {/* Mensagem de erro */}
-                    {error && (
+                    {formState.error && (
                         <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                            {error}
+                            {formState.error}
                         </div>
                     )}
 
                     {/* Mensagem de sucesso */}
-                    {successMessage && (
+                    {formState.successMessage && (
                         <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                            {successMessage}
+                            {formState.successMessage}
                         </div>
                     )}
 
                     {/* Dropdown para seleção de opções */}
                     <div className="mb-6">
                         <select
-                            value={selectedOption}
+                            value={formState.selectedOption}
                             onChange={handleOptionChange}
                             className="w-full p-4 border border-gray-300 rounded-lg bg-white"
                         >
                             <option value="" disabled>
                                 Selecione uma opção
                             </option>
-                            <option value={TicketOption.FERIAS}>Solicitar Férias</option>
-                            <option value={TicketOption.ABONO}>Solicitar Abono de Faltas</option>
+                            <option value="ferias">Solicitar Férias</option>
+                            <option value="abono">Solicitar Abono de Faltas</option>
                         </select>
                     </div>
 
@@ -151,7 +175,7 @@ const ConteudoSolicitacoes: React.FC = () => {
                     <div className="mb-6 relative">
                         <textarea
                             placeholder="Descreva o motivo da sua solicitação..."
-                            value={description}
+                            value={formState.description}
                             onChange={handleDescriptionChange}
                             className="w-full p-4 border border-gray-300 rounded-lg resize-none"
                             rows={8}
