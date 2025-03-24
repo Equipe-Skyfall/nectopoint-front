@@ -1,136 +1,95 @@
 import React, { useEffect, useState } from 'react';
 import api from '../hooks/axios';
+import SessaoUsuario from '../../interfaces/interfaceSessaoUsuario';
 
-interface Ponto {
-    tipo_ponto: string; // "ENTRADA" ou "SAIDA"
-    data_hora: string;
-    tempo_entre_pontos: number | null;
-}
-
-interface JornadaAtual {
-    id_colaborador: number;
-    nome_colaborador: string;
-    id_registro: string;
-    inicio_turno: string;
-    status_turno: string;
-    tempo_trabalhado_min: number;
-    tempo_intervalo_min: number;
-    pontos_marcados: Ponto[];
-}
-
-interface ApiResponse {
-    id_colaborador: number;
-    nome: string;
-    id_sessao: string;
-    dados_usuario: {
-        cpf: string;
-        cargo: string;
-        departamento: string;
-        status: string | null;
-    };
-    jornada_trabalho: {
-        tipo_jornada: string;
-        banco_de_horas: number;
-        horas_diarias: number;
-    };
-    jornada_atual: JornadaAtual;
-    jornadas_historico: JornadaAtual[];
-    jornadas_irregulares: any[];
-    alertas_usuario: any[];
+interface HistoricoJornada {
+    data: string;
+    inicioTurno: string;
+    fimTurno: string;
+    statusTurno: string;
 }
 
 export default function ConteudoHistoricoFunc() {
-    const [pontosMarcados, setPontosMarcados] = useState<Ponto[]>([]);
+    const [historicoJornadas, setHistoricoJornadas] = useState<HistoricoJornada[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const itensPorPagina = 9;
 
-    // Busca os pontos marcados do usuário logado
-    const buscarPontosMarcados = async () => {
+    const buscarHistoricoJornadas = async () => {
         try {
             setCarregando(true);
             setErro(null);
 
-            const response = await api.get<ApiResponse>('/sessao/usuario/me');
-            console.log('Resposta da API:', response.data); // Log da resposta
+            const response = await api.get<SessaoUsuario>('/sessao/usuario/me');
+            console.log('Resposta da API:', response.data);
 
-            if (response.data) {
-                let pontosMarcados: Ponto[] = [];
+            if (response.data && Array.isArray(response.data.jornadas_historico)) {
+                const historicoFormatado = response.data.jornadas_historico
+                    .map(jornada => {
+                        const dataInicio = new Date(jornada.inicio_turno);
+                        const dataFim = jornada.fim_turno ? new Date (jornada.fim_turno) : null
+                        
+                        return {
+                            data: dataInicio.toLocaleDateString('pt-BR'),
+                            inicioTurno: dataInicio.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                            fimTurno: dataFim ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                            statusTurno: formatarStatus(jornada.status_turno),
+                            dataOriginal: dataInicio
+                        };
+                    })
+                    .sort((a, b) => {
+                        // Ordena do mais recente para o mais antigo
+                        return b.dataOriginal.getTime() - a.dataOriginal.getTime();
+                    })
+                    .map(item => {
+                        const {dataOriginal, ...rest } = item
+                        return rest
+                    });
 
-                // Usa jornadas_historico se estiver disponível e não estiver vazio
-                // Adiciona pontos de jornada_atual
-                if (response.data.jornada_atual) {
-                    pontosMarcados = pontosMarcados.concat(
-                        response.data.jornada_atual.pontos_marcados.map((ponto) => ({
-                            ...ponto,
-                            tipo_jornada:"Atual"
-                        }))
-                    );
-                }
-                if (Array.isArray(response.data.jornadas_historico)) {
-                    pontosMarcados = pontosMarcados.concat(
-                        response.data.jornadas_historico.flatMap(
-                            (jornada) => jornada.pontos_marcados.map((ponto) => ({
-                                ...ponto,
-                                tipo_jornada:"Histórica"
-                            }))
-                        )
-                    );
-                }
-
-                // Adiciona pontos de jornadas_irregulares
-                if (Array.isArray(response.data.jornadas_irregulares)) {
-                    pontosMarcados = pontosMarcados.concat(
-                        response.data.jornadas_irregulares.flatMap(
-                            (jornada) => jornada.pontos_marcados.map((ponto) => ({
-                                ...ponto,
-                                tipo_jornada:"Irregular"
-                            }))
-                        )
-                    );
-                }
-                pontosMarcados.sort((a, b) => {
-                    const dataA = new Date(a.data_hora).getTime();
-                    const dataB = new Date(b.data_hora).getTime();
-                    return dataB - dataA; // Ordem decrescente
-                });
-                setPontosMarcados(pontosMarcados);
+                setHistoricoJornadas(historicoFormatado);
             } else {
-                setErro('Dados inválidos recebidos da API. A estrutura não é a esperada.');
+                setErro('Dados inválidos recebidos da API ou nenhum histórico encontrado.');
             }
         } catch (error) {
-            setErro('Erro ao carregar os pontos marcados. Tente novamente mais tarde.');
+            setErro('Erro ao carregar o histórico de jornadas. Tente novamente mais tarde.');
         } finally {
             setCarregando(false);
         }
     };
 
-    useEffect(() => {
-        buscarPontosMarcados();
-    }, []);
-
-    const formatarDataHora = (dataHora: string) => {
-        const data = new Date(dataHora);
-        return data.toLocaleString('pt-BR');
+    const formatarStatus = (status: string) => {
+        switch(status) {
+            case 'ENCERRADO':
+                return 'Encerrado';
+            case 'EM_ANDAMENTO':
+                return 'Em Andamento';
+            case 'NAO_INICIADO':
+                return 'Não Iniciado';
+            case 'PAUSADO':
+                return 'Pausado';
+            default:
+                return status;
+        }
     };
 
+    useEffect(() => {
+        buscarHistoricoJornadas();
+    }, []);
 
-    const totalPaginas = Math.ceil(pontosMarcados.length / itensPorPagina);
+    const totalPaginas = Math.ceil(historicoJornadas.length / itensPorPagina);
     const obterItensPaginaAtual = () => {
         const inicio = paginaAtual * itensPorPagina;
         const fim = inicio + itensPorPagina;
-        return pontosMarcados.slice(inicio, fim);
+        return historicoJornadas.slice(inicio, fim);
     };
 
-    // Avança para a próxima página
     const avancarPagina = () => {
         if (paginaAtual < totalPaginas - 1) {
             setPaginaAtual(paginaAtual + 1);
         }
     };
 
-    // Retrocede para a página anterior
     const retrocederPagina = () => {
         if (paginaAtual > 0) {
             setPaginaAtual(paginaAtual - 1);
@@ -139,40 +98,40 @@ export default function ConteudoHistoricoFunc() {
 
     return (
         <div className="flex flex-col items-center justify-center p-4 my-4 w-full overflow-y-hidden overflow-x-hidden">
-            <h2 className="poppins-semibold text-blue-600 mb-5 my-10">Histórico de Pontos</h2>
+            <h2 className="poppins-semibold text-blue-600 mb-5 my-10">Histórico de Jornadas</h2>
 
             {erro ? (
                 <p className="text-red-600">{erro}</p>
             ) : carregando ? (
                 <p>Carregando...</p>
-            ) : pontosMarcados.length === 0 ? (
+            ) : historicoJornadas.length === 0 ? (
                 <p>Nenhum registro encontrado.</p>
             ) : (
                 <>
                     <div className="w-[94vw] rounded-md !overflow-x-hidden bg-[#F1F1F1]">
-                        <table className="w-full border border-gray-300 text-center ">
+                        <table className="w-full border border-gray-300 text-center">
                             <thead>
                                 <tr className="bg-blue-800 text-white">
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Tipo</th>
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Data e Hora</th>
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Tempo entre Pontos (min)</th>
+                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Data</th>
+                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Início do Turno</th>
+                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Fim do Turno</th>
+                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Status</th>
                                 </tr>
                             </thead>
                             <tbody className='text-center justify-center'>
-                                {obterItensPaginaAtual().map((ponto, index) => (
+                                {obterItensPaginaAtual().map((jornada, index) => (
                                     <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
                                         <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
-                                            {ponto.tipo_ponto === 'ENTRADA' ? (
-                                                <span className="text-green-600">Entrada</span>
-                                            ) : (
-                                                <span className="text-red-600">Saída</span>
-                                            )}
+                                            {jornada.data}
                                         </td>
                                         <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
-                                            {formatarDataHora(ponto.data_hora)}
+                                            {jornada.inicioTurno}
                                         </td>
                                         <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
-                                            {ponto.tempo_entre_pontos !== null ? ponto.tempo_entre_pontos : 'N/A'}
+                                            {jornada.fimTurno}
+                                        </td>
+                                        <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
+                                            {jornada.statusTurno}
                                         </td>
                                     </tr>
                                 ))}
@@ -181,7 +140,7 @@ export default function ConteudoHistoricoFunc() {
                     </div>
 
                     {/* Paginação */}
-                    <div className="mt-3 -mb-4  flex items-center gap-4">
+                    <div className="mt-3 -mb-4 flex items-center gap-4">
                         <button
                             onClick={retrocederPagina}
                             disabled={paginaAtual === 0}

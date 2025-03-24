@@ -84,7 +84,7 @@ export default function NavBar() {
                     <div className="flex items-center gap-2">
                         {/* Ícone do usuário */}
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">{user?.jornada_atual?.nome_colaborador}</span>
+                        <span className="text-gray-700 font-medium">{user?.nome}</span>
                     </div>
                 </div>
 
@@ -114,7 +114,7 @@ export default function NavBar() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.jornada_atual?.nome_colaborador}</span>
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span>
                             <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p>
                         </div>
                     </div>

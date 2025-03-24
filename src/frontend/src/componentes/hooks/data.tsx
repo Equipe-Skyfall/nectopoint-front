@@ -42,7 +42,7 @@ export default function Data(): JSX.Element {
         <>
         <div className="overflow-hidden font-['Poppins']">
             <div className="text-center justify-center my-8">
-                <h2 className='text-blue-600  font-semibold'>Olá, {user?.jornada_atual?.nome_colaborador}</h2>
+                <h2 className='text-blue-600  font-semibold'>Olá, {user?.nome}</h2>
                 <p className="text-gray-600">{formatarData()}</p>
             </div>
         </div>
