@@ -15,8 +15,8 @@ export default function Ponto() {
 
     return (
         <>
-            <div className="overflow-hidden pt-20">
-
+            <div className="overflow-hidden ">
+                
                 <div className="flex text-white flex-col text-center self-center items-center justify-center my-auto topabso-1/4 left-0 w-full mx-auto lute"> {/* 'bg-midnight' e 'text-white' são cores customizadas */}
                     <Data />
 

@@ -18,13 +18,13 @@ export default defineConfig({
       '/usuario': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        secure: false,
+        secure: false
       },
       '/tickets': {
-        target: 'http://localhost:8080/',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false
       },
     },
-  },
+  }
 });

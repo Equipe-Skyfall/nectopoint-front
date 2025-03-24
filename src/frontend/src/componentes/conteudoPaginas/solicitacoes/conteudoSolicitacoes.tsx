@@ -9,7 +9,6 @@ const ConteudoSolicitacoes: React.FC = () => {
     const [error, setError] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
 
-    // Mapeamento de mensagens personalizadas por tipo de ticket
     const ticketMessages: { [key: string]: string } = {
         ferias: 'Solicitação de férias enviada com sucesso!',
         abono: 'Solicitação de abono enviada com sucesso!',
@@ -43,16 +42,35 @@ const ConteudoSolicitacoes: React.FC = () => {
             return;
         }
 
-        const ticketData = {
-            id_colaborador: 1, // Substitua pelo ID do colaborador logado
-            tipo_ticket: selectedOption, // Já é um valor válido do enum
-            mensagem: description,
+        const ticketTypeMapping: { [key: string]: string } = {
+            ferias: 'PEDIR_FERIAS',
+            abono: 'PEDIR_ABONO',
+            atestado: 'PEDIR_ABONO',
+            folga: 'PEDIR_ABONO',
         };
 
+        const ticketData = {
+            tipo_ticket: ticketTypeMapping[selectedOption],
+            mensagem: description,
+            id_colaborador: 1, // Substitua pelo ID real do colaborador logado
+        };
+
+        switch (ticketData.tipo_ticket) {
+            case 'PEDIR_FERIAS':
+                ticketData.data_inicio_ferias = new Date().toISOString();
+                ticketData.dias_ferias = 10;
+                break;
+            case 'PEDIR_ABONO':
+                ticketData.motivo_abono = description;
+                ticketData.dias_abono = [new Date().toISOString()];
+                break;
+        }
+
+        console.log('Payload enviado:', ticketData); // Verifique o payload no console
+
         try {
-            console.log(ticketData); // Verifique o objeto no console
             const response = await axios.post('/tickets/postar', ticketData);
-            console.log(response)
+            console.log('Resposta do backend:', response.data); // Verifique a resposta do backend
             if (response.status === 200) {
                 setSuccessMessage(ticketMessages[selectedOption] || 'Solicitação enviada com sucesso!');
                 setSelectedOption('');
@@ -61,7 +79,11 @@ const ConteudoSolicitacoes: React.FC = () => {
                 setError('');
             }
         } catch (error) {
-            setError('Erro ao enviar a solicitação. Tente novamente.');
+            if (error.response && error.response.data) {
+                setError(`Erro ao enviar a solicitação: ${error.response.data.message}`);
+            } else {
+                setError('Erro ao enviar a solicitação. Tente novamente.');
+            }
             console.error('Erro ao enviar solicitação:', error);
         }
     };
