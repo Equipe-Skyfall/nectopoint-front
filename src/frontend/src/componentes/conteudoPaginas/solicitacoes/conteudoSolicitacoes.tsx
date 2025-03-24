@@ -1,21 +1,46 @@
 import React, { useState } from 'react';
 import { FaPaperclip, FaBell } from 'react-icons/fa';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+
+enum TicketType {
+  PEDIR_FERIAS = 'PEDIR_FERIAS',
+  PEDIR_ABONO = 'PEDIR_ABONO'
+}
+
+enum TicketOption {
+  FERIAS = 'ferias',
+  ABONO = 'abono'
+}
+
+interface TicketData {
+  tipo_ticket: TicketType;
+  mensagem: string;
+  id_colaborador: number;
+  data_inicio_ferias?: string;
+  dias_ferias?: number;
+  motivo_abono?: string;
+  dias_abono?: string[];
+}
 
 const ConteudoSolicitacoes: React.FC = () => {
-    const [selectedOption, setSelectedOption] = useState<string>('');
+    const [selectedOption, setSelectedOption] = useState<TicketOption | ''>('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
 
-    const ticketMessages: { [key: string]: string } = {
-        ferias: 'Solicitação de férias enviada com sucesso!',
-        abono: 'Solicitação de abono enviada com sucesso!',
+    const ticketMessages: Record<TicketOption, string> = {
+        [TicketOption.FERIAS]: 'Solicitação de férias enviada com sucesso!',
+        [TicketOption.ABONO]: 'Solicitação de abono enviada com sucesso!',
+    };
+
+    const ticketTypeMapping: Record<TicketOption, TicketType> = {
+        [TicketOption.FERIAS]: TicketType.PEDIR_FERIAS,
+        [TicketOption.ABONO]: TicketType.PEDIR_ABONO,
     };
 
     const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedOption(e.target.value);
+        setSelectedOption(e.target.value as TicketOption);
         setError('');
     };
 
@@ -40,47 +65,39 @@ const ConteudoSolicitacoes: React.FC = () => {
             return;
         }
 
-        const ticketTypeMapping: { [key: string]: string } = {
-            ferias: 'PEDIR_FERIAS',
-            abono: 'PEDIR_ABONO',
-        };
-
-        const ticketData = {
+        const ticketData: TicketData = {
             tipo_ticket: ticketTypeMapping[selectedOption],
             mensagem: description,
             id_colaborador: 1, // Substitua pelo ID real do colaborador logado
         };
 
         switch (ticketData.tipo_ticket) {
-            case 'PEDIR_FERIAS':
+            case TicketType.PEDIR_FERIAS:
                 ticketData.data_inicio_ferias = new Date().toISOString();
                 ticketData.dias_ferias = 10;
                 break;
-            case 'PEDIR_ABONO':
+            case TicketType.PEDIR_ABONO:
                 ticketData.motivo_abono = description;
                 ticketData.dias_abono = [new Date().toISOString()];
                 break;
         }
 
-        console.log('Payload enviado:', ticketData); // Verifique o payload no console
-
         try {
             const response = await axios.post('/tickets/postar', ticketData);
-            console.log('Resposta do backend:', response.data); // Verifique a resposta do backend
             if (response.status === 200) {
-                setSuccessMessage(ticketMessages[selectedOption] || 'Solicitação enviada com sucesso!');
+                setSuccessMessage(ticketMessages[selectedOption]);
                 setSelectedOption('');
                 setDescription('');
                 setFile(null);
                 setError('');
             }
         } catch (error) {
-            if (error.response && error.response.data) {
-                setError(`Erro ao enviar a solicitação: ${error.response.data.message}`);
+            const axiosError = error as AxiosError;
+            if (axiosError.response) {
+                setError(`Erro ao enviar a solicitação: ${axiosError.response.data.message}`);
             } else {
                 setError('Erro ao enviar a solicitação. Tente novamente.');
             }
-            console.error('Erro ao enviar solicitação:', error);
         }
     };
 
@@ -125,8 +142,8 @@ const ConteudoSolicitacoes: React.FC = () => {
                             <option value="" disabled>
                                 Selecione uma opção
                             </option>
-                            <option value="ferias">Solicitar Férias</option>
-                            <option value="abono">Solicitar Abono de Faltas</option>
+                            <option value={TicketOption.FERIAS}>Solicitar Férias</option>
+                            <option value={TicketOption.ABONO}>Solicitar Abono de Faltas</option>
                         </select>
                     </div>
 
