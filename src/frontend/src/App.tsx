@@ -14,6 +14,7 @@ import Teste from "./paginas/teste";
 import CadastrarFuncionario from "./paginas/gestorCadastrarFunc";
 import Historico from "./paginas/historico";
 import HistoricoFunc from "./paginas/historicoFunc";
+import SolicitacoesGestor from "./paginas/solicitacoesGestor";
 
 
 function App() {
@@ -47,6 +48,9 @@ function App() {
                     <Route path="historico-func" element={<HistoricoFunc/>}/>
                     <Route path="cadastrar" element={<CadastrarFuncionario/>}/>
                     <Route path="bater-ponto" element={<PaginaUsuario />}/>
+
+                    <Route path="solicitacoes-empresa" element={<SolicitacoesGestor />}/>
+
                     <Route path="teste" element={<Teste />} />
                     {/* </Route> */}
                   </Routes>
