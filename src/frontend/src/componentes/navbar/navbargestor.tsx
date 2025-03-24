@@ -31,7 +31,7 @@ export default function NavBarGestor() {
               
               const response = await api.get('sessao/usuario/me');
               
-              console.log('Users data:', response.data);
+              
             } catch (error) {
               console.error('Error fetching users:', error);
              

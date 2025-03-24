@@ -1,4 +1,5 @@
 import api from "../api";
+import recarregar from "./recarregar";
 
 export default async function baterPonto() { 
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -7,6 +8,9 @@ export default async function baterPonto() {
     try {
         
         const response = await api.post('/turno/bater-ponto');
+        //fetch nos dados apos bater turno
+        recarregar();
+        
         console.log('Ponto batido com sucesso:', response.data);
         return response.data || [];
     } catch (error: any) {
