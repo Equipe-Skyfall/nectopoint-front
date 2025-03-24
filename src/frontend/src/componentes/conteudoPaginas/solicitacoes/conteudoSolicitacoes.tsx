@@ -12,8 +12,6 @@ const ConteudoSolicitacoes: React.FC = () => {
     const ticketMessages: { [key: string]: string } = {
         ferias: 'Solicitação de férias enviada com sucesso!',
         abono: 'Solicitação de abono enviada com sucesso!',
-        atestado: 'Solicitação de atestado enviada com sucesso!',
-        folga: 'Solicitação de folga enviada com sucesso!',
     };
 
     const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -45,8 +43,6 @@ const ConteudoSolicitacoes: React.FC = () => {
         const ticketTypeMapping: { [key: string]: string } = {
             ferias: 'PEDIR_FERIAS',
             abono: 'PEDIR_ABONO',
-            atestado: 'PEDIR_ABONO',
-            folga: 'PEDIR_ABONO',
         };
 
         const ticketData = {
@@ -131,8 +127,6 @@ const ConteudoSolicitacoes: React.FC = () => {
                             </option>
                             <option value="ferias">Solicitar Férias</option>
                             <option value="abono">Solicitar Abono de Faltas</option>
-                            <option value="atestado">Solicitar Atestado</option>
-                            <option value="folga">Solicitar Folga</option>
                         </select>
                     </div>
 

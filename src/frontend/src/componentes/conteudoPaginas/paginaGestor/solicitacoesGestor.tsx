@@ -18,6 +18,7 @@ const TipoStatus = {
     RESOLVIDO: 'RESOLVIDO',
 } as const;
 
+
 type TipoStatus = keyof typeof TipoStatus;
 
 export default function SolicitacoesGestor() {
@@ -84,6 +85,17 @@ export default function SolicitacoesGestor() {
         }
     };
 
+    const formatarTipoTicket = (tipo: string) => {
+        switch (tipo) {
+            case 'PEDIR_FERIAS':
+                return 'Férias';
+            case 'PEDIR_ABONO':
+                return 'Abono';
+            default:
+                return tipo;
+        }
+    };
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -117,7 +129,7 @@ export default function SolicitacoesGestor() {
                         <div key={solicitacao.id_ticket} className="bg-gray-200 p-4 rounded w-full shadow-md flex justify-between items-center">
                             <div className="text-left">
                                 <p className="poppins-semibold">Colaborador ID: {solicitacao.id_colaborador}</p>
-                                <p className="poppins text-sm">{solicitacao.tipo_ticket}</p>
+                                <p className="poppins text-sm">{formatarTipoTicket(solicitacao.tipo_ticket)}</p>
                                 <p className="poppins text-xs text-gray-600 truncate">{truncarTexto(solicitacao.mensagem, 20)}</p>
                                 {solicitacao.aviso_atrelado ? (
                                     <p className="poppins text-xs text-blue-500">Anexo disponível</p>
@@ -161,7 +173,7 @@ export default function SolicitacoesGestor() {
                     <div ref={modalRef} className="bg-white p-6 poppins rounded shadow-lg w-full md:w-2/3 lg:w-1/3 text-center relative">
                         <h2 className="text-xl poppins-semibold mb-2">Detalhes da Solicitação</h2>
                         <p className="text-left poppins"><strong>Colaborador ID:</strong> {modalAberto.id_colaborador}</p>
-                        <p className="text-left poppins"><strong>Motivo:</strong> {modalAberto.tipo_ticket}</p>
+                        <p className="text-left poppins"><strong>Motivo:</strong> {formatarTipoTicket(modalAberto.tipo_ticket)}</p>                        
                         <p className="text-left poppins"><strong>Justificativa:</strong> {modalAberto.mensagem}</p>
                         <p className="text-left poppins"><strong>Status:</strong> {modalAberto.status_ticket}</p>
                         {modalAberto.aviso_atrelado ? (
