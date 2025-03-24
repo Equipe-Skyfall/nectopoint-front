@@ -138,3 +138,4 @@ const useAuth = () => {
 };
 
 export default useAuth;
+export type { User };

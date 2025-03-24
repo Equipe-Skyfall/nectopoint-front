@@ -16,7 +16,7 @@ export default function DisplayTempo(props : Display ){
         let temposubtraido= Date.parse(tempo) - 10800000
         const tempofinal = new Date(temposubtraido).toISOString() 
         const tempoFormatado = (`${(tempofinal.split("T")[1].split(":")[0])}`) + ":" + (tempofinal).split("T")[1].split(":")[1]
-        console.log(saida);
+        
         
         return tempoFormatado
     }
@@ -25,8 +25,8 @@ export default function DisplayTempo(props : Display ){
                     
             
                 <span className="flex w-64 justify-between grid grid-cols-2 gap-2">
-                <div className={`flex items-center rounded-xl text-center w-auto p-2 justify-center ${intervalo ? "bg-gray-500" : "bg-brown-400"}`}>
-                <img src={intervalo ? "./semalmoco.png" : "./fimalmoco.png"}  className="w-11 h-11 m-1 p-1"></img>
+                <div className={`flex items-center rounded-xl text-center w-auto p-2 justify-center ${intervalo ? "bg-gray-500" : "bg-orange-900"}`}>
+                <img src={intervalo ? "./almoco.png" : "./fimalmoco.png"}  className="w-11 h-11 m-1 p-1"></img>
                 </div>
                 <span className='flex items-center bg-blue-900 rounded-xl text-center w-auto   p-2'> <img src='./time-left.png'  className="w-8 h-8 m-2 p-1"></img><p className={'text-white poppins'}> {banco_de_horas}h</p></span>
                 
