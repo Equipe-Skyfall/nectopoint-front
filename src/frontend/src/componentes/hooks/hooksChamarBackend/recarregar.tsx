@@ -1,3 +1,4 @@
+import SessaoUsuario from "../../../interfaces/interfaceSessaoUsuario";
 import api from "../api";
 import { User } from "../useAuth";
 // Recarrega os dados do usuário logado
@@ -7,16 +8,22 @@ const recarregar = async () => {
       
 
         // Extrai os dados do usuário do novo JSON
-        const userData: User = {
-          id: responseData.id_colaborador,
-          nome: responseData.dados_usuario.nome, // Nome pode ser null
-          cpf: responseData.dados_usuario.cpf,
-          cargo: responseData.dados_usuario.cargo,
-          departamento: responseData.dados_usuario.departamento,
-          status: responseData.dados_usuario.status, // Status pode ser null
-          jornada_trabalho: responseData.jornada_trabalho,
-          jornada_atual: responseData.jornada_atual,
-          alertas_usuario: responseData.alertas_usuario,
+        const userData: SessaoUsuario = {
+            id_sessao: responseData.id_sessao, // Corrected to match 'id_sessao'
+            id_colaborador: responseData.id_colaborador,
+            dados_usuario: {
+                nome: responseData.dados_usuario.nome,
+                cpf: responseData.dados_usuario.cpf,
+                cargo: responseData.dados_usuario.cargo,
+                departamento: responseData.dados_usuario.departamento,
+                status: responseData.dados_usuario.status,
+            },
+            jornada_trabalho: responseData.jornada_trabalho,
+            jornada_atual: responseData.jornada_atual,
+            alertas_usuario: responseData.alertas_usuario,
+            jornadas_historico: responseData.jornadas_historico, // Optional
+            jornadas_irregulares: responseData.jornadas_irregulares, // Optional
+            tickets_usuario: responseData.tickets_usuario, // Optional
         };
         localStorage.setItem('user', JSON.stringify(userData));
         return userData;
