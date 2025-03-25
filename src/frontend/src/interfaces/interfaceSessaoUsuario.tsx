@@ -1,26 +1,30 @@
+import { Alertas } from "./interfaceAlertas";
+import registroPonto from "./interfaceRegistroPonto";
+import PointRegistryEntity from "./interfaceRegistroPonto";
+import { Ticket } from "./interfaceTicket";
 
 
 export default interface SessaoUsuario {
-    id: number;
-    nome: string | null; 
-    cpf: string;
-    cargo: string;
-    departamento: string;
-    status: string | null;
-    jornada_trabalho: JornadaTrabalho;
-    jornada_atual: Turno;
-    jornadas_historico: Turno[];
-    jornadas_irregulares: Turno[];
-    alertas_usuario: any[];
+  id_sessao: string; // Updated from 'id' to 'id_sessao'
+    id_colaborador: number; // Added to match 'id_colaborador'
+    dados_usuario: DadosUsuario; // Updated to match 'DadosUsuario'
+    jornada_trabalho: JornadaTrabalho; // No changes needed
+
+    jornada_atual: PointRegistryEntity; // Updated to match 'PointRegistryStripped'
+    jornadas_historico: registroPonto[]; // Updated to match 'List<PointRegistryStripped>'
+    jornadas_irregulares: registroPonto[]; // Updated to match 'List<PointRegistryStripped>'
+
+    tickets_usuario: Ticket[]; // Added to match 'List<TicketsStripped>'
+    alertas_usuario: Alertas[]; // Updated to match 'List<WarningsStripped>'
 }
 
-interface UserData {
-    nome: string | null; 
-    cpf: string;
-    cargo: string;
-    departamento: string;
-    status: string | null;
-  }
+interface DadosUsuario {
+  nome: string | null;
+  cpf: string;
+  cargo: string;
+  departamento: string;
+  status: string | null;
+}
   
   interface JornadaTrabalho {
     tipo_jornada: string;
