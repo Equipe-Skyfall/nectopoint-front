@@ -1,5 +1,16 @@
 
-
+.bg-primarygreen {
+  background-color: #6CA044 !important;
+}
+.bg-primaryorange {
+  background-color: #D19148 !important;
+}	
+.bg-primarybrown {
+  background-color: #95724C !important;
+}
+.bg-primaryred {
+  background-color: #853838 !important;
+}
 .poppins {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
@@ -7,32 +18,32 @@
 }
 
 .poppins-semibold {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins-semibold", sans-serif;
   font-weight: 600;
   font-style: normal;
 }
 
 .poppins-bold {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins-bold", sans-serif;
   font-weight: 700;
   font-style: normal;
 }
 
 
 .poppins-medium-italic {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins-italic", sans-serif;
   font-weight: 500;
   font-style: italic;
 }
 
 .poppins-semibold-italic {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins-italicsemibold", sans-serif;
   font-weight: 600;
   font-style: italic;
 }
 
 .poppins-bold-italic {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins-italicbold", sans-serif;
   font-weight: 700;
   font-style: italic;
 }
