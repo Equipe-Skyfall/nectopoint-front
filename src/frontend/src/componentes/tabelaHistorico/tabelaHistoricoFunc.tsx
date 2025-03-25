@@ -52,7 +52,7 @@ export default function ConteudoHistoricoFunc() {
                     });
 
                 setHistoricoJornadas(historicoFormatado);
-=
+
             } else {
                 setErro('Dados inválidos recebidos da API ou nenhum histórico encontrado.');
             }

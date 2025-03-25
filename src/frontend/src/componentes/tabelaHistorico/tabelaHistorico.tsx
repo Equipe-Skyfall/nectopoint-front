@@ -43,7 +43,7 @@ interface ApiResponse {
     };
     numberOfElements: number;
     empty: boolean;
-
+}
 interface HistoricoParams {
     page?: number;
     size?: number;
