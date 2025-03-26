@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import api from '../hooks/axios';
+
+import api from '../hooks/api';
+
 import SessaoUsuario from '../../interfaces/interfaceSessaoUsuario';
+
 
 interface HistoricoJornada {
     data: string;
@@ -20,6 +23,7 @@ export default function ConteudoHistoricoFunc() {
         try {
             setCarregando(true);
             setErro(null);
+
 
             const response = await api.get<SessaoUsuario>('/sessao/usuario/me');
             console.log('Resposta da API:', response.data);
@@ -48,6 +52,7 @@ export default function ConteudoHistoricoFunc() {
                     });
 
                 setHistoricoJornadas(historicoFormatado);
+=
             } else {
                 setErro('Dados inválidos recebidos da API ou nenhum histórico encontrado.');
             }

@@ -1,14 +1,20 @@
 import { useEffect } from "react";
-
+import useUserData from "../../hooks/userData";
 
 import DisplayTempo from "../../displayTempo/displayTempo";
 import Data from "../../hooks/data";
+import baterPonto from "../../hooks/hooksChamarBackend/baterPonto";
 
 
 export default  function ConteudoHome() {
     
    
     
+    const userData : any = (useUserData());
+    const entrada = (userData.jornada_atual.inicio_turno)
+    const saida = (userData.jornada_atual.fim_turno)
+    const banco_de_horas = (userData.jornada_trabalho.banco_de_horas)
+    console.log('entrada',entrada);
     
     useEffect(() => {
         document.body.classList.add("overflow-hidden");
@@ -26,13 +32,11 @@ export default  function ConteudoHome() {
                     
                     <Data />
                     
-                    <DisplayTempo cor="primarygreen" img="./setadir.png" hora={'9999'}></DisplayTempo>
-                    <DisplayTempo cor="primaryorange" img="/almoco.png" hora="1204"></DisplayTempo>
-                    <DisplayTempo cor="primarybrown" img="/fimalmoco.png" hora="1304"></DisplayTempo>
-                    <DisplayTempo cor="primaryred" img="/setadir.png" hora="1604"></DisplayTempo>         {/* para montar palhetas customizadas vá para tailwind.config.js > theme > extend > colors */}
+                    <DisplayTempo entrada={entrada} saida={saida} intervalo={true} banco_de_horas={banco_de_horas}></DisplayTempo>
+                          
 
                     <div>
-                        <button className="bg-blue-800 rounded-lg p-3 w-full mt-10 px-10 text-center poppins">Botão Mutável</button>
+                        <button className="bg-blue-800 rounded-lg p-3 w-full mt-10 px-10 text-center poppins" onClick={baterPonto}>Bater Ponto</button>
                     </div>
 
                 </div>

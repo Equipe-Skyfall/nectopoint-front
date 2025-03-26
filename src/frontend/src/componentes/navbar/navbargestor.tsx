@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaBell, FaUserPlus } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
-import api from "../hooks/axios";
+import api from "../hooks/api";
 
 function useOutsideClick(ref, callback) {
     useEffect(() => {
@@ -31,7 +31,7 @@ export default function NavBarGestor() {
               
               const response = await api.get('sessao/usuario/me');
               
-              console.log('Users data:', response.data);
+              
             } catch (error) {
               console.error('Error fetching users:', error);
              
@@ -50,6 +50,7 @@ export default function NavBarGestor() {
     const confirmLogout = () => {
         setShowLogoutModal(false);
         logout();
+        localStorage.removeItem('user')
         navigate("/"); 
     };
 
