@@ -7,6 +7,12 @@ interface HistoricoJornada {
     inicioTurno: string;
     fimTurno: string;
     statusTurno: string;
+    pontos: PontoFormatado[];
+}
+
+interface PontoFormatado {
+    tipo: string;
+    horario: string;
 }
 
 export default function ConteudoHistoricoFunc() {
@@ -24,50 +30,71 @@ export default function ConteudoHistoricoFunc() {
             const response = await api.get<SessaoUsuario>('/sessao/usuario/me');
             console.log('Resposta da API:', response.data);
 
-            if (response.data && Array.isArray(response.data.jornadas_historico)) {
+            if (response.data) {
+                // Processa jornadas históricas
                 const historicoFormatado = response.data.jornadas_historico
-                    .map(jornada => {
-                        const dataInicio = new Date(jornada.inicio_turno);
-                        const dataFim = jornada.fim_turno ? new Date (jornada.fim_turno) : null
-                        
-                        return {
-                            data: dataInicio.toLocaleDateString('pt-BR'),
-                            inicioTurno: dataInicio.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                            fimTurno: dataFim ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-                            statusTurno: formatarStatus(jornada.status_turno),
-                            dataOriginal: dataInicio
-                        };
-                    })
-                    .sort((a, b) => {
-                        // Ordena do mais recente para o mais antigo
-                        return b.dataOriginal.getTime() - a.dataOriginal.getTime();
-                    })
-                    .map(item => {
-                        const {dataOriginal, ...rest } = item
-                        return rest
-                    });
+                    .map(formatarJornada)
+                    .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime());
 
-                setHistoricoJornadas(historicoFormatado);
+                // Processa jornadas irregulares
+                const irregularFormatado = response.data.jornadas_irregulares
+                    .map(formatarJornada)
+                    .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime());
+
+                // Combina e ordena todos os registros
+                const todosRegistros = [...historicoFormatado, ...irregularFormatado]
+                    .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime())
+                    .map(({ dataOriginal, ...rest }) => rest);
+
+                setHistoricoJornadas(todosRegistros);
             } else {
                 setErro('Dados inválidos recebidos da API ou nenhum histórico encontrado.');
             }
         } catch (error) {
+            console.error('Erro ao buscar histórico:', error);
             setErro('Erro ao carregar o histórico de jornadas. Tente novamente mais tarde.');
         } finally {
             setCarregando(false);
         }
     };
 
+    const formatarJornada = (jornada: any) => {
+        const dataInicio = new Date(jornada.inicio_turno);
+        const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
+
+        // Formata os pontos marcados
+        const pontosFormatados = jornada.pontos_marcados?.map((ponto: any) => ({
+            tipo: ponto.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída',
+            horario: new Date(ponto.data_hora).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            })
+        })) || [];
+
+        return {
+            data: dataInicio.toLocaleDateString('pt-BR'),
+            inicioTurno: dataInicio.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            }),
+            fimTurno: dataFim ? dataFim.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            }) : 'N/A',
+            statusTurno: formatarStatus(jornada.status_turno),
+            pontos: pontosFormatados,
+            dataOriginal: dataInicio
+        };
+    };
+
     const formatarStatus = (status: string) => {
-        switch(status) {
+        switch (status) {
             case 'ENCERRADO':
                 return 'Encerrado';
-            case 'EM_ANDAMENTO':
-                return 'Em Andamento';
-            case 'NAO_INICIADO':
-                return 'Não Iniciado';
-            case 'PAUSADO':
-                return 'Pausado';
+            case 'NAO_COMPARECEU':
+                return 'Não Compareceu';
+            case 'IRREGULAR':
+                return 'Irregular';
             default:
                 return status;
         }
@@ -121,16 +148,16 @@ export default function ConteudoHistoricoFunc() {
                             <tbody className='text-center justify-center'>
                                 {obterItensPaginaAtual().map((jornada, index) => (
                                     <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                                        <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
+                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
                                             {jornada.data}
                                         </td>
-                                        <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
+                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
                                             {jornada.inicioTurno}
                                         </td>
-                                        <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
+                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
                                             {jornada.fimTurno}
                                         </td>
-                                        <td className="p-2 px-5 md:p-3 poppins text-sm md:text-base text-black">
+                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
                                             {jornada.statusTurno}
                                         </td>
                                     </tr>
@@ -144,10 +171,11 @@ export default function ConteudoHistoricoFunc() {
                         <button
                             onClick={retrocederPagina}
                             disabled={paginaAtual === 0}
-                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === 0
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-800"
-                                }`}
+                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${
+                                paginaAtual === 0
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-blue-600 text-white hover:bg-blue-800"
+                            }`}
                         >
                             Anterior
                         </button>
@@ -159,10 +187,11 @@ export default function ConteudoHistoricoFunc() {
                         <button
                             onClick={avancarPagina}
                             disabled={paginaAtual === totalPaginas - 1}
-                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === totalPaginas - 1
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-800"
-                                }`}
+                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${
+                                paginaAtual === totalPaginas - 1
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-blue-600 text-white hover:bg-blue-800"
+                            }`}
                         >
                             Próxima
                         </button>
