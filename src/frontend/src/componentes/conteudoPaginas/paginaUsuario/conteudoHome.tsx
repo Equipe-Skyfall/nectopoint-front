@@ -32,7 +32,7 @@ export default  function ConteudoHome() {
                     
                     <Data />
                     
-                    <DisplayTempo entrada={entrada} saida={saida} intervalo={true} banco_de_horas={banco_de_horas}></DisplayTempo>
+                    <DisplayTempo entrada={entrada} saida={saida} intervalo={userData.jornada_atual.tirou_almoco} banco_de_horas={banco_de_horas}></DisplayTempo>
                           
 
                     <div>

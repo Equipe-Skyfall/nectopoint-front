@@ -103,9 +103,9 @@ const useAuth = () => {
         jornada_trabalho: responseData.jornada_trabalho,
         jornada_atual: responseData.jornada_atual,
         alertas_usuario: responseData.alertas_usuario,
-        jornadas_historico: responseData.jornadas_historico, // Optional
-        jornadas_irregulares: responseData.jornadas_irregulares, // Optional
-        tickets_usuario: responseData.tickets_usuario, // Optional
+        jornadas_historico: responseData.jornadas_historico, 
+        jornadas_irregulares: responseData.jornadas_irregulares, 
+        tickets_usuario: responseData.tickets_usuario, 
     };
 
 
