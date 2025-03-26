@@ -103,11 +103,11 @@ export default function DashboardGestor() {
                     </div>
 
                 </div>
-                <div className="bg-slate-300 rounded-full absolute right-5 bottom-5 sm:right-14 shadow-md h-9 sm:h-14 sm:w-14 w-9">
+                {/* <div className="bg-slate-300 rounded-full absolute right-5 bottom-5 sm:right-14 shadow-md h-9 sm:h-14 sm:w-14 w-9">
                     <button >
                         <FaBell className="w-5 h-5 sm:h-9 sm:w-9 mt-2 text-gray-800" />
                     </button>
-                </div>
+                </div> */}
             </div>
         </>
     );

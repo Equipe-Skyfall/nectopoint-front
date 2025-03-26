@@ -115,9 +115,6 @@ export default function ConteudoLogin() {
                     {isLoading ? "Carregando..." : "Acessar"}
                 </button>
 
-                <Link to="/" className="text-black my-8">
-                    Esqueceu sua senha?
-                </Link>
             </div>
         </>
     );

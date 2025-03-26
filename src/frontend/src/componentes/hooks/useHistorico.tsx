@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../hooks/axios';
+import api from '../hooks/api';
 
 interface HistoricoParams {
     page?: number;

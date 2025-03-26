@@ -21,30 +21,34 @@ function useOutsideClick(ref, callback) {
 
 export default function NavBar() {
     const [isOpen, setIsOpen] = useState(false);
-    const { logout, user, isAuthenticated } = useAuthContext();
+    const { logout, isAuthenticated } = useAuthContext();
     const sidebarRef = useRef(null);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+    const [userData, setUserData] = useState({ nome: '', cpf: '' });
 
     // Busca os dados do usuário logado
     useEffect(() => {
         if (isAuthenticated) {
-            const fetchUserData = async () => {
+            // Busca os dados do localStorage
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
                 try {
-                    const response = await api.get('sessao/usuario/me');
-                    console.log('User data:', response.data);
-                } catch (error) {
-                    console.error('Error fetching user data:', error);
-                    if (error.response) {
-                        console.error('Response data:', error.response.data);
-                        console.error('Response status:', error.response.status);
+                    const parsedUser = JSON.parse(storedUser);
+                    // Extrai apenas nome e cpf de dados_usuario
+                    if (parsedUser.dados_usuario) {
+                        setUserData({
+                            nome: parsedUser.dados_usuario.nome || '',
+                            cpf: parsedUser.dados_usuario.cpf || ''
+                        });
                     }
+                } catch (error) {
+                    console.error('Erro ao parsear dados do usuário:', error);
                 }
-            };
-
-            fetchUserData();
+            }
         }
     }, [isAuthenticated]);
+
 
     // Função para confirmar o logout
     const confirmLogout = () => {
@@ -84,7 +88,7 @@ export default function NavBar() {
                     <div className="flex items-center gap-2">
                         {/* Ícone do usuário */}
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">{user?.nome}</span>
+                        <span className="text-gray-700 font-medium">{userData.nome}</span>
                     </div>
                 </div>
 
@@ -114,8 +118,8 @@ export default function NavBar() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span>
-                            <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p>
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{userData.nome}</span>
+                            <p className="text-sm text-gray-500 text-start">CPF: {userData.cpf}</p>
                         </div>
                     </div>
 

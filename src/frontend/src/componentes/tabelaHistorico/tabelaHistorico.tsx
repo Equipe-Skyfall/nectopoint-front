@@ -1,48 +1,5 @@
-
-import React, { useEffect, useState } from 'react';
-import api from '../hooks/api';
+import React, { useCallback, useState } from 'react';
 import useHistorico from '../hooks/useHistorico';
-
-interface Ponto {
-    tipo_ponto: string; // "ENTRADA" ou "SAIDA"
-    data_hora: string;
-}
-
-interface Turno {
-    id_colaborador: number;
-    nome_colaborador: string;
-    id_registro: string;
-    inicio_turno: string;
-    pontos_marcados: Ponto[];
-}
-
-interface ApiResponse {
-    content: Turno[];
-    pageable: {
-        pageNumber: number;
-        pageSize: number;
-        sort: {
-            sorted: boolean;
-            unsorted: boolean;
-            empty: boolean;
-        };
-        offset: number;
-        paged: boolean;
-        unpaged: boolean;
-    };
-    totalPages: number;
-    totalElements: number;
-    last: boolean;
-    first: boolean;
-    size: number;
-    number: number;
-    sort: {
-        sorted: boolean;
-        unsorted: boolean;
-        empty: boolean;
-    };
-    numberOfElements: number;
-    empty: boolean;
 
 interface HistoricoParams {
     page?: number;
@@ -51,7 +8,6 @@ interface HistoricoParams {
     endDate?: string;
     status_turno?: string;
     id_colaborador?: number;
-
 }
 
 export default function ConteudoHistorico() {
