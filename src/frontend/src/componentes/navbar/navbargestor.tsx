@@ -142,17 +142,10 @@ export default function NavBarGestor() {
                         </button>
                     </Link>
 
-                    <Link to="/buscar-funcionario" onClick={toggleSidebar}>
+                    <Link to="/colaboradores" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaUser className="w-5 h-5" />
-                            <span>Buscar Funcionário</span>
-                        </button>
-                    </Link>
-
-                    <Link to="/cadastrar" onClick={toggleSidebar}>
-                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
-                            <FaUserPlus className="w-5 h-5" />
-                            <span>Criar Funcionário</span>
+                            <span>Colaboradores</span>
                         </button>
                     </Link>
 

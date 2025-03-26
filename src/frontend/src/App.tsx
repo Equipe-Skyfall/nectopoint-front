@@ -15,6 +15,7 @@ import CadastrarFuncionario from "./paginas/gestorCadastrarFunc";
 import Historico from "./paginas/historico";
 import HistoricoFunc from "./paginas/historicoFunc";
 import SolicitacoesGestor from "./paginas/solicitacoesGestor";
+import Funcionarios from "./paginas/gestorFuncionarios";
 
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
                     <Route path="gestor-page" element={<PaginaGestor />} />
                     <Route path="historico-gestor" element={<Historico/>}/>
                     <Route path="historico-func" element={<HistoricoFunc/>}/>
+                    <Route path="colaboradores" element={<Funcionarios />} />
                     <Route path="cadastrar" element={<CadastrarFuncionario/>}/>
                     <Route path="bater-ponto" element={<PaginaUsuario />}/>
 
