@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import api from '../hooks/api';
+import useHistorico from '../hooks/useHistorico';
 
 interface Ponto {
     tipo_ponto: string; // "ENTRADA" ou "SAIDA"
@@ -41,84 +43,77 @@ interface ApiResponse {
     };
     numberOfElements: number;
     empty: boolean;
+
+interface HistoricoParams {
+    page?: number;
+    size?: number;
+    startDate?: string;
+    endDate?: string;
+    status_turno?: string;
+    id_colaborador?: number;
+
 }
 
 export default function ConteudoHistorico() {
-    const [historico, setHistorico] = useState<Array<Ponto & { id_colaborador: number; nome_colaborador: string; status_turno: string }>>([]);
-    const [carregando, setCarregando] = useState(true);
-    const [erro, setErro] = useState<string | null>(null);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const itensPorPagina = 9;
 
-    // Busca o histórico de pontos
-    const buscarHistorico = async () => {
-        try {
-            setCarregando(true);
-            setErro(null);
-
-            const response = await api.get<ApiResponse>('/turno/historico');
-
-            if (response.data && Array.isArray(response.data.content)) {
-                // Combina todos os pontos de todos os turnos
-                const todosPontos = response.data.content.flatMap((turno) =>
-                    turno.pontos_marcados.map((ponto) => ({
-                        ...ponto,
-                        id_colaborador: turno.id_colaborador,
-                        nome_colaborador: turno.nome_colaborador,
-                    }))
-                );
-
-                // Ordena os pontos por data_hora em ordem decrescente
-                todosPontos.sort((a, b) => {
-                    const dataA = new Date(a.data_hora).getTime();
-                    const dataB = new Date(b.data_hora).getTime();
-                    return dataB - dataA; // Ordem decrescente
-                });
-
-                setHistorico(todosPontos);
-            } else {
-                setErro('Dados inválidos recebidos da API. A estrutura não é a esperada.');
-            }
-        } catch (error) {
-            setErro('Erro ao carregar o histórico. Tente novamente mais tarde.');
-        } finally {
-            setCarregando(false);
-        }
+    const params: HistoricoParams = {
+        page: paginaAtual,
+        size: itensPorPagina,
     };
 
-    useEffect(() => {
-        buscarHistorico();
+    const { historico, erro, totalPaginas } = useHistorico(params);
+
+
+    const formatarDataHora = useCallback((dataHora: string) => {
+        const data = new Date(dataHora);
+
+
+        if (isNaN(data.getTime())) {
+            return 'Data inválida';
+        }
+
+        return data.toLocaleString('pt-BR');
     }, []);
 
-    // Formata a data e hora para o formato brasileiro
-    const formatarDataHora = (dataHora: string) => {
-        const data = new Date(dataHora);
-        return data.toLocaleString('pt-BR');
-    };
 
-    // Calcula o total de páginas
-    const totalPaginas = Math.ceil(historico.length / itensPorPagina);
+    const traduzirStatusTurno = useCallback((status: string) => {
+        switch (status) {
+            case 'TRABALHANDO':
+                return 'Trabalhando';
+            case 'INTERVALO':
+                return 'Intervalo';
+            case 'ENCERRADO':
+                return 'Encerrado';
+            case 'NAO_COMPARECEU':
+                return 'Não Compareceu';
+            case 'IRREGULAR':
+                return 'Irregular';
+            default:
+                return status; 
+        }
+    }, []);
 
-    // Obtém os itens da página atual
-    const obterItensPaginaAtual = () => {
-        const inicio = paginaAtual * itensPorPagina;
-        const fim = inicio + itensPorPagina;
-        return historico.slice(inicio, fim);
-    };
+    const obterFimTurno = useCallback((pontos_marcados: { data_hora: string }[]) => {
+        if (pontos_marcados.length === 0) return 'N/A';
+        const ultimoPonto = pontos_marcados[pontos_marcados.length - 1];
+        return formatarDataHora(ultimoPonto.data_hora);
+    }, [formatarDataHora]);
 
-    // Avança para a próxima página
-    const avancarPagina = () => {
+
+    const avancarPagina = useCallback(() => {
         if (paginaAtual < totalPaginas - 1) {
             setPaginaAtual(paginaAtual + 1);
         }
-    };
+    }, [paginaAtual, totalPaginas]);
 
-    // Retrocede para a página anterior
-    const retrocederPagina = () => {
+
+    const retrocederPagina = useCallback(() => {
         if (paginaAtual > 0) {
             setPaginaAtual(paginaAtual - 1);
         }
-    };
+    }, [paginaAtual]);
 
     return (
         <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
@@ -126,8 +121,6 @@ export default function ConteudoHistorico() {
 
             {erro ? (
                 <p className="text-red-600">{erro}</p>
-            ) : carregando ? (
-                <p>Carregando...</p>
             ) : historico.length === 0 ? (
                 <p>Nenhum registro encontrado.</p>
             ) : (
@@ -136,26 +129,24 @@ export default function ConteudoHistorico() {
                         <table className="w-full border border-gray-300 bg-[#f1f1f1] text-center">
                             <thead>
                                 <tr className="bg-blue-800 text-white ">
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">ID Colaborador</th>
                                     <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Nome</th>
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Tipo</th>
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Data e Hora</th>
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Status</th>
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Início do Turno</th>
+                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Fim do Turno</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {obterItensPaginaAtual().map((item, index) => (
-                                    <tr key={`${item.id_colaborador}-${index}`} className="border-b border-gray-200  hover:bg-gray-50">
-                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">{item.id_colaborador}</td>
+                                {historico.map((item, index) => (
+                                    <tr key={`${item.id_registro}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
                                         <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">{item.nome_colaborador}</td>
-                                        <td className="p-1 sm:p-3 poppins text-xs  border-r sm:text-base text-black">
-                                            {item.tipo_ponto === 'ENTRADA' ? (
-                                                <span className="text-green-600">Entrada</span>
-                                            ) : (
-                                                <span className="text-red-600">Saída</span>
-                                            )}
+                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">
+                                            {traduzirStatusTurno(item.status_turno)}
                                         </td>
-                                        <td className="p-1 sm:p-3 poppins text-xs  border-r sm:text-base text-black">
-                                            {formatarDataHora(item.data_hora)}
+                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">
+                                            {formatarDataHora(item.inicio_turno)}
+                                        </td>
+                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">
+                                            {obterFimTurno(item.pontos_marcados)}
                                         </td>
                                     </tr>
                                 ))}

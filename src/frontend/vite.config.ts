@@ -20,11 +20,19 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       },
+
       '/turno': { // Adicionado para cobrir /turno/bater-ponto
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false
       },
+      '/tickets': {
+
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+
       '/sessao': { // Adicionado para cobrir /turno/bater-ponto
         target: 'http://localhost:8080',
         changeOrigin: true,
