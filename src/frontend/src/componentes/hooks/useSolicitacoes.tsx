@@ -1,3 +1,4 @@
+// hooks/useSolicitacoes.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -38,7 +39,7 @@ interface PageData {
     empty: boolean;
 }
 
-const useSolicitacoes = (page: number, size: number, statusTicket?: string) => {
+const useSolicitacoes = (page: number, size: number, statusTicket?: string[]) => {
     const [solicitacoes, setSolicitacoes] = useState<PageData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -51,11 +52,13 @@ const useSolicitacoes = (page: number, size: number, statusTicket?: string) => {
                 params: {
                     page,
                     size,
-                    statusTicket,
+                    lista_status_ticket: statusTicket?.join(','), // Envia como string separada por vírgulas
+                },
+                paramsSerializer: {
+                    indexes: null // Isso permite enviar arrays como lista_status_ticket=EM_AGUARDO,APROVADO
                 },
                 withCredentials: true,
             });
-            console.log("Resposta do backend:", response.data); // Debugue a resposta do backend
             setSolicitacoes(response.data);
         } catch (err: any) {
             setError(err.message || 'Erro ao buscar solicitações');
@@ -70,17 +73,15 @@ const useSolicitacoes = (page: number, size: number, statusTicket?: string) => {
                 (solicitacao) => solicitacao.id_ticket !== id_ticket
             );
 
-            // Atualiza o estado das solicitações
             setSolicitacoes({
                 ...solicitacoes,
                 content: novasSolicitacoes,
-                totalElements: solicitacoes.totalElements - 1, // Atualiza o total de elementos
-                numberOfElements: novasSolicitacoes.length, // Atualiza o número de elementos na página atual
+                totalElements: solicitacoes.totalElements - 1,
+                numberOfElements: novasSolicitacoes.length,
             });
 
-            // Se a página atual ficar vazia e não for a primeira página, recarrega a página anterior
             if (novasSolicitacoes.length === 0 && page > 0) {
-                fetchSolicitacoes(page - 1, size, statusTicket);
+                fetchSolicitacoes();
             }
         }
     };
