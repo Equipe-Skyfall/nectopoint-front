@@ -1,13 +1,16 @@
 import SessaoUsuario from "../../../interfaces/interfaceSessaoUsuario";
 import api from "../api";
 import { User } from "../useAuth";
+import useUserData from "../userData";
 // Recarrega os dados do usuário logado
-const recarregar = async () => {
+const  recarregar =  async () => {
     try {
         const responseData = (await api.get('sessao/usuario/me')).data;
-      
+        console.log('Dados do usuário recarregados:', responseData);
+        
 
-        // Extrai os dados do usuário do novo JSON
+        if ( useUserData() != responseData){
+            // Extrai os dados do usuário do novo JSON
         const userData: SessaoUsuario = {
             id_sessao: responseData.id_sessao, // Corrected to match 'id_sessao'
             id_colaborador: responseData.id_colaborador,
@@ -26,7 +29,9 @@ const recarregar = async () => {
             tickets_usuario: responseData.tickets_usuario, // Optional
         };
         localStorage.setItem('user', JSON.stringify(userData));
-        return userData;
+        window.location.reload();
+        }
+       
     } catch (error) {
         console.error('Error :', error);
         if (error.response) {
@@ -36,3 +41,5 @@ const recarregar = async () => {
     }
 }
 export default recarregar;
+
+
