@@ -60,7 +60,7 @@ export default function CadastrarFunc() {
 
   return (
     <>
-      <div className=" mt-[15%]  md:mt-[6%] flex items-center justify-center min-h-screen">
+      <div className=" mt-[15%]  md:mt-[2%] flex items-center justify-center min-h-screen">
         <div className="bg-white p-8 rounded-lg w-full max-w-4xl">
           <h2 className="text-2xl font-semibold text-blue-600 poppins text-center">Olá, Gestor!</h2>
           <h3 className="mb-[5%] poppins text-gray-400">Cadastre um colaborador</h3>
@@ -123,6 +123,7 @@ export default function CadastrarFunc() {
                   value={formData.cpf}
                   onChange={handleChange}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  maxLength={11}
                   required
                 />
               </div>
@@ -197,6 +198,9 @@ export default function CadastrarFunc() {
               className="w-full poppins bg-blue-500 text-white font-semibold p-3 rounded-lg hover:bg-blue-600 transition"
             >
               Cadastrar
+            </button>
+            <button className="w-full poppins bg-red-500 text-white font-semibold p-3 rounded-lg hover:bg-red-600 transition">
+              <a href='/colaboradores'>Voltar</a>
             </button>
           </form>
         </div>
