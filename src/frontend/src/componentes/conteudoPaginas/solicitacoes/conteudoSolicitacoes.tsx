@@ -248,8 +248,8 @@ const ConteudoSolicitacoes: React.FC = () => {
       {/* Parte esquerda (apenas no desktop) */}
       <div className="hidden md:flex flex-col items-center justify-center w-1/3 p-8 -mt-8">
         <FaBell className="w-32 h-32 mb-12 text-gray-600" />
-        <h1 className="text-4xl font-bold mb-12 text-[#6CA144]">SOLICITAÇÕES</h1>
-        <p className="text-center text-2xl font-semibold text-black">
+        <h1 className="text-4xl font-bold mb-12 text-[#6CA144]">Solicitações</h1>
+        <p className="text-center text-xl font-semibold text-gray-600">
           Selecione uma das opções ao lado e faça uma justificativa para mandar sua solicitação ao
           gerente.
         </p>
@@ -302,14 +302,14 @@ const ConteudoSolicitacoes: React.FC = () => {
               rows={8}
             />
             {/* Anexar arquivo */}
-            <label className="absolute bottom-4 right-4 cursor-pointer">
+            {/* <label className="absolute bottom-4 right-4 cursor-pointer">
               <input
                 type="file"
                 onChange={handleFileChange}
                 className="hidden"
               />
               <FaPaperclip className="text-gray-500 hover:text-blue-600 transition-colors" size={24} />
-            </label>
+            </label> */}
           </div>
 
           {/* Botão de enviar */}
