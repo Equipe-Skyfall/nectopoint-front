@@ -40,7 +40,7 @@ export default  function ConteudoHome() {
                           
 
                     <div className="flex flex-col mx-auto mt-10  w-58 ">
-                                <button className="bg-blue-900 pointer rounded-lg p-3 mx-auto mt-10 w-64 px-10 text-center poppins" onClick={() => {
+                                <button className="bg-blue-900 pointer ease-in rounded-lg p-3 mx-auto mt-10 w-64 px-10 text-center poppins" onClick={() => {
                                     baterPonto();
                                 }
                                 }>
@@ -50,7 +50,7 @@ export default  function ConteudoHome() {
                                 </button>
                                     {
                                     userData.jornada_atual.pontos_marcados.length < 0 ? '' :
-                                    <button className=" pointer rounded-lg p-2 mx-auto animacao w-full px-10 text-center text-sm text-red-700 poppins" onClick={
+                                    <button className=" pointer rounded-lg p-2 mx-auto transition delay-50 duration-100 ease-in-out hover:text-white hover:ease-in hover:bg-red-900 m-2 w-full px-10 text-center text-sm text-red-700 poppins" onClick={
                                         setModal
                     
                                     }>
@@ -59,16 +59,16 @@ export default  function ConteudoHome() {
                                     
                                     }
                             { modalConfirmacao ?
-                                <div className="fixed z-10 inset-0 overflow-y-auto flex flex-col justify-center items-center bg-black bg-opacity-50">
-                                    <div className="bg-white w-[300px] h-auto p-4 px-8 rounded-lg flex flex-col justify-center items-center">
-                                        <p className="text-black text-center mt-20 poppins text-justify">Ao encerrar o turno você encerra seu turno e bloqueia qualquer acesso até o dia seguinte.</p>
+                                <div className="fixed z-10 inset-0 overflow-y-auto text-center flex flex-col justify-center items-center bg-black bg-opacity-50">
+                                    <div className="bg-white w-[300px] text-center h-auto p-4 px-8 rounded-lg flex flex-col justify-center items-center">
+                                        <p className="text-black mx-auto text-center mt-20 poppins text-justify">Ao encerrar o turno você encerra seu turno e bloqueia qualquer acesso até o dia seguinte.</p>
                                         <p className="text-black text-center mt-20 poppins">Tem certeza disso ?</p>
-                                        <button className="bg-primaryred pointer rounded-lg p-3 mx-auto mt-10 w-64 px-10 text-center poppins" onClick={() => {
+                                        <button className="bg-primaryred pointer  rounded-lg p-3 mx-auto mt-10 w-full px-10 text-center poppins" onClick={() => {
                                             encerrarTurno();
                                             setModal();
                                         }
                                         }>Encerrar Turno</button>
-                                        <button className="bg-blue-900 pointer rounded-lg p-3 mx-auto mt-10 w-64 px-10 text-center poppins" onClick={() => {
+                                        <button className="bg-blue-900 pointer rounded-lg p-3 mx-auto mt-10 w-full px-10 text-center poppins" onClick={() => {
                                             setModal();
                                         }
                                         }>Cancelar</button>
