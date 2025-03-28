@@ -11,7 +11,7 @@ const useColaborador = () => {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
-    const pageSize = 5; // Fixando 5 itens por página
+    const pageSize = 5;
 
     const fetchEmployees = useCallback(async () => {
         if (!isAuthenticated) return;

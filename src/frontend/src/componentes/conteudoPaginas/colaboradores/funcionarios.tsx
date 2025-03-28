@@ -21,11 +21,11 @@ const EmployeeList = () => {
         if (!data) return 'N/A';
 
         try {
-            // Converte de AAAA-MM-DD para DD-MM-AAAA
+
             const [ano, mes, dia] = data.split('-');
             return `${dia}/${mes}/${ano}`;
         } catch {
-            return data; // Retorna no formato original se houver erro
+            return data;
         }
     };
 
@@ -60,9 +60,8 @@ const EmployeeList = () => {
         try {
             await api.delete(`/usuario/${id}`);
             toast.success('Colaborador excluído com sucesso!');
-            refreshEmployees(); // Atualiza a lista após exclusão
+            refreshEmployees(); 
 
-            // Fecha a seção expandida se estiver aberta para o colaborador excluído
             if (expandedEmployee === id) {
                 setExpandedEmployee(null);
             }

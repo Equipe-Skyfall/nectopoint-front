@@ -125,7 +125,6 @@ const EditarFuncionario = () => {
             await updateEmployee(id, payload);
             setSubmitStatus('success');
 
-            // Alteração aqui - redireciona para /colaboradores
             setTimeout(() => navigate('/colaboradores'), 2000);
         } catch (err) {
             setSubmitStatus('error');
@@ -147,7 +146,7 @@ const EditarFuncionario = () => {
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center mb-6">
                     <button
-                        onClick={() => navigate('/colaboradores')}  // Alterado aqui
+                        onClick={() => navigate('/colaboradores')}
                         className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
                         disabled={loading}
                     >
