@@ -104,7 +104,7 @@ export default function ConteudoHistorico() {
                     <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden shadow-md">
                         <table className="w-full border border-gray-300 bg-[#f1f1f1] text-center">
                             <thead>
-                                <tr className="bg-blue-800 text-white ">
+                                <tr className="bg-blue-700 text-white ">
                                     <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Nome</th>
                                     <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Status</th>
                                     <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Início do Turno</th>
