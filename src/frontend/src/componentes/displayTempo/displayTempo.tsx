@@ -29,7 +29,7 @@ export default function DisplayTempo(props : Display ){
                 <div className={`flex items-center rounded-xl text-center w-auto p-2 justify-center ${!intervalo ? "bg-gray-500" : "bg-orange-900"}`}>
                 <img src={!intervalo ? "./almoco.png" : "./fimalmoco.png"}  className="w-11 h-11 m-1 p-1"></img>
                 </div>
-                <span className='flex items-center bg-blue-900 rounded-xl text-center w-auto   p-2'> <img src='./time-left.png'  className="w-8 h-8 m-2 p-1"></img><p className={'text-white poppins'}> {banco_de_horas}h</p></span>
+                <span className='flex items-center bg-blue-600 rounded-xl text-center w-auto   p-2'> <img src='./time-left.png'  className="w-8 h-8 m-2 p-1"></img><p className={'text-white poppins'}> {banco_de_horas}h</p></span>
                 
                 </span>
                 </div>

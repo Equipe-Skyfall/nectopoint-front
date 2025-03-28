@@ -245,36 +245,36 @@ const ConteudoSolicitacoes: React.FC = () => {
 
   return (
     <div className="flex flex-col md:flex-row pt-12">
-      {/* Parte esquerda (apenas no desktop) */}
+     
       <div className="hidden md:flex flex-col items-center justify-center w-1/3 p-8 -mt-8">
         <FaBell className="w-32 h-32 mb-12 text-gray-600" />
-        <h1 className="text-4xl font-bold mb-12 text-[#6CA144]">SOLICITAÇÕES</h1>
-        <p className="text-center text-2xl font-semibold text-black">
+        <h1 className="text-4xl font-bold mb-12 text-blue-600">Solicitações</h1>
+        <p className="text-center text-xl font-semibold text-gray-600">
           Selecione uma das opções ao lado e faça uma justificativa para mandar sua solicitação ao
           gerente.
         </p>
       </div>
 
-      {/* Parte direita (formulário) */}
+
       <div className="w-full md:w-2/3 p-4 flex items-center justify-center h-[calc(100vh-4rem)]">
         <div className="w-full max-w-2xl">
           <h1 className="text-2xl font-bold mb-4 md:hidden">Solicitações</h1>
 
-          {/* Mensagem de erro */}
+
           {formState.error && (
             <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
               {formState.error}
             </div>
           )}
 
-          {/* Mensagem de sucesso */}
+          
           {formState.successMessage && (
             <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
               {formState.successMessage}
             </div>
           )}
 
-          {/* Dropdown para seleção de opções */}
+          
           <div className="mb-6">
             <select
               value={formState.selectedOption}
@@ -289,10 +289,10 @@ const ConteudoSolicitacoes: React.FC = () => {
             </select>
           </div>
 
-          {/* Campos adicionais baseados na seleção */}
+          
           {renderAdditionalFields()}
 
-          {/* Caixa de texto */}
+          
           <div className="mb-6 relative">
             <textarea
               placeholder="Descreva o motivo da sua solicitação..."
@@ -302,14 +302,14 @@ const ConteudoSolicitacoes: React.FC = () => {
               rows={8}
             />
             {/* Anexar arquivo */}
-            <label className="absolute bottom-4 right-4 cursor-pointer">
+            {/* <label className="absolute bottom-4 right-4 cursor-pointer">
               <input
                 type="file"
                 onChange={handleFileChange}
                 className="hidden"
               />
               <FaPaperclip className="text-gray-500 hover:text-blue-600 transition-colors" size={24} />
-            </label>
+            </label> */}
           </div>
 
           {/* Botão de enviar */}
