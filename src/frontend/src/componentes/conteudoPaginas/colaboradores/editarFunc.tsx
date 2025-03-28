@@ -142,9 +142,9 @@ const EditarFuncionario = () => {
     }
 
     return (
-        <div className="mt-16 min-h-screen p-4 md:p-6">
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center mb-6">
+        <div className="mt-7 p-4 md:p-6 !overflow-y-hidden">
+            <div className="max-w-4xl mx-auto bg-gray-100 rounded-lg shadow-md p-6">
+                <div className="flex  gap-0 sm:flex-row flex-col items-center mb-6">
                     <button
                         onClick={() => navigate('/colaboradores')}
                         className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
@@ -153,8 +153,8 @@ const EditarFuncionario = () => {
                         <FaArrowLeft className="mr-2" />
                         Voltar
                     </button>
-                    <h2 className="text-2xl font-semibold text-gray-800">
-                        Editar Funcionário: {formData.name}
+                    <h2 className="sm:text-2xl text-xl font-semibold sm:mt-0 mt-5 text-blue-600">
+                        Editar Colaborador: {formData.name}
                     </h2>
                 </div>
 
@@ -237,7 +237,7 @@ const EditarFuncionario = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-gray-700">Número do Funcionário*</label>
+                            <label className="block text-gray-700">Número do Colaborador*</label>
                             <input
                                 type="text"
                                 name="employeeNumber"
@@ -304,7 +304,7 @@ const EditarFuncionario = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded min-w-32 ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                            className={`flex items-center sm:w-40 w-full justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded min-w-32 ${loading ? 'opacity-50 cursor-not-allowed' : ''
                                 }`}
                         >
                             {loading ? (

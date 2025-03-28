@@ -92,7 +92,7 @@ const EmployeeList = () => {
 
                 <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-3 md:gap-4">
                     <div className="relative w-full md:flex-grow">
-                        <label className="block text-left poppins font-medium text-gray-600 mb-2">Buscar Colaboradores pelo CPF:</label>
+                        <label className="block text-center sm:text-left poppins font-medium text-gray-600 mb-2">Buscar Colaboradores pelo CPF:</label>
                         <div className="relative">
                             <input
                                 type="text"
@@ -109,7 +109,7 @@ const EmployeeList = () => {
 
                     <a
                         href="/cadastrar"
-                        className="w-full md:w-auto flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-200"
+                        className="w-full md:w-auto flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition duration-200"
                     >
                         <FaPlus className="mr-2" />
                         Cadastrar
