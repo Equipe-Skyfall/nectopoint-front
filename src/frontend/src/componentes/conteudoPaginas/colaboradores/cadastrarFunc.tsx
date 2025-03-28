@@ -181,9 +181,9 @@ export default function CadastrarFunc() {
               </div>
 
               <div>
-                <label htmlFor="birthDate" className="block poppins text-gray-600">Data de Nascimento (YYYY-MM-DD)</label>
+                <label htmlFor="birthDate" className="block poppins text-gray-600">Data de Nascimento</label>
                 <input
-                  type="text"
+                  type="date"
                   id="birthDate"
                   value={formData.birthDate}
                   onChange={handleChange}

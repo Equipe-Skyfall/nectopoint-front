@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import api from '../hooks/api';
 
 interface EmployeeData {
+    id?: number;
     name: string;
     email: string;
-    password: string;
+    password?: string;
     cpf: string;
-    title: string;
-    department: string,
+    title: 'GERENTE' | 'COLABORADOR';
+    department: string;
     workJourneyType: string;
-    employeenumber: string;
-    bankOfHours: string;
-    dailyHours: string;
+    employeeNumber: string;
+    dailyHours: number;
+    bankOfHours: number;
+    birthDate: string;
 }
 
 export const useEdit = () => {
@@ -24,15 +26,10 @@ export const useEdit = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get(`/usuario/${id}`, {
-
-            });
-            console.log(response)
+            const response = await api.get(`/usuario/${id}`);
             return response.data as EmployeeData;
         } catch (err: any) {
-            const errorMessage = err.response?.data?.message  
-                              err.message  
-                              'Erro ao buscar funcionário';
+            const errorMessage = err.response?.data?.message || err.message || 'Erro ao buscar funcionário';
             setError(errorMessage);
             throw err;
         } finally {
@@ -45,11 +42,17 @@ export const useEdit = () => {
         setError(null);
         try {
             const response = await api.put(`/usuario/${id}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
-            return response.data as EmployeeData;
+            return response.data;
         } catch (err: any) {
-            const errorMessage = err.response?.data?.message  
-                              err.message  
+            const errorMessage = err.response?.data?.message || 
+                              err.response?.data?.error || 
+                              JSON.stringify(err.response?.data) || 
+                              err.message || 
                               'Erro ao atualizar funcionário';
             setError(errorMessage);
             throw err;

@@ -6,40 +6,48 @@ import { useEdit } from '../../hooks/useEdit';
 interface FormData {
     name: string;
     email: string;
-    password: string;
+    password?: string;
     cpf: string;
-    title: string;
-    department: string,
+    title: 'GERENTE' | 'COLABORADOR';
+    department: string;
     workJourneyType: string;
-    employeenumber: string;
-    bankOfHours: string;
-    dailyHours: string;
+    employeeNumber: string;
+    dailyHours: number;
+    bankOfHours: number;
+    birthDate: string;
 }
 
 const EditarFuncionario = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { 
-        loading, 
-        error, 
-        getEmployeeById, 
-        updateEmployee,
-        clearError 
-    } = useEdit();
-    
+    const { loading, error, getEmployeeById, updateEmployee, clearError } = useEdit();
+
     const [formData, setFormData] = useState<FormData>({
-        nome: '',
+        name: '',
         email: '',
+        password: '',
         cpf: '',
-        cargo: '',
-        departamento: '',
-        horas_diarias: 8
+        title: 'COLABORADOR',
+        department: '',
+        workJourneyType: '',
+        employeeNumber: '',
+        bankOfHours: 0,
+        dailyHours: 8,
+        birthDate: '',
     });
+    const [initialDataLoaded, setInitialDataLoaded] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-    // Carrega os dados do funcionário
+    const formatCPF = (value: string): string => {
+        const cleaned = value.replace(/\D/g, '').slice(0, 11);
+        if (cleaned.length <= 3) return cleaned;
+        if (cleaned.length <= 6) return `${cleaned.slice(0, 3)}.${cleaned.slice(3)}`;
+        if (cleaned.length <= 9) return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6)}`;
+        return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`;
+    };
+
     useEffect(() => {
-        if (!id) return;
+        if (!id || initialDataLoaded) return;
 
         const loadData = async () => {
             try {
@@ -48,15 +56,16 @@ const EditarFuncionario = () => {
                     name: employee.name || '',
                     email: employee.email || '',
                     password: employee.password || '',
-                    cpf: employee.cpf || '',
-                    title: employee.title || '',
+                    cpf: formatCPF(employee.cpf || ''),
+                    title: employee.title || 'COLABORADOR',
                     department: employee.department || '',
                     workJourneyType: employee.workJourneyType || '',
-                    employeenumber: employee.employeenumber || '',
-                    bankOfHours: employee.bankOfHours || '',
-                    dailyHours: employee.dailyHours || '',
-                
+                    employeeNumber: employee.employeeNumber || '',
+                    bankOfHours: Number(employee.bankOfHours) || 0,
+                    dailyHours: Number(employee.dailyHours) || 8,
+                    birthDate: employee.birthDate || ''
                 });
+                setInitialDataLoaded(true);
             } catch (err) {
                 console.error('Erro ao carregar funcionário:', err);
                 setSubmitStatus('error');
@@ -64,38 +73,68 @@ const EditarFuncionario = () => {
         };
 
         loadData();
-    }, []);
+    }, [id, getEmployeeById, initialDataLoaded]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
+
+        if (name === 'cpf') {
+            const formattedValue = formatCPF(value);
+            setFormData(prev => ({
+                ...prev,
+                cpf: formattedValue
+            }));
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
-            [name]: name === 'horas_diarias' ? Number(value) : value
+            [name]: name === 'dailyHours' || name === 'bankOfHours'
+                ? Number(value)
+                : value
         }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (loading || !id) return;
 
-        clearError();
-        setSubmitStatus('idle');
+        if (!id || isNaN(Number(id)) || !formData) {
+            alert("Dados inválidos");
+            return;
+        }
 
         try {
-            await updateEmployee(id, formData);
+            setSubmitStatus('idle');
+            clearError();
+
+            const payload = {
+                id: Number(id),
+                name: formData.name.trim(),
+                email: formData.email.trim(),
+                password: formData.password,
+                cpf: formData.cpf.replace(/\D/g, ''),
+                title: formData.title,
+                department: formData.department,
+                workJourneyType: formData.workJourneyType,
+                employeeNumber: formData.employeeNumber,
+                dailyHours: formData.dailyHours,
+                bankOfHours: formData.bankOfHours,
+                birthDate: formData.birthDate
+            };
+
+            await updateEmployee(id, payload);
             setSubmitStatus('success');
-            
-            // Feedback visual antes de redirecionar
-            setTimeout(() => {
-                navigate('/lista-funcionarios');
-            }, 1500);
+
+            // Alteração aqui - redireciona para /colaboradores
+            setTimeout(() => navigate('/colaboradores'), 2000);
         } catch (err) {
-            console.error('Erro ao atualizar:', err);
             setSubmitStatus('error');
+            console.error("Erro ao atualizar:", err);
+            alert(err.response?.data?.message || "Erro ao atualizar. Verifique os dados e tente novamente.");
         }
     };
 
-    if (loading && !formData.nome) {
+    if (loading && !initialDataLoaded) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <FaSpinner className="animate-spin text-4xl text-blue-500" />
@@ -107,8 +146,8 @@ const EditarFuncionario = () => {
         <div className="mt-16 min-h-screen p-4 md:p-6">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center mb-6">
-                    <button 
-                        onClick={() => navigate(-1)}
+                    <button
+                        onClick={() => navigate('/colaboradores')}  // Alterado aqui
                         className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
                         disabled={loading}
                     >
@@ -123,10 +162,10 @@ const EditarFuncionario = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="block text-gray-700">Nome</label>
+                            <label className="block text-gray-700">Nome*</label>
                             <input
                                 type="text"
-                                name="nome"
+                                name="name"
                                 value={formData.name}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
@@ -135,33 +174,19 @@ const EditarFuncionario = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-gray-700">E-mail</label>
+                            <label className="block text-gray-700">E-mail*</label>
                             <input
-                                type="text"
-                                name="horas_diarias"
+                                type="email"
+                                name="email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
-                                min="1"
-                                max="12"
+                                required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-gray-700">Senha</label>
-                            <input
-                                type="text"
-                                name="horas_diarias"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                                min="1"
-                                max="12"
-                            />
-                        </div>
-                        
-                        <div className="space-y-2">
-                            <label className="block text-gray-700">CPF</label>
+                            <label className="block text-gray-700">CPF*</label>
                             <input
                                 type="text"
                                 name="cpf"
@@ -169,54 +194,58 @@ const EditarFuncionario = () => {
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
                                 required
-                            />
-                        </div>
-                        
-                        <div className="space-y-2">
-                            <label className="block text-gray-700">Cargo</label>
-                            <input
-                                type="text"
-                                name="cargo"
-                                value={formData.title}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                            />
-                        </div>
-                        
-                        <div className="space-y-2">
-                            <label className="block text-gray-700">Departamento</label>
-                            <input
-                                type="text"
-                                name="departamento"
-                                value={formData.department}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                            />
-                        </div>
-                        
-                        <div className="space-y-2">
-                            <label className="block text-gray-700">Jornada de trabalho</label>
-                            <input
-                                type="text"
-                                name="horas_diarias"
-                                value={formData.workJourneyType}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                                min="1"
-                                max="12"
+                                placeholder="000.000.000-00"
+                                maxLength={14}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-gray-700">Numero do Funcionário</label>
-                            <input
-                                type="text"
-                                name="horas_diarias"
-                                value={formData.employeenumber}
+                            <label className="block text-gray-700">Cargo*</label>
+                            <select
+                                name="title"
+                                value={formData.title}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
-                                min="1"
-                                max="12"
+                                required
+                            >
+                                <option value="COLABORADOR">Colaborador</option>
+                                <option value="GERENTE">Gerente</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-gray-700">Departamento*</label>
+                            <input
+                                type="text"
+                                name="department"
+                                value={formData.department}
+                                onChange={handleChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-gray-700">Tipo de Jornada*</label>
+                            <input
+                                type="text"
+                                name="workJourneyType"
+                                value={formData.workJourneyType}
+                                onChange={handleChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-gray-700">Número do Funcionário*</label>
+                            <input
+                                type="text"
+                                name="employeeNumber"
+                                value={formData.employeeNumber}
+                                onChange={handleChange}
+                                className="w-full p-2 border rounded"
+                                required
                             />
                         </div>
 
@@ -224,31 +253,42 @@ const EditarFuncionario = () => {
                             <label className="block text-gray-700">Banco de Horas</label>
                             <input
                                 type="number"
-                                name="horas_diarias"
+                                name="bankOfHours"
                                 value={formData.bankOfHours}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
-                                min="1"
-                                max="12"
+                                min="0"
+                                step="0.5"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-gray-700">Horas Diárias</label>
+                            <label className="block text-gray-700">Horas Diárias*</label>
                             <input
                                 type="number"
-                                name="horas_diarias"
+                                name="dailyHours"
                                 value={formData.dailyHours}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
                                 min="1"
                                 max="12"
+                                required
                             />
                         </div>
 
+                        <div className="space-y-2">
+                            <label className="block text-gray-700">Data de Nascimento*</label>
+                            <input
+                                type="date"
+                                name="birthDate"
+                                value={formData.birthDate}
+                                onChange={handleChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
                     </div>
 
-                    {/* Mensagens de status */}
                     {error && (
                         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
                             {error}
@@ -257,7 +297,7 @@ const EditarFuncionario = () => {
 
                     {submitStatus === 'success' && (
                         <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4">
-                            Funcionário atualizado com sucesso!
+                            Funcionário atualizado com sucesso! Redirecionando...
                         </div>
                     )}
 
@@ -265,9 +305,8 @@ const EditarFuncionario = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded min-w-32 ${
-                                loading ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
+                            className={`flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded min-w-32 ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
                         >
                             {loading ? (
                                 <>

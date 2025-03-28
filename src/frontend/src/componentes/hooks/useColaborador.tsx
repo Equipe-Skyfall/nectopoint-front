@@ -13,10 +13,10 @@ const useColaborador = () => {
 
     const fetchEmployees = useCallback(async () => {
         if (!isAuthenticated) return;
-        
+
         setLoading(true);
         setError(null);
-        
+
         try {
             const response = await api.get('/sessao/usuario/todos');
             setEmployees(response.data.content);
