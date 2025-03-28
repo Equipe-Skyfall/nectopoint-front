@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useHistorico from '../hooks/useHistorico';
 
 interface HistoricoParams {
@@ -12,7 +12,27 @@ interface HistoricoParams {
 
 export default function ConteudoHistorico() {
     const [paginaAtual, setPaginaAtual] = useState(0);
-    const itensPorPagina = 9;
+    const [itensPorPagina, setItensPorPagina] = useState(12);
+    const atualizarItensPorPagina = useCallback(() => {
+        if (window.innerWidth >= 640) { // sm breakpoint do Tailwind
+            setItensPorPagina(9);
+        } else {
+            setItensPorPagina(12);
+        }
+    }, []);
+
+    useEffect(() => {
+        // Atualiza no carregamento inicial
+        atualizarItensPorPagina();
+        
+        // Adiciona listener para mudanças de tamanho de tela
+        window.addEventListener('resize', atualizarItensPorPagina);
+        
+        // Remove listener ao desmontar
+        return () => {
+            window.removeEventListener('resize', atualizarItensPorPagina);
+        };
+    }, [atualizarItensPorPagina]);
 
     const params: HistoricoParams = {
         page: paginaAtual,
@@ -73,7 +93,7 @@ export default function ConteudoHistorico() {
 
     return (
         <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
-            <h2 className="poppins-semibold text-blue-600 mb-5 my-10">Histórico de Pontos</h2>
+            <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Pontos</h2>
 
             {erro ? (
                 <p className="text-red-600">{erro}</p>
@@ -81,27 +101,27 @@ export default function ConteudoHistorico() {
                 <p>Nenhum registro encontrado.</p>
             ) : (
                 <>
-                    <div className="w-[95vw] rounded-md !overflow-x-hidden shadow-md">
+                    <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden shadow-md">
                         <table className="w-full border border-gray-300 bg-[#f1f1f1] text-center">
                             <thead>
                                 <tr className="bg-blue-800 text-white ">
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Nome</th>
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Status</th>
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Início do Turno</th>
-                                    <th className="p-1 sm:p-3 poppins text-xs sm:text-lg">Fim do Turno</th>
+                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Nome</th>
+                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Status</th>
+                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Início do Turno</th>
+                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Fim do Turno</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {historico.map((item, index) => (
                                     <tr key={`${item.id_registro}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
-                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">{item.nome_colaborador}</td>
-                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">
+                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">{item.nome_colaborador}</td>
+                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">
                                             {traduzirStatusTurno(item.status_turno)}
                                         </td>
-                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">
+                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">
                                             {formatarDataHora(item.inicio_turno)}
                                         </td>
-                                        <td className="p-1 sm:p-3 poppins text-xs border-r sm:text-base text-black">
+                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">
                                             {obterFimTurno(item.pontos_marcados)}
                                         </td>
                                     </tr>
