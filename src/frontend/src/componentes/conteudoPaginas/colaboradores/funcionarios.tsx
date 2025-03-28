@@ -3,6 +3,7 @@ import useColaborador from '../../hooks/useColaborador';
 import { useEdit } from '../../hooks/useEdit';
 import { FaUser, FaSearch, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import api from '../../hooks/api';
+import { toast } from 'react-toastify';
 
 const EmployeeList = () => {
     const {
@@ -18,7 +19,7 @@ const EmployeeList = () => {
     } = useColaborador();
     const formatarDataNascimento = (data: string) => {
         if (!data) return 'N/A';
-        
+
         try {
             // Converte de AAAA-MM-DD para DD-MM-AAAA
             const [ano, mes, dia] = data.split('-');
@@ -27,10 +28,11 @@ const EmployeeList = () => {
             return data; // Retorna no formato original se houver erro
         }
     };
-    
+
     const { navigateToEdit } = useEdit();
     const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);
     const [employeeDetails, setEmployeeDetails] = useState<any>({});
+    const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
     const toggleExpand = async (id: number) => {
         if (expandedEmployee === id) {
@@ -43,6 +45,32 @@ const EmployeeList = () => {
             } catch (err) {
                 console.error('Erro ao buscar detalhes:', err);
             }
+        }
+    };
+
+    const handleDelete = async (id: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        if (!window.confirm('Tem certeza que deseja excluir este colaborador?')) {
+            return;
+        }
+
+        setIsDeleting(id);
+
+        try {
+            await api.delete(`/usuario/${id}`);
+            toast.success('Colaborador excluído com sucesso!');
+            refreshEmployees(); // Atualiza a lista após exclusão
+
+            // Fecha a seção expandida se estiver aberta para o colaborador excluído
+            if (expandedEmployee === id) {
+                setExpandedEmployee(null);
+            }
+        } catch (err) {
+            console.error('Erro ao excluir colaborador:', err);
+            toast.error('Erro ao excluir colaborador');
+        } finally {
+            setIsDeleting(null);
         }
     };
 
@@ -92,12 +120,12 @@ const EmployeeList = () => {
                 {loading && <p className="text-center text-gray-500">Carregando...</p>}
                 {error && <p className="text-center text-red-500">Erro: {error}</p>}
 
-                
+
                 <div className="space-y-4">
                     {filteredEmployees.length > 0 ? (
                         filteredEmployees.map(emp => (
                             <div key={emp.id_colaborador} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200">
-                                <div 
+                                <div
                                     className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 cursor-pointer  hover:bg-gray-50 transition-colors duration-300"
                                     onClick={() => toggleExpand(emp.id_colaborador)}
                                 >
@@ -126,11 +154,22 @@ const EmployeeList = () => {
                                             <FaEdit className="text-lg" />
                                         </button>
                                         <button
-                                            className="flex items-center px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-200"
+                                            onClick={(e) => handleDelete(emp.id_colaborador, e)}
+                                            disabled={isDeleting === emp.id_colaborador}
+                                            className={`flex items-center px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-300 ${isDeleting === emp.id_colaborador
+                                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                    : "text-red-600 hover:text-red-800 hover:bg-red-50"
+                                                }`}
                                             title="Excluir"
                                         >
-                                            <span className="mr-2">Deletar</span>
-                                            <FaTrash className="text-lg" />
+                                            {isDeleting === emp.id_colaborador ? (
+                                                <span className="mr-2">Excluindo...</span>
+                                            ) : (
+                                                <>
+                                                    <span className="mr-2">Deletar</span>
+                                                    <FaTrash className="text-lg" />
+                                                </>
+                                            )}
                                         </button>
                                     </div>
 
@@ -144,9 +183,9 @@ const EmployeeList = () => {
                                 </div>
 
                                 {expandedEmployee === emp.id_colaborador && (
-                                    <div className="px-6 pb-6 pt-0 mt-5  overflow-hidden">
+                                    <div className="px-6 pb-52 sm:pb-6 pt-0 mt-5  overflow-hidden">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-down">
-                                            {/* Informações Pessoais */}
+
                                             <div className="p-4 rounded-lg shadow-md border hover:bg-gray-100 transition-colors duration-300 border-gray-100">
                                                 <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Informações Pessoais</h4>
                                                 <div className="space-y-2">
@@ -161,7 +200,7 @@ const EmployeeList = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Informações Profissionais */}
+
                                             <div className="hover:bg-gray-100 p-4 rounded-lg shadow-md border transition-colors duration-300 border-gray-100">
                                                 <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Informações Profissionais</h4>
                                                 <div className="space-y-2">
@@ -184,7 +223,7 @@ const EmployeeList = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Informações de Horas */}
+
                                             <div className="hover:bg-gray-100 shadow-md p-4 rounded-lg  border transition-colors duration-300 border-gray-100">
                                                 <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Horas</h4>
                                                 <div className="space-y-2">
@@ -210,17 +249,16 @@ const EmployeeList = () => {
                     )}
                 </div>
 
-                
+
                 {totalPages > 1 && (
                     <div className="mt-6 flex items-center justify-center gap-4">
                         <button
                             onClick={retrocederPagina}
                             disabled={currentPage === 0}
-                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${
-                                currentPage === 0
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
-                            }`}
+                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${currentPage === 0
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-800"
+                                }`}
                         >
                             Anterior
                         </button>
@@ -232,11 +270,10 @@ const EmployeeList = () => {
                         <button
                             onClick={avancarPagina}
                             disabled={currentPage === totalPages - 1}
-                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${
-                                currentPage === totalPages - 1
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
-                            }`}
+                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${currentPage === totalPages - 1
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-800"
+                                }`}
                         >
                             Próxima
                         </button>
