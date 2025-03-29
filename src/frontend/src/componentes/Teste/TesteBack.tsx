@@ -21,6 +21,8 @@ const UserListTest = () => {
         try {
           // Use the /usuario endpoint instead of /usuarios
           const response = await api.get('/');
+          const asdasd = await api.get('/sessao/usuario/me')
+          console.log(asdasd);
           
           console.log('Users data:', response.data);
         } catch (error) {
@@ -49,6 +51,7 @@ const UserListTest = () => {
           <button onClick={() => api.get('/usuario').then(res => console.log(res.data))}>
             Fetch Users (Manual)
           </button>
+          
         </div>
       ) : (
         <p>Not authenticated. Please log in first.</p>

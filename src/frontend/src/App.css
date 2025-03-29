@@ -72,7 +72,7 @@ input[type="checkbox"]:checked {
    margin: 2px 8px;
   border-radius: 100%;
  
-  background-color: blue;
+  background-color: #0000ff;
 }
 .custom-checkbox {
   width: 20px;
@@ -93,4 +93,31 @@ input[type="checkbox"]:checked {
   padding: 0.5rem;
   text-align: center;
    min-height: 100vh;
+}
+
+@keyframes slide-down {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
+      max-height: 0;
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 500px;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out forwards;
+}
+
+/* Transição suave para o card principal */
+.bg-white {
+  transition: all 0.3s ease;
+}
+
+/* Estilo para os cards de informação */
+.bg-white.rounded-lg {
+  transition: transform 0.2s ease;
 }

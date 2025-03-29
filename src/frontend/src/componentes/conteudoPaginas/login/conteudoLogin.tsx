@@ -11,7 +11,7 @@ export default function ConteudoLogin() {
     
     // Use the auth context instead of manual fetch
     const { login, isLoading, error, user, isAuthenticated } = useAuthContext();
-    console.log(user)
+   
     // Define redirectBasedOnRole function at component level
     const redirectBasedOnRole = (cargo) => {
         if (cargo === "COLABORADOR") {

@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import api from '../hooks/axios';
-import SessaoUsuario from '../../interfaces/interfaceSessaoUsuario';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface HistoricoJornada {
     data: string;
@@ -20,26 +18,51 @@ export default function ConteudoHistoricoFunc() {
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
     const [paginaAtual, setPaginaAtual] = useState(0);
-    const itensPorPagina = 9;
-
-    const buscarHistoricoJornadas = async () => {
+    const [itensPorPagina, setItensPorPagina] = useState(12);
+        const atualizarItensPorPagina = useCallback(() => {
+            if (window.innerWidth >= 640) { // sm breakpoint do Tailwind
+                setItensPorPagina(9);
+            } else {
+                setItensPorPagina(12);
+            }
+        }, []);
+    
+        useEffect(() => {
+            // Atualiza no carregamento inicial
+            atualizarItensPorPagina();
+            
+            // Adiciona listener para mudanças de tamanho de tela
+            window.addEventListener('resize', atualizarItensPorPagina);
+            
+            // Remove listener ao desmontar
+            return () => {
+                window.removeEventListener('resize', atualizarItensPorPagina);
+            };
+        }, [atualizarItensPorPagina]);
+    const buscarHistoricoJornadas = () => {
         try {
             setCarregando(true);
             setErro(null);
 
-            const response = await api.get<SessaoUsuario>('/sessao/usuario/me');
-            console.log('Resposta da API:', response.data);
+            const userDataString = localStorage.getItem('user');
+            if (!userDataString) {
+                setErro('Nenhum dado de usuário encontrado no localStorage.');
+                return;
+            }
+            const userData = JSON.parse(userDataString);
+            console.log('Dados do localStorage:', userData);
 
-            if (response.data) {
+            if (userData) {
                 // Processa jornadas históricas
-                const historicoFormatado = response.data.jornadas_historico
-                    .map(formatarJornada)
-                    .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime());
+                const historicoFormatado = userData.jornadas_historico
+                    ?.map(formatarJornada)
+                    ?.sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime()) || [];
 
                 // Processa jornadas irregulares
-                const irregularFormatado = response.data.jornadas_irregulares
-                    .map(formatarJornada)
-                    .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime());
+                const irregularFormatado = userData.jornadas_irregulares
+                    ?.map(formatarJornada)
+                    ?.sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime()) || [];
+
 
                 // Combina e ordena todos os registros
                 const todosRegistros = [...historicoFormatado, ...irregularFormatado]
@@ -48,10 +71,12 @@ export default function ConteudoHistoricoFunc() {
 
                 setHistoricoJornadas(todosRegistros);
             } else {
-                setErro('Dados inválidos recebidos da API ou nenhum histórico encontrado.');
+                setErro('Dados inválidos no localStorage ou nenhum histórico encontrado.');
             }
         } catch (error) {
-            console.error('Erro ao buscar histórico:', error);
+
+            console.error('Erro ao processar dados do localStorage:', error);
+
             setErro('Erro ao carregar o histórico de jornadas. Tente novamente mais tarde.');
         } finally {
             setCarregando(false);
@@ -125,7 +150,7 @@ export default function ConteudoHistoricoFunc() {
 
     return (
         <div className="flex flex-col items-center justify-center p-4 my-4 w-full overflow-y-hidden overflow-x-hidden">
-            <h2 className="poppins-semibold text-blue-600 mb-5 my-10">Histórico de Jornadas</h2>
+            <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Jornadas</h2>
 
             {erro ? (
                 <p className="text-red-600">{erro}</p>
@@ -135,10 +160,10 @@ export default function ConteudoHistoricoFunc() {
                 <p>Nenhum registro encontrado.</p>
             ) : (
                 <>
-                    <div className="w-[94vw] rounded-md !overflow-x-hidden bg-[#F1F1F1]">
+                    <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden bg-[#F1F1F1]">
                         <table className="w-full border border-gray-300 text-center">
                             <thead>
-                                <tr className="bg-blue-800 text-white">
+                                <tr className="bg-blue-700 text-white">
                                     <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Data</th>
                                     <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Início do Turno</th>
                                     <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Fim do Turno</th>

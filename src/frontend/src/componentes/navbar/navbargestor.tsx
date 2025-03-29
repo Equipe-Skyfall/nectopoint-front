@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaBell, FaUserPlus } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
-import api from "../hooks/axios";
 
 function useOutsideClick(ref, callback) {
     useEffect(() => {
@@ -20,42 +19,43 @@ function useOutsideClick(ref, callback) {
 
 export default function NavBarGestor() {
     const [isOpen, setIsOpen] = useState(false);
-    const { logout, user, isAuthenticated } = useAuthContext();
+    const { logout, isAuthenticated } = useAuthContext();
     const sidebarRef = useRef(null);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+    const [userData, setUserData] = useState({ nome: '', cpf: '' });
     useEffect(() => {
         if (isAuthenticated) {
-          const fetchUsers = async () => {
-            try {
-              
-              const response = await api.get('sessao/usuario/me');
-              
-              console.log('Users data:', response.data);
-            } catch (error) {
-              console.error('Error fetching users:', error);
-             
-              if (error.response) {
-                console.error('Response data:', error.response.data);
-                console.error('Response status:', error.response.status);
-              }
+            // Busca os dados do localStorage
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                try {
+                    const parsedUser = JSON.parse(storedUser);
+                    // Extrai apenas nome e cpf de dados_usuario
+                    if (parsedUser.dados_usuario) {
+                        setUserData({
+                            nome: parsedUser.dados_usuario.nome || '',
+                            cpf: parsedUser.dados_usuario.cpf || ''
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erro ao parsear dados do usuário:', error);
+                }
             }
-          };
-    
-          fetchUsers();
         }
-      }, [isAuthenticated]);
-
+    }, [isAuthenticated]);
 
     const confirmLogout = () => {
         setShowLogoutModal(false);
         logout();
-        navigate("/"); 
+        localStorage.removeItem('user')
+        navigate("/");
     };
 
     useOutsideClick(sidebarRef, () => setIsOpen(false));
 
     const toggleSidebar = () => setIsOpen(!isOpen);
+
 
     return (
         <>
@@ -82,7 +82,7 @@ export default function NavBarGestor() {
 
                     <div className="flex items-center gap-2">
                         <FaUser className="w-5 h-5 text-gray-700" />
-                        <span className="text-gray-700 font-medium">{user?.nome}</span>
+                        <span className="text-gray-700 font-medium">{userData.nome}</span>
                     </div>
                 </div>
 
@@ -109,8 +109,8 @@ export default function NavBarGestor() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
-                            <span className="text-lg font-semibold text-gray-700 text-start flex">{user?.nome}</span>
-                            <p className="text-sm text-gray-500 text-start">CPF: {user?.cpf}</p>
+                            <span className="text-lg font-semibold text-gray-700 text-start flex">{userData.nome}</span>
+                            <p className="text-sm text-gray-500 text-start">CPF: {userData.cpf}</p>
                         </div>
                     </div>
 
@@ -142,17 +142,10 @@ export default function NavBarGestor() {
                         </button>
                     </Link>
 
-                    <Link to="/buscar-funcionario" onClick={toggleSidebar}>
+                    <Link to="/colaboradores" onClick={toggleSidebar}>
                         <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                             <FaUser className="w-5 h-5" />
-                            <span>Buscar Funcionário</span>
-                        </button>
-                    </Link>
-
-                    <Link to="/cadastrar" onClick={toggleSidebar}>
-                        <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
-                            <FaUserPlus className="w-5 h-5" />
-                            <span>Criar Funcionário</span>
+                            <span>Colaboradores</span>
                         </button>
                     </Link>
 

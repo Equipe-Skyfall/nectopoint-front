@@ -13,7 +13,7 @@ export default function PaginaUsuario() {
 
     return (
         <div className="PaginaUsuarios">
-            {userData.cargo == "GERENTE"? <NavBarGestor /> :<NavBar/>}
+            {userData.dados_usuario.cargo == "GERENTE"? <NavBarGestor /> :<NavBar/>}
             
             <ConteudoHome />
         </div>

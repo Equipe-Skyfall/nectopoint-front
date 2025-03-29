@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import api from './axios';
+import api from './api';
+import SessaoUsuario from '../../interfaces/interfaceSessaoUsuario';
 
 
 interface UserData {
@@ -63,7 +64,7 @@ interface LoginCredentials {
 }
 
 const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SessaoUsuario | null>(null);
   const queryClient = useQueryClient();
 
 
@@ -82,24 +83,30 @@ const useAuth = () => {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      const response = await api.post<LoginResponse>('/usuario/auth', credentials);
+      const response = await api.post<SessaoUsuario>('/usuario/auth', credentials);
       return response;
     },
     onSuccess: (response) => {
       const responseData = response.data;
 
 
-      const userData: User = {
-        id: responseData.id_colaborador,
-        nome: responseData.dados_usuario.nome, 
-        cpf: responseData.dados_usuario.cpf,
-        cargo: responseData.dados_usuario.cargo,
-        departamento: responseData.dados_usuario.departamento,
-        status: responseData.dados_usuario.status, 
+      const userData: SessaoUsuario = {
+        id_sessao: responseData.id_sessao, // Corrected to match 'id_sessao'
+        id_colaborador: responseData.id_colaborador,
+        dados_usuario: {
+            nome: responseData.dados_usuario.nome,
+            cpf: responseData.dados_usuario.cpf,
+            cargo: responseData.dados_usuario.cargo,
+            departamento: responseData.dados_usuario.departamento,
+            status: responseData.dados_usuario.status,
+        },
         jornada_trabalho: responseData.jornada_trabalho,
         jornada_atual: responseData.jornada_atual,
         alertas_usuario: responseData.alertas_usuario,
-      };
+        jornadas_historico: responseData.jornadas_historico, 
+        jornadas_irregulares: responseData.jornadas_irregulares, 
+        tickets_usuario: responseData.tickets_usuario, 
+    };
 
 
       setUser(userData);
@@ -137,3 +144,4 @@ const useAuth = () => {
 };
 
 export default useAuth;
+export type { User };
