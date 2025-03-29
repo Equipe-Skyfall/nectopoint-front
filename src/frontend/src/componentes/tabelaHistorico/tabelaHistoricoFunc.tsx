@@ -43,6 +43,7 @@ export default function ConteudoHistoricoFunc() {
         try {
             setCarregando(true);
             setErro(null);
+
             const userDataString = localStorage.getItem('user');
             if (!userDataString) {
                 setErro('Nenhum dado de usuário encontrado no localStorage.');
@@ -62,6 +63,7 @@ export default function ConteudoHistoricoFunc() {
                     ?.map(formatarJornada)
                     ?.sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime()) || [];
 
+
                 // Combina e ordena todos os registros
                 const todosRegistros = [...historicoFormatado, ...irregularFormatado]
                     .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime())
@@ -72,7 +74,9 @@ export default function ConteudoHistoricoFunc() {
                 setErro('Dados inválidos no localStorage ou nenhum histórico encontrado.');
             }
         } catch (error) {
+
             console.error('Erro ao processar dados do localStorage:', error);
+
             setErro('Erro ao carregar o histórico de jornadas. Tente novamente mais tarde.');
         } finally {
             setCarregando(false);
