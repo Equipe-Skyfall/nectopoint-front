@@ -72,7 +72,7 @@ input[type="checkbox"]:checked {
    margin: 2px 8px;
   border-radius: 100%;
  
-  background-color: blue;
+  background-color: #0000ff;
 }
 .custom-checkbox {
   width: 20px;

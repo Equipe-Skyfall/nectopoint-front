@@ -1,5 +1,5 @@
 
-import DashboardGestor from "../componentes/conteudoPaginas/paginaGestor/DashboardGestor";
+import DashboardGestor from "../componentes/conteudoPaginas/paginaGestor/homeGestor";
 
 
 import NavBarGestor from "../componentes/navbar/navbargestor";

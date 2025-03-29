@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../hooks/api";
+
+import GraficoDashboard from "../graficoDashboard/graficoDashboard";
 // (int page), (int size), (Date startDate), (Date endDate), (str statusTurno), (int id_colaborador) 
 type params = {
 page: number;
@@ -21,7 +23,7 @@ export default function DashboardGestor()    {
             let hoje = new Date();
             let umDiaAtras = new Date(hoje);
             const params :params    = {
-                page: 0,
+                page: 1,
                 size: 1000,
                 startDate: umDiaAtras,// 1 dia atrás
                 endDate: hoje,
@@ -62,27 +64,28 @@ export default function DashboardGestor()    {
     const ausentes = data.filter((item: any) => item.status === "NAO_COMPARECEU");
     const ausentesCount = ausentes.length;
     console.log(data);
-    
 return (
     <div className="flex justify-center">
-                    <div className=" rounded-md  h-[140vw]  sm:h-[35vw] w-[80%]">
-                       <div className="flex items-center bg-primarygreen rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
+                    <div className=" rounded-md w-[80%] flex flex-col justify-center items-center bg-white shadow-md p-4">
+                       <div className="flex flex-wrap justify-center">
+                       <div className="flex mx-2 items-center bg-primarygreen rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
                         <p className=" flex text-white text-center text-lg  align-text-top font-bold p-2 align-top p-auto ">
-                                Trabalhando : 
+                        Trabalhando : 
                         </p>
                         <p className="font-bold text-white">{trabalhandoCount} </p>
                         
                        </div>
-                       <div className="flex items-center bg-primaryred rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
+                       <div className="flex mx-2 items-center bg-primaryred rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
 
-                       <p className=" flex text-white text-center text-lg  align-text-top font-bold p-2 align-top p-auto ">
-                                Ausentes : 
-                        </p>
-                        <p className="font-bold text-white">{ausentesCount} </p>
+                            <p className=" flex text-white text-center text-lg  align-text-top font-bold p-2 align-top p-auto ">
+                            Ausentes : 
+                            </p>
+                            <p className="font-bold text-white">{ausentesCount} </p>
                         </div>
-                       
+                       </div>
+                       <GraficoDashboard/>
                     </div>
-
+                    
     </div>
                 )
 }
