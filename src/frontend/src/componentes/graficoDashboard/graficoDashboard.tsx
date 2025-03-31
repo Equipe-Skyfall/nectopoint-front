@@ -3,7 +3,7 @@ import { LineChart, CartesianGrid, XAxis, Tooltip, Legend, Line, ResponsiveConta
 export default function GraficoDashboard() {
     let dados = [{  'Media banco de horas':16},{  'Media banco de horas':26},{  'Media banco de horas':11},{  'Media banco de horas':15}];
     let width = '100%';
-    let height = 200;
+    let height = 400;
 return (
    <>
    <ResponsiveContainer width={width} height={height}>

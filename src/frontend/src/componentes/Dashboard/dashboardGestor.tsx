@@ -66,8 +66,8 @@ export default function DashboardGestor()    {
     console.log(data);
 return (
     <div className="flex justify-center">
-                    <div className=" rounded-md w-[80%] flex flex-col justify-center items-center bg-white shadow-md p-4">
-                       <div className="flex flex-wrap justify-center">
+                    <div className=" rounded-md w-[80%] flex flex-col justify-between items-center bg-white shadow-md p-4">
+                       <div className=" w-full flex flex-wrap justify-between">
                        <div className="flex mx-2 items-center bg-primarygreen rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
                         <p className=" flex text-white text-center text-lg  align-text-top font-bold p-2 align-top p-auto ">
                         Trabalhando : 
