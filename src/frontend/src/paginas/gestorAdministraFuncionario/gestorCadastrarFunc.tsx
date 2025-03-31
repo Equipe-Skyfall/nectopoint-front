@@ -1,5 +1,5 @@
 
-import CadastrarFunc from "../componentes/conteudoPaginas/colaboradores/cadastrarFunc"
+import CadastrarFunc from "../../componentes/conteudoPaginas/colaboradores/cadastrarFunc"
 
 export default function CadastrarFuncionario() {
 
