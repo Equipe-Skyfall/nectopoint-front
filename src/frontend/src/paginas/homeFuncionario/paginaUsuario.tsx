@@ -1,8 +1,8 @@
-import ConteudoHome from "../componentes/conteudoPaginas/paginaUsuario/conteudoHome";
+import ConteudoHome from "../../componentes/conteudoPaginas/paginaUsuario/conteudoHome";
 
-import useUserData from "../componentes/hooks/userData";
-import NavBar from "../componentes/navbar/navbar";
-import NavBarGestor from "../componentes/navbar/navbargestor";
+import useUserData from "../../componentes/hooks/userData";
+import NavBar from "../../componentes/navbar/navbar";
+import NavBarGestor from "../../componentes/navbar/navbargestor";
 
 
 

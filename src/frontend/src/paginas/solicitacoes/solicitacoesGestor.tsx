@@ -1,5 +1,5 @@
-import SolicitacoesGestor from "../componentes/conteudoPaginas/paginaGestor/solicitacoesGestor";
-import NavBarGestor from "../componentes/navbar/navbargestor";
+import SolicitacoesGestor from "../../componentes/conteudoPaginas/paginaGestor/solicitacoesGestor";
+import NavBarGestor from "../../componentes/navbar/navbargestor";
 
 export default function SoliGestor() {
 

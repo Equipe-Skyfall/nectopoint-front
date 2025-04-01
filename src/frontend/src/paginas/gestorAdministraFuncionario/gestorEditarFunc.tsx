@@ -1,5 +1,5 @@
 
-import EditarFunc from "../componentes/conteudoPaginas/colaboradores/editarFunc"
+import EditarFunc from "../../componentes/conteudoPaginas/colaboradores/editarFunc"
 
 export default function Funcionarios() {
 

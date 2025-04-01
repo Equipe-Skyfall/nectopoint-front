@@ -65,6 +65,7 @@ export default function DashboardGestor() {
     const ausentes = data.filter((item: any) => item.status === "NAO_COMPARECEU");
     const ausentesCount = ausentes.length;
     console.log(data);
+
     return (
         <div className="flex justify-center">
             <div className=" rounded-md w-[80%] flex flex-col justify-center items-center bg-gray-100 shadow-md p-6 sm:p-4">
@@ -72,6 +73,7 @@ export default function DashboardGestor() {
                     <div className="flex items-center bg-primarygreen rounded-xl w-60 sm:w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
                         <p className=" flex text-white text-center text-lg  font-bold p-2 align-top p-auto ">
                             Trabalhando :
+
                         </p>
                         <p className="font-bold text-white">{trabalhandoCount} </p>
 

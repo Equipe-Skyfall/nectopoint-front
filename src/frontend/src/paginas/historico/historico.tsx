@@ -1,5 +1,5 @@
-import NavBarGestor from "../componentes/navbar/navbargestor";
-import ConteudoHistorico from "../componentes/tabelaHistorico/tabelaHistorico";
+import NavBarGestor from "../../componentes/navbar/navbargestor";
+import ConteudoHistorico from "../../componentes/tabelaHistorico/tabelaHistorico";
 
 
 

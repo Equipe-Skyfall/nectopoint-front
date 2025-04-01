@@ -1,6 +1,6 @@
-import NavBarGestor from "../componentes/navbar/navbargestor";
+import NavBarGestor from "../../componentes/navbar/navbargestor";
 
-import FuncionariosGestor from "../componentes/conteudoPaginas/colaboradores/funcionarios"
+import FuncionariosGestor from "../../componentes/conteudoPaginas/colaboradores/funcionarios"
 
 export default function Funcionarios() {
 

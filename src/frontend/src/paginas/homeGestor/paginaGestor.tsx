@@ -1,8 +1,8 @@
 
-import DashboardGestor from "../componentes/conteudoPaginas/paginaGestor/homeGestor";
+import DashboardGestor from "../../componentes/conteudoPaginas/paginaGestor/homeGestor";
 
 
-import NavBarGestor from "../componentes/navbar/navbargestor";
+import NavBarGestor from "../../componentes/navbar/navbargestor";
 
 
 export default function PaginaGestor() {

@@ -1,21 +1,21 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
-import PaginaUsuario from "./paginas/paginaUsuario";
-import Solicitacoes from "./paginas/solicitacoes";
+import PaginaUsuario from "./paginas/homeFuncionario/paginaUsuario";
+import Solicitacoes from "./paginas/solicitacoes/solicitacoes";
 
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import PaginaGestor from "./paginas/paginaGestor";
-import Login from "./paginas/login";
+import PaginaGestor from "./paginas/homeGestor/paginaGestor";
+import Login from "./paginas/login/login";
 import { AuthProvider } from "./Provider/AuthProvider";
 import Teste from "./paginas/teste";
 
-import CadastrarFuncionario from "./paginas/gestorCadastrarFunc";
-import Historico from "./paginas/historico";
-import HistoricoFunc from "./paginas/historicoFunc";
-import SolicitacoesGestor from "./paginas/solicitacoesGestor";
-import Funcionarios from "./paginas/gestorFuncionarios";
+import CadastrarFuncionario from "./paginas/gestorAdministraFuncionario/gestorCadastrarFunc";
+import Historico from "./paginas/historico/historico";
+import HistoricoFunc from "./paginas/historico/historicoFunc";
+import SolicitacoesGestor from "./paginas/solicitacoes/solicitacoesGestor";
+import Funcionarios from "./paginas/gestorAdministraFuncionario/gestorFuncionarios";
 import EditarFunc from "./componentes/conteudoPaginas/colaboradores/editarFunc";
 
 
