@@ -20,7 +20,7 @@ export default function ConteudoHistoricoFunc() {
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [itensPorPagina, setItensPorPagina] = useState(12);
         const atualizarItensPorPagina = useCallback(() => {
-            if (window.innerWidth >= 640) { // sm breakpoint do Tailwind
+            if (window.innerWidth >= 640) { 
                 setItensPorPagina(9);
             } else {
                 setItensPorPagina(12);
@@ -44,6 +44,7 @@ export default function ConteudoHistoricoFunc() {
             setCarregando(true);
             setErro(null);
 
+            //Puxa os dados da tabela user salva em localStorage
             const userDataString = localStorage.getItem('user');
             if (!userDataString) {
                 setErro('Nenhum dado de usuário encontrado no localStorage.');
@@ -95,7 +96,7 @@ export default function ConteudoHistoricoFunc() {
                 minute: '2-digit' 
             })
         })) || [];
-
+        // Retorna os dados formatados
         return {
             data: dataInicio.toLocaleDateString('pt-BR'),
             inicioTurno: dataInicio.toLocaleTimeString('pt-BR', { 
@@ -112,6 +113,7 @@ export default function ConteudoHistoricoFunc() {
         };
     };
 
+    // Formata o status da jornada para que apareça de acordo com o padrão no site
     const formatarStatus = (status: string) => {
         switch (status) {
             case 'ENCERRADO':
@@ -128,20 +130,24 @@ export default function ConteudoHistoricoFunc() {
     useEffect(() => {
         buscarHistoricoJornadas();
     }, []);
-
+    
+    // Obtem o total de paginas dividindo o total de registros pela quantidade de itens por pagina
     const totalPaginas = Math.ceil(historicoJornadas.length / itensPorPagina);
+    // Retorna os itens da página atual com base em paginaAtual e itensPorPagina
     const obterItensPaginaAtual = () => {
         const inicio = paginaAtual * itensPorPagina;
         const fim = inicio + itensPorPagina;
         return historicoJornadas.slice(inicio, fim);
     };
 
+    //Incrementa paginaAtual para exibir a próxima página
     const avancarPagina = () => {
         if (paginaAtual < totalPaginas - 1) {
             setPaginaAtual(paginaAtual + 1);
         }
     };
 
+    //Decrementa paginaAtual para exibir a página anterior
     const retrocederPagina = () => {
         if (paginaAtual > 0) {
             setPaginaAtual(paginaAtual - 1);
@@ -152,6 +158,7 @@ export default function ConteudoHistoricoFunc() {
         <div className="flex flex-col items-center justify-center p-4 my-4 w-full overflow-y-hidden overflow-x-hidden">
             <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Jornadas</h2>
 
+            {/* Mensagem de erro ou carregando */}
             {erro ? (
                 <p className="text-red-600">{erro}</p>
             ) : carregando ? (
