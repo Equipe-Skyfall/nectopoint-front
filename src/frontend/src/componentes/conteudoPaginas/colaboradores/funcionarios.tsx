@@ -16,7 +16,10 @@ const EmployeeList = () => {
         currentPage,
         totalPages,
         setCurrentPage,
+        //Busca e gerencia a lista de colaboradores, pesquisa, paginação e estados de carregamento e erro. 
     } = useColaborador();
+
+    //Função feita para formatar a data de nascimento no formato DD/MM/YYYY
     const formatarDataNascimento = (data: string) => {
         if (!data) return 'N/A';
 
@@ -34,6 +37,7 @@ const EmployeeList = () => {
     const [employeeDetails, setEmployeeDetails] = useState<any>({});
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
+    //Faz a expansão dos detalhes de um colaborador. Busca os detalhes da API se necessário
     const toggleExpand = async (id: number) => {
         if (expandedEmployee === id) {
             setExpandedEmployee(null);
@@ -48,13 +52,16 @@ const EmployeeList = () => {
         }
     };
 
+    //Exclui um colaborador da API e atualiza a lista
     const handleDelete = async (id: number, e: React.MouseEvent) => {
         e.stopPropagation();
 
+        //Janela de confirmação
         if (!window.confirm('Tem certeza que deseja excluir este colaborador?')) {
             return;
         }
 
+        //Deleta referenciado no id do funcionario selecionado
         setIsDeleting(id);
 
         try {
@@ -73,12 +80,15 @@ const EmployeeList = () => {
         }
     };
 
+    //Avança para a próxima página, caso haja mais de uma
     const avancarPagina = () => {
         if (currentPage < totalPages - 1) {
             setCurrentPage(currentPage + 1);
         }
     };
 
+
+    //Retrocede para a página anterior, caso haja mais de uma
     const retrocederPagina = () => {
         if (currentPage > 0) {
             setCurrentPage(currentPage - 1);
@@ -94,6 +104,7 @@ const EmployeeList = () => {
                     <div className="relative w-full md:flex-grow">
                         <label className="block text-center sm:text-left poppins font-medium text-gray-600 mb-2">Buscar Colaboradores pelo CPF:</label>
                         <div className="relative">
+                            {/* Input de pesquisa que realiza o search do funcionario basiado no seu CPF */}
                             <input
                                 type="text"
                                 placeholder="Digite o CPF para pesquisar..."
@@ -107,6 +118,7 @@ const EmployeeList = () => {
                         </div>
                     </div>
 
+                    {/* Redireciona para a página de cadastro */}
                     <a
                         href="/cadastrar"
                         className="w-full md:w-auto flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition duration-200"
@@ -116,6 +128,7 @@ const EmployeeList = () => {
                     </a>
                 </div>
 
+                {/* Mensagens de carregamento e erro */}
                 {loading && <p className="text-center text-gray-500">Carregando...</p>}
                 {error && <p className="text-center text-red-500">Erro: {error}</p>}
 
@@ -123,16 +136,18 @@ const EmployeeList = () => {
                 <div className="space-y-4">
                     {filteredEmployees.length > 0 ? (
                         filteredEmployees.map(emp => (
+                            // Cria um card para cada colaborador, os dados são puxados referenciando o id_colaborador de cada um
                             <div key={emp.id_colaborador} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200">
                                 <div
                                     className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 cursor-pointer  hover:bg-gray-50 transition-colors duration-300"
-                                    onClick={() => toggleExpand(emp.id_colaborador)}
+                                    onClick={() => toggleExpand(emp.id_colaborador)} //Expande os detalhes do colaborador, baseado no seu id
                                 >
                                     <div className="flex items-center w-full sm:w-auto">
                                         <div className="bg-blue-100 p-3 rounded-full flex-shrink-0 mr-4">
                                             <FaUser className="text-blue-600 text-xl" />
                                         </div>
-
+                                        
+                                        {/* Exibe os dados do colaborador, nomem, id e cpf */}
                                         <div className="text-left">
                                             <h3 className="text-lg font-semibold text-gray-800">{emp.nome}</h3>
                                             <p className='text-sm text-gray-600'>ID: {emp.id_colaborador}</p>
@@ -141,6 +156,7 @@ const EmployeeList = () => {
                                     </div>
 
                                     <div className="w-full sm:w-auto flex sm:absolute sm:right-60 right-6 relative justify-end mt-4 sm:mt-0 ml-auto">
+                                        {/* Botão que redirecionado para a páginad de Edição */}
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -152,6 +168,7 @@ const EmployeeList = () => {
                                             <span className="mr-2">Editar</span>
                                             <FaEdit className="text-lg" />
                                         </button>
+                                        {/* Botão que é responsavel pela exclusão do colaborador, puxa a função handleDelete */}
                                         <button
                                             onClick={(e) => handleDelete(emp.id_colaborador, e)}
                                             disabled={isDeleting === emp.id_colaborador}
@@ -180,11 +197,11 @@ const EmployeeList = () => {
                                         )}
                                     </div>
                                 </div>
-
+                                {/* Div onde exibe os detalhes expandidos do colaborador */}
                                 {expandedEmployee === emp.id_colaborador && (
                                     <div className="px-6 pb-52 sm:pb-6 pt-0 mt-5  overflow-hidden">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-down">
-
+                                            {/* Informações pessoais */}
                                             <div className="p-4 rounded-lg shadow-md border hover:bg-gray-100 transition-colors duration-300 border-gray-100">
                                                 <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Informações Pessoais</h4>
                                                 <div className="space-y-2">
@@ -199,7 +216,7 @@ const EmployeeList = () => {
                                                 </div>
                                             </div>
 
-
+                                            {/* Informações Profissionais */}
                                             <div className="hover:bg-gray-100 p-4 rounded-lg shadow-md border transition-colors duration-300 border-gray-100">
                                                 <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Informações Profissionais</h4>
                                                 <div className="space-y-2">
@@ -222,7 +239,7 @@ const EmployeeList = () => {
                                                 </div>
                                             </div>
 
-
+                                            {/* Horas */}
                                             <div className="hover:bg-gray-100 shadow-md p-4 rounded-lg  border transition-colors duration-300 border-gray-100">
                                                 <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Horas</h4>
                                                 <div className="space-y-2">
@@ -248,7 +265,7 @@ const EmployeeList = () => {
                     )}
                 </div>
 
-
+                {/* Paginação dos colaboradores */}
                 {totalPages > 1 && (
                     <div className="mt-6 flex items-center justify-center gap-4">
                         <button

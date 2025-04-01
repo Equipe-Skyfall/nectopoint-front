@@ -9,10 +9,10 @@ export default function ConteudoLogin() {
     const [lembrarMe, setLembrarMe] = useState(false);
     const navigate = useNavigate();
     
-    // Use the auth context instead of manual fetch
+    // Usa o AuthContext ao invés de um fetch
     const { login, isLoading, error, user, isAuthenticated } = useAuthContext();
    
-    // Define redirectBasedOnRole function at component level
+    // Função para redirecionar baseado no cargo
     const redirectBasedOnRole = (cargo) => {
         if (cargo === "COLABORADOR") {
             navigate("/home");
@@ -21,7 +21,7 @@ export default function ConteudoLogin() {
         }
     };
 
-    // Check authentication on component mount and when auth state changes
+    // Checa a autenticação ao montar o componente e redireciona baseado no cargo
     useEffect(() => {
         document.body.classList.add("overflow-hidden");
 
@@ -34,7 +34,7 @@ export default function ConteudoLogin() {
         };
     }, [isAuthenticated, user, navigate]);
 
-    // Handle login form submission
+    // Função para submit do login
     const handleLogin = async () => {
         const cpfFormatado = cpf.replace(/\D/g, "");
         const senhaFormatada = senha.trim();
@@ -47,7 +47,6 @@ export default function ConteudoLogin() {
                         sessionStorage.setItem('sessionAuth', 'true');
                     }
                     
-                    // Use the correct data path
                     const cargo = response.data.dados_usuario.cargo;
                     redirectBasedOnRole(cargo);
                 }
@@ -71,6 +70,7 @@ export default function ConteudoLogin() {
                     Login
                 </h1>
 
+                {/* Input com o valor de cpf */}
                 <InputPadrao
                     placeholder="CPF"
                     length={11}
@@ -79,6 +79,8 @@ export default function ConteudoLogin() {
                     value={cpf}
                     onChange={(e) => setCpf(e.target.value)}
                 />
+
+                {/* Input com o valor de senha */}
                 <InputPadrao
                     placeholder="Senha"
                     length={20}
@@ -107,6 +109,7 @@ export default function ConteudoLogin() {
                     </p>
                 )}
 
+                {/* Botão que puxa o handleLogin e realiza o submit de login */}
                 <button
                     onClick={handleLogin}
                     disabled={isLoading}

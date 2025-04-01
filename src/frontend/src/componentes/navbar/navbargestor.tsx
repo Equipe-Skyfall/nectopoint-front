@@ -5,6 +5,8 @@ import { useAuthContext } from "../../Provider/AuthProvider";
 
 function useOutsideClick(ref, callback) {
     useEffect(() => {
+
+        //Função para identificar cliques fora de um elemento
         function handleClickOutside(event) {
             if (ref.current && !ref.current.contains(event.target)) {
                 callback();
@@ -43,8 +45,11 @@ export default function NavBarGestor() {
                 }
             }
         }
+        //Confirma que o usuário esta autenticado ou não para puxar dados
     }, [isAuthenticated]);
 
+
+    // Função para confirmar o logout
     const confirmLogout = () => {
         setShowLogoutModal(false);
         logout();
@@ -52,6 +57,7 @@ export default function NavBarGestor() {
         navigate("/");
     };
 
+     // Hook para detectar cliques fora da sidebar
     useOutsideClick(sidebarRef, () => setIsOpen(false));
 
     const toggleSidebar = () => setIsOpen(!isOpen);
@@ -82,6 +88,7 @@ export default function NavBarGestor() {
 
                     <div className="flex items-center gap-2">
                         <FaUser className="w-5 h-5 text-gray-700" />
+                        {/* Exibe o nome do usuário logado (no caso do Gestor) */}
                         <span className="text-gray-700 font-medium">{userData.nome}</span>
                     </div>
                 </div>
@@ -109,6 +116,7 @@ export default function NavBarGestor() {
                     <div className="flex items-center gap-3 border-b pb-4">
                         <FaUser className="w-8 h-8 text-gray-700" />
                         <div>
+                            {/* Exibe o nome e CPF do usuário logado */}
                             <span className="text-lg font-semibold text-gray-700 text-start flex">{userData.nome}</span>
                             <p className="text-sm text-gray-500 text-start">CPF: {userData.cpf}</p>
                         </div>
@@ -157,7 +165,7 @@ export default function NavBarGestor() {
                     </Link>
                 </div>
             </div>
-
+            {/* Modal para confirmação de Logout */}
             {showLogoutModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40">
                     <div className="bg-white p-6 rounded-lg shadow-lg text-center">
