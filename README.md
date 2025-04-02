@@ -1,10 +1,10 @@
-# FATEC Profº Jessen Vidal - São José dos Campos - 3º Semestre DSM - 2024
+# FATEC Profº Jessen Vidal - São José dos Campos - 3º Semestre DSM - 2025
 
 <p>Projeto desenvolvido para a API (Aprendizagem por Projeto Integrado) do 3° Semestre do curso Desenvolvimento de Software Multiplataforma (DSM) em parceria com a Necto Systems.</p>
 
 > _A API se trata de um projeto submetido à metodologia de ensino em implantação na Fatec São José dos Campos, do qual os alunos formam equipes baseadas na metodologia ágil SCRUM, tendo um aluno como Scrum Master, um sendo o Product Owner e o restante dos integrantes como Dev Team._
 
-### ⏳ Status do projeto: 1/3 Sprint
+### ⏳ Status do projeto: 2/3 Sprint
 
 ### 📃 Respositórios 
 - [Repositório FrontEnd](https://github.com/Equipe-Skyfall/nectopoint-front)
@@ -67,7 +67,6 @@
 <img src="https://img.shields.io/badge/prisma-000000?style=for-the-badge&logo=prisma&logoColor=black&color=06b6d4">
 <img src="https://img.shields.io/badge/typescript-000000?style=for-the-badge&logo=typescript&logoColor=black&color=06b6d4">
 <img src="https://img.shields.io/badge/javascript-000000?style=for-the-badge&logo=javascript&logoColor=black&color=06b6d4">
-<img src="https://img.shields.io/badge/node.js-000000?style=for-the-badge&logo=node.js&logoColor=black&color=06b6d4">
 <img src="https://img.shields.io/badge/react-000000?style=for-the-badge&logo=react&logoColor=black&color=06b6d4">
 <img src="https://img.shields.io/badge/tailwind-000000?style=for-the-badge&logo=tailwindcss&logoColor=black&color=06b6d4">
 <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white&color=06b6d4">
@@ -80,25 +79,27 @@
 
 ## 📜 Product Backlog <a name="backlog"><a>
 
-| RANK | SPRINT | PRIORIDADE | ITEM | USER STORY (NOME)                                           | STATUS |
-|:----:|:------:|:----------:|:----:|:-----------------------------------------------------------:|:------:|
-| 1    |   1    |   Alta     |  1   | Cadastro de Novos Colaboradores pelo Administrador          |  ✅   |
-| 2    |   1    |   Alta     |  2   | Registro de Ponto pelo Colaborador                          |   ✅    |
-| 3    |   1    |   Alta     |  3   | Visualização de Histórico de Marcações pelo Colaborador     |   ✅    |
-| 4    |   2    |   Média    |  4   | Geração de Relatórios de Ausências e Horas Extras           |        |
-| 5    |   2    |   Média    |  5   | Cálculo Automático de Horas Extras pelo Sistema             |        |
-| 6    |   2    |   Média    |  6   | Solicitação de Férias pelo Colaborador                      |        |
-| 7    |   2    |   Média    |  7   | Alerta de Esquecimento de Registro de Ponto pelo Sistema    |        |
-| 8    |   3    |   Baixa    |  8   | Ajuste Manual de Marcações de Ponto pelo Administrador      |        |
-| 9    |   3    |   Baixa    |  9   | Aprovação/Reprovação de Solicitações de Férias pelo Administrador |        |
-| 10   |   3    |   Baixa    | 10   | Conformidade com Normas Trabalhistas (CLT) pelo Sistema     |        |
-| 11   |   3    |   Baixa    | 11   | Geração de Relatórios Detalhados do Banco de Horas          |        |
-| 12   |   3    |   Baixa    | 12   | Justificativa de Ausências ou Atrasos pelo Colaborador      |        |
-| 13   |   3    |   Baixa    | 13   | Configuração de Jornadas Flexíveis pelo Administrador       |        |
-| 14   |   3    |   Baixa    | 14   | Anexação de Atestados Médicos pelo Colaborador              |        |
-| 15   |   3    |   Baixa    | 15   | Configuração de Folgas Obrigatórias e Escalas pelo Administrador |        |
-| 16   |   3    |   Baixa    | 16   | Gerenciamento de Locais de Trabalho e Turnos pelo Administrador |        |
-| 17   |   3    |   Baixa    | 17   | Geração de Gráficos de Horas Extras e Faltas pelo Administrador |        |
+| RANK | SPRINT | PRIORIDADE | ITEM | USER STORY (NOME)                                             | STATUS |
+|:----:|:------:|:----------:|:----:|:-------------------------------------------------------------:|:------:|
+| 1    |   1    |   Alta     |  1   | Cadastro de novos colaboradores pelo Administrador           |    ✅    |
+| 2    |   1    |   Alta     |  2   | Registro de entrada, saída e intervalos pelo Colaborador     |    ✅    |
+| 3    |   1    |   Alta     |  3   | Visualização do histórico de marcações pelo Colaborador      |    ✅    |
+| 4    |   2    |   Média    |  4   | Geração de relatórios de ausências e horas extras            |         |
+| 5    |   2    |   Média    |  5   | Cálculo automático de horas extras pelo Sistema              |         |
+| 6    |   2    |   Média    |  6   | Solicitação de autorização para horas extras pelo Colaborador |         |
+| 7    |   2    |   Média    |  7   | Solicitação de férias pelo Colaborador                       |         |
+| 8    |   2    |   Média    |  8   | Envio de alertas sobre marcação de ponto pelo Sistema        |         |
+| 9    |   2    |   Baixa    |  9   | Aprovação ou reprovação de solicitações de férias            |         |
+| 10   |   2    |   Média    | 10   | Justificativa de ausências ou atrasos pelo Colaborador       |         |
+| 11   |   2    |   Baixa    | 11   | Anexação de atestados médicos pelo Colaborador               |         |
+| 12   |   3    |   Baixa    | 12   | Ajuste manual de marcações de ponto pelo Administrador       |         |
+| 13   |   3    |   Baixa    | 13   | Conformidade com normas trabalhistas (CLT) pelo Sistema      |         |
+| 14   |   3    |   Baixa    | 14   | Geração de relatórios detalhados do banco de horas           |         |
+| 15   |   3    |   Média    | 15   | Configuração de jornadas de trabalho flexíveis               |         |
+| 16   |   3    |   Baixa    | 16   | Configuração de folgas obrigatórias e escalas de trabalho    |         |
+| 17   |   3    |   Baixa    | 17   | Gerenciamento de locais de trabalho e turnos                 |         |
+| 18   |   3    |   Baixa    | 18   | Geração de gráficos de horas extras e faltas                 |         |
+
 
 ---
 
