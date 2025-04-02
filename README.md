@@ -82,9 +82,9 @@
 
 | RANK | SPRINT | PRIORIDADE | ITEM | USER STORY (NOME)                                           | STATUS |
 |:----:|:------:|:----------:|:----:|:-----------------------------------------------------------:|:------:|
-| 1    |   1    |   Alta     |  1   | Cadastro de Novos Colaboradores pelo Administrador          |        |
-| 2    |   1    |   Alta     |  2   | Registro de Ponto pelo Colaborador                          |        |
-| 3    |   1    |   Alta     |  3   | Visualização de Histórico de Marcações pelo Colaborador     |        |
+| 1    |   1    |   Alta     |  1   | Cadastro de Novos Colaboradores pelo Administrador          |  ✅   |
+| 2    |   1    |   Alta     |  2   | Registro de Ponto pelo Colaborador                          |   ✅    |
+| 3    |   1    |   Alta     |  3   | Visualização de Histórico de Marcações pelo Colaborador     |   ✅    |
 | 4    |   2    |   Média    |  4   | Geração de Relatórios de Ausências e Horas Extras           |        |
 | 5    |   2    |   Média    |  5   | Cálculo Automático de Horas Extras pelo Sistema             |        |
 | 6    |   2    |   Média    |  6   | Solicitação de Férias pelo Colaborador                      |        |
