@@ -18,7 +18,7 @@ const EmployeeList = () => {
         setCurrentPage,
         //Busca e gerencia a lista de colaboradores, pesquisa, paginação e estados de carregamento e erro. 
     } = useColaborador();
-
+    
     //Função feita para formatar a data de nascimento no formato DD/MM/YYYY
     const formatarDataNascimento = (data: string) => {
         if (!data) return 'N/A';
@@ -142,7 +142,7 @@ const EmployeeList = () => {
                                     className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 cursor-pointer  hover:bg-gray-50 transition-colors duration-300"
                                     onClick={() => toggleExpand(emp.id_colaborador)} //Expande os detalhes do colaborador, baseado no seu id
                                 >
-                                    <div className="flex items-center w-full sm:w-auto">
+                                    <div className="flex items-center w-full sm:w-auto ">
                                         <div className="bg-blue-100 p-3 rounded-full flex-shrink-0 mr-4">
                                             <FaUser className="text-blue-600 text-xl" />
                                         </div>
@@ -155,7 +155,7 @@ const EmployeeList = () => {
                                         </div>
                                     </div>
 
-                                    <div className="w-full sm:w-auto flex sm:absolute sm:right-60 right-6 relative justify-end mt-4 sm:mt-0 ml-auto">
+                                    <div className="w-full   flex  justify-center sm:justify-end mt-4 sm:mt-0 ml-auto">
                                         {/* Botão que redirecionado para a páginad de Edição */}
                                         <button
                                             onClick={(e) => {
@@ -199,7 +199,7 @@ const EmployeeList = () => {
                                 </div>
                                 {/* Div onde exibe os detalhes expandidos do colaborador */}
                                 {expandedEmployee === emp.id_colaborador && (
-                                    <div className="px-6 pb-52 sm:pb-6 pt-0 mt-5  overflow-hidden">
+                                    <div className="px-6 pb-52 sm:pb-6 pt-0 mt-5  overflow-scroll">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-down">
                                             {/* Informações pessoais */}
                                             <div className="p-4 rounded-lg shadow-md border hover:bg-gray-100 transition-colors duration-300 border-gray-100">

@@ -13,9 +13,19 @@ export default  function ConteudoHome() {
     
     const userData : any = (useUserData());
     const entrada = (userData.jornada_atual.inicio_turno)
-    const saida = (userData.jornada_atual.fim_turno)
+    const pontos = userData.jornada_atual.pontos_marcados
+    //Se tiver pontos os bastante define up_hora e up_tipo
+    
+        // Se o último ponto for uma saída, define up_hora e up_tipo
+        const up_hora = pontos.length >=2 ? (pontos[pontos.length - 1].data_hora) : ''
+        const up_tipo = pontos.length >=2 ? (pontos[pontos.length - 1].tipo_ponto) :''
+    const ultimoPonto = pontos.length >=2 ? {"tipo_ponto":up_tipo,up_hora} : {'tipo_ponto':null, up_hora: null}
     const banco_de_horas = (userData.jornada_trabalho.banco_de_horas)
     console.log('entrada',userData.jornada_atual.pontos_marcados.length);
+    
+    
+    
+   
     
     useEffect(() => {
         document.body.classList.add("overflow-hidden");
@@ -36,7 +46,7 @@ export default  function ConteudoHome() {
                     
                     <Data />
                     
-                    <DisplayTempo entrada={entrada} saida={saida} intervalo={userData.jornada_atual.tirou_almoco} banco_de_horas={banco_de_horas}></DisplayTempo>
+                    <DisplayTempo entrada={entrada} ultimo_ponto={ultimoPonto} intervalo={userData.jornada_atual.tirou_almoco} banco_de_horas={banco_de_horas}></DisplayTempo>
                           
 
                     <div className="flex flex-col mx-auto mt-10  w-58 ">

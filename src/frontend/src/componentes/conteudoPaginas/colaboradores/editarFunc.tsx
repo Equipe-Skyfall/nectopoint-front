@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaUser, FaSave, FaArrowLeft, FaSpinner } from 'react-icons/fa';
 import { useEdit } from '../../hooks/useEdit';
+import recarregar from '../../hooks/hooksChamarBackend/recarregar';
 
 interface FormData {
     name: string;
@@ -65,6 +66,8 @@ const EditarFuncionario = () => {
                     dailyHours: Number(employee.dailyHours) || 8,
                     birthDate: employee.birthDate || ''
                 });
+                console.log('Dados do funcionário:', employee);
+                
                 setInitialDataLoaded(true);
             } catch (err) {
                 console.error('Erro ao carregar funcionário:', err);
@@ -124,8 +127,9 @@ const EditarFuncionario = () => {
 
             await updateEmployee(id, payload);
             setSubmitStatus('success');
-
-            setTimeout(() => navigate('/colaboradores'), 2000);
+            
+            setTimeout(() => navigate('/colaboradores'));
+            recarregar();
         } catch (err) {
             setSubmitStatus('error');
             console.error("Erro ao atualizar:", err);
