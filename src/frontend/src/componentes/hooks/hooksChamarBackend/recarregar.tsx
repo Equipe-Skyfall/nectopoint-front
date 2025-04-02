@@ -1,6 +1,5 @@
 import SessaoUsuario from "../../../interfaces/interfaceSessaoUsuario";
 import api from "../api";
-import { User } from "../useAuth";
 import useUserData from "../userData";
 // Recarrega os dados do usuário logado
 const  recarregar =  async () => {
@@ -31,6 +30,7 @@ const  recarregar =  async () => {
         localStorage.setItem('user', JSON.stringify(userData));
         window.location.reload();
         }
+       console.log('Dados do usuário recarregados:', responseData);
        
     } catch (error) {
         console.error('Error :', error);

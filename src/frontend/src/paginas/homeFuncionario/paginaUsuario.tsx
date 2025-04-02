@@ -8,7 +8,7 @@ import NavBarGestor from "../../componentes/navbar/navbargestor";
 
 export default function PaginaUsuario() {
     const userData : any = (useUserData());
-    console.log(userData);
+    
     
 
     return (

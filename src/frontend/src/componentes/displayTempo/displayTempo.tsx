@@ -9,7 +9,7 @@ export default function DisplayTempo(props : Display ){
 
     
     const {entrada, ultimo_ponto, banco_de_horas, intervalo} = props;
-    console.log(props);
+
     
     const formatarTempo = (tempo: string) => {
         // Formata a string de tempo para o formato HH:MM
@@ -42,16 +42,21 @@ export default function DisplayTempo(props : Display ){
                 {
                     //Se a entrada for diferente de nulo, exibe a entrada
                     entrada !== null||''||undefined ? 
+                   <>
+                    <p className="poppins text-blue-900 mt-2">Primeira Entrada </p>
                     <div className={`flex items-center bg-primarygreen rounded-xl text-center w-64 justify-between mx-auto px-2 my-2`}>
                     <img src={'./setadir.png'}  className="w-8 h-8 m-2 p-1"></img>
                     <p className="text-center poppins align-middle  px-2  ">{entrada != null||''||undefined ? formatarTempo(entrada):''}</p>
-                </div> : ''
+                </div>
+                </> : ''
                 }
                
                 {
                     //Se ultimo ponto for diferente de nulo, exibe a saida
                     ultimo_ponto.up_hora !== null||''||undefined ? 
-                    <>{
+                    <>
+                    <p className="poppins text-blue-900 mt-2">Ultimo Ponto </p>
+                    {
                         ultimo_ponto.tipo_ponto == 'SAIDA'?  <>
                         <div className={`a flex items-center bg-primaryred rounded-xl text-center w-64 justify-between mx-auto px-2 my-2`}>
                             <img src={'./setaesq.png'}  className="w-8 h-8 m-2 p-1"></img>

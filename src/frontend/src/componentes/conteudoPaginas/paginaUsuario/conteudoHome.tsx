@@ -21,7 +21,7 @@ export default  function ConteudoHome() {
         const up_tipo = pontos.length >=2 ? (pontos[pontos.length - 1].tipo_ponto) :''
     const ultimoPonto = pontos.length >=2 ? {"tipo_ponto":up_tipo,up_hora} : {'tipo_ponto':null, up_hora: null}
     const banco_de_horas = (userData.jornada_trabalho.banco_de_horas)
-    console.log('entrada',userData.jornada_atual.pontos_marcados.length);
+    
     
     
     

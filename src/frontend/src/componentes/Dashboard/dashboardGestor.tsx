@@ -6,10 +6,10 @@ import GraficoDashboard from "../graficoDashboard/graficoDashboard";
 type params = {
     page: number;
     size: number;
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
     status_turno: string;
-    id_colaborador: string;
+  
 }
 
 export default function DashboardGestor() {
@@ -23,25 +23,27 @@ export default function DashboardGestor() {
                 let hoje = new Date();
                 let umDiaAtras = new Date(hoje);
                 const params: params = {
-                    page: 1,
+                    page: 0,
                     size: 1000,
-                    startDate: umDiaAtras,// 1 dia atrás
-                    endDate: hoje,
-                    status_turno: "",
-                    id_colaborador: "",
+                    startDate: umDiaAtras.toISOString(),// 1 dia atrás
+                    endDate: hoje.toISOString(),
+                    status_turno: ""
+                    
                 };
+               
+                
                 try {
                     const response = await api.get("sessao/usuario/todos", {
                         params: {
                             page: params.page,
                             size: params.size,
-                            startDate: params.startDate.toISOString(),
-                            endDate: params.endDate.toISOString(),
+                            startDate: params.startDate,
+                            endDate: params.endDate,
                             status_turno: params.status_turno,
-                            id_colaborador: params.id_colaborador,
+                            
                         },
                     });
-                    console.log("Data fetched:", response.data);
+                    
                     setData(response.data.content);;
 
                 } catch (error) {
@@ -55,16 +57,13 @@ export default function DashboardGestor() {
 
         fetchData();
     }, [])
-    let Trabalhando = 0;
-    let Atrasados = 0;
-    let HoraExtra = 0;
-    let SaidaAntecipada = 0;
+    
 
     const trabalhando = data.filter((item: any) => item.status === "TRABALHANDO");
     const trabalhandoCount = trabalhando.length;
     const ausentes = data.filter((item: any) => item.status === "NAO_COMPARECEU");
     const ausentesCount = ausentes.length;
-    console.log(data);
+    
 
     return (
         <div className="flex justify-center">

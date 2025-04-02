@@ -66,7 +66,7 @@ const EditarFuncionario = () => {
                     dailyHours: Number(employee.dailyHours) || 8,
                     birthDate: employee.birthDate || ''
                 });
-                console.log('Dados do funcionário:', employee);
+                
                 
                 setInitialDataLoaded(true);
             } catch (err) {
@@ -127,9 +127,9 @@ const EditarFuncionario = () => {
 
             await updateEmployee(id, payload);
             setSubmitStatus('success');
-            
-            setTimeout(() => navigate('/colaboradores'));
             recarregar();
+            setTimeout(() => navigate('/colaboradores'),0);
+           
         } catch (err) {
             setSubmitStatus('error');
             console.error("Erro ao atualizar:", err);
@@ -260,7 +260,7 @@ const EditarFuncionario = () => {
                                 value={formData.bankOfHours}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
-                                min="0"
+                                
                                 step="0.5"
                             />
                         </div>

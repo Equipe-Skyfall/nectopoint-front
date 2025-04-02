@@ -1,6 +1,5 @@
 import DashboardGestor from "../../Dashboard/dashboardGestor";
 import Data from "../../hooks/data";
-import { FaBell } from "react-icons/fa";
 
 export default function homeGestor() {
 
