@@ -2,10 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
 import PaginaUsuario from "./paginas/homeFuncionario/paginaUsuario";
 import Solicitacoes from "./paginas/solicitacoes/solicitacoes";
-
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import PaginaGestor from "./paginas/homeGestor/paginaGestor";
 import Login from "./paginas/login/login";
 import { AuthProvider } from "./Provider/AuthProvider";

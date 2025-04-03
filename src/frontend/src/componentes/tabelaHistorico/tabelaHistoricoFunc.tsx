@@ -1,17 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-
-interface HistoricoJornada {
-    data: string;
-    inicioTurno: string;
-    fimTurno: string;
-    statusTurno: string;
-    pontos: PontoFormatado[];
-}
-
-interface PontoFormatado {
-    tipo: string;
-    horario: string;
-}
+import { HistoricoJornada, PontoFormatado } from '../../interfaces/interfaceHistoricoFunc';
 
 export default function ConteudoHistoricoFunc() {
     const [historicoJornadas, setHistoricoJornadas] = useState<HistoricoJornada[]>([]);
