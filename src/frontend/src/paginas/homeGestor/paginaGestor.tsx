@@ -1,15 +1,16 @@
 
 import DashboardGestor from "../../componentes/conteudoPaginas/paginaGestor/homeGestor";
+import NavBar from "../../componentes/navbar/navbar";
 
 
-import NavBarGestor from "../../componentes/navbar/navbargestor";
+
 
 
 export default function PaginaGestor() {
 
     return (
         <div className="overflow-y-hidden">
-            <NavBarGestor /> 
+            <NavBar/>
             <DashboardGestor/>
         </div>
     );

@@ -1,11 +1,11 @@
 import SolicitacoesGestor from "../../componentes/conteudoPaginas/paginaGestor/solicitacoesGestor";
-import NavBarGestor from "../../componentes/navbar/navbargestor";
+import NavBar from "../../componentes/navbar/navbar";
 
 export default function SoliGestor() {
 
     return (
         <div className="SolicitacoesGestor">
-            <NavBarGestor />
+            <NavBar/>
             <SolicitacoesGestor />
         </div>
     );

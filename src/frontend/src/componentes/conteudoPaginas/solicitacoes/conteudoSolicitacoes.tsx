@@ -244,9 +244,9 @@ const ConteudoSolicitacoes: React.FC = () => {
   }, [formState, handleDateChange]);
 
   return (
-    <div className="flex flex-col md:flex-row pt-12">
+    <div className="flex flex-col md:flex-row pt-24">
      
-      <div className="hidden md:flex flex-col items-center justify-center w-1/3 p-8 -mt-8">
+      <div className="hidden md:flex flex-col items-center justify-center w-1/3 p-8 mt-8">
         <FaBell className="w-32 h-32 mb-12 text-gray-600" />
         <h1 className="text-4xl font-bold mb-12 text-blue-600">Solicitações</h1>
         <p className="text-center text-xl font-semibold text-gray-600">
@@ -256,7 +256,7 @@ const ConteudoSolicitacoes: React.FC = () => {
       </div>
 
 
-      <div className="w-full md:w-2/3 p-4 flex items-center justify-center h-[calc(100vh-4rem)]">
+      <div className="w-full md:w-2/3 p-4 flex items-center justify-center ">
         <div className="w-full max-w-2xl">
           <h1 className="text-2xl font-bold mb-4 md:hidden">Solicitações</h1>
 

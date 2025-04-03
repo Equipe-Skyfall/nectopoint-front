@@ -1,4 +1,5 @@
-import NavBarGestor from "../../componentes/navbar/navbargestor";
+import NavBar from "../../componentes/navbar/navbar";
+
 import ConteudoHistorico from "../../componentes/tabelaHistorico/tabelaHistorico";
 
 
@@ -8,7 +9,7 @@ export default function Historico() {
 
     return (
         <div className="Historico">
-            <NavBarGestor/>
+            <NavBar/>
             <ConteudoHistorico />
         </div>
     );
