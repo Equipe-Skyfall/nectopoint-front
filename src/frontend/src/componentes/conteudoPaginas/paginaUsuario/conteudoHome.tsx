@@ -42,15 +42,15 @@ export default  function ConteudoHome() {
         <>
             <div className="overflow-hidden ">
 
-                <div className="flex text-white flex-col text-center self-center items-center justify-center my-auto top-[80px] left-0 w-full mx-auto absolute"> {/* 'bg-midnight' e 'text-white' são cores customizadas */}
+                <div className="flex text-white flex-col text-center self-center items-center justify-center my-auto top-[100px] left-0 w-full mx-auto absolute"> {/* 'bg-midnight' e 'text-white' são cores customizadas */}
                     
                     <Data />
                     
                     <DisplayTempo entrada={entrada} ultimo_ponto={ultimoPonto} intervalo={userData.jornada_atual.tirou_almoco} banco_de_horas={banco_de_horas}></DisplayTempo>
                           
 
-                    <div className="flex flex-col mx-auto mt-10  w-58 ">
-                                <button className="bg-blue-600 hover:bg-blue-800 transition-colors duration-300 pointer ease-in rounded-lg p-3 mx-auto mt-10 w-64 px-10 text-center poppins" onClick={() => {
+                    <div className="flex flex-col mx-auto mt-2 w-58 ">
+                                <button className="bg-blue-600 hover:bg-blue-800 transition-colors duration-300 pointer ease-in rounded-lg p-3 mx-auto mt-2 w-64 px-10 text-center poppins" onClick={() => {
                                     baterPonto();
                                 }
                                 }>

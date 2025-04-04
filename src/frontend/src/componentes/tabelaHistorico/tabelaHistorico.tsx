@@ -1,18 +1,21 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useHistorico from '../hooks/useHistorico';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ConteudoHistorico() {
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [itensPorPagina, setItensPorPagina] = useState(12);
+    const queryClient = useQueryClient();
 
     //Ajusta o número de itens por página com base na largura da tela (9 para telas grandes, 12 para telas pequenas). Esta função é usada para responsividade.
     const atualizarItensPorPagina = useCallback(() => {
-        if (window.innerWidth >= 640) {
-            setItensPorPagina(9);
-        } else {
-            setItensPorPagina(12);
+        const novosItens = window.innerWidth >= 640 ? 9 : 9;
+        if (novosItens !== itensPorPagina) {
+            setItensPorPagina(novosItens);
+            // Invalida a query quando os itens por página mudam
+            queryClient.invalidateQueries({ queryKey: ['historico'] });
         }
-    }, []);
+    }, [itensPorPagina, queryClient]);
     //Executa o atualizarItensPorPagina sempre que a largura da tela mudar
     useEffect(() => {
         atualizarItensPorPagina();
@@ -23,12 +26,13 @@ export default function ConteudoHistorico() {
     }, [atualizarItensPorPagina]);
 
     //useMemo memoriza os parametros (page e size) para otimizar o hook, evita re-renderizações a cada mudança
-    const params = useMemo(() => ({
+    const params = {
         page: paginaAtual,
         size: itensPorPagina,
-    }), [paginaAtual, itensPorPagina]);
+    };
 
-    const { historico, erro, totalPaginas } = useHistorico(params); //aqui estou passando o params para o useHistorico
+
+    const { historico, erro, totalPaginas, isLoading } = useHistorico(params); //aqui estou passando o params para o useHistorico
 
     //Essa const formata uma string de data e hora para o formato local ("pt-BR") e vai retornar data invalida se não puder ser convertida
     const formatarDataHora = useCallback((dataHora: string) => {
@@ -59,9 +63,8 @@ export default function ConteudoHistorico() {
 
     //Obtém e formata a data e hora do ultimo ponto marcado no turno. Se não tiver nada, retorna N/A
     const obterFimTurno = useCallback((pontos_marcados: { data_hora: string }[]) => {
-        if (pontos_marcados && pontos_marcados.length > 0) {
-            const ultimoPonto = pontos_marcados[pontos_marcados.length - 1];
-            return formatarDataHora(ultimoPonto.data_hora);
+        if (pontos_marcados?.length > 0) {
+            return formatarDataHora(pontos_marcados[pontos_marcados.length - 1].data_hora);
         }
         return 'N/A';
     }, [formatarDataHora]);
@@ -84,7 +87,9 @@ export default function ConteudoHistorico() {
         <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
             <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Pontos</h2>
 
-            {erro ? (
+            {isLoading ? (
+                <p>Carregando...</p>
+            ) : erro ? (
                 <p className="text-red-600">{erro}</p>
             ) : historico.length === 0 ? (
                 <p>Nenhum registro encontrado.</p>

@@ -1,12 +1,12 @@
-import NavBarGestor from "../../componentes/navbar/navbargestor";
 
 import FuncionariosGestor from "../../componentes/conteudoPaginas/colaboradores/funcionarios"
+import NavBar from "../../componentes/navbar/navbar";
 
 export default function Funcionarios() {
 
     return (
         <div className="overflow-y-hidden">
-            <NavBarGestor />
+            <NavBar/>
             <FuncionariosGestor />
         </div>
     );

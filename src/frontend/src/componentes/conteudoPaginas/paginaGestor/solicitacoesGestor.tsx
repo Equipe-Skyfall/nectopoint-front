@@ -177,7 +177,7 @@ export default function SolicitacoesGestor() {
 
   return (
     <div className="p-6 flex flex-col items-center poppins">
-      <div className="w-full max-w-3xl mt-16 z-20 relative">
+      <div className="w-full max-w-3xl mt-16 z-20 ">
         <h1 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Solicitações</h1>
 
         <div className="flex flex-col gap-6">
