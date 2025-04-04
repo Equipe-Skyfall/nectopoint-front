@@ -14,10 +14,12 @@ import HistoricoFunc from "./paginas/historico/historicoFunc";
 import SolicitacoesGestor from "./paginas/solicitacoes/solicitacoesGestor";
 import Funcionarios from "./paginas/gestorAdministraFuncionario/gestorFuncionarios";
 import EditarFunc from "./componentes/conteudoPaginas/colaboradores/editarFunc";
+import SemLogin from "./paginas/semLogin/semLogin";
 
 
 function App() {
   const queryClient = new QueryClient()
+
 
   return (
     <>
@@ -36,26 +38,20 @@ function App() {
               path="*"
               element={
                 <>
-                  <Routes>
-                    {/* Usaremos 'RotasPrivadas' para validar se o usuário está logado ou não
-                        antes de mostrar as páginas do app */}
-                    {/* <Route element={<RotasPrivadas />}> */}
-                    <Route path="home" element={<PaginaUsuario />} />
-                    <Route path="solicitacoes" element={<Solicitacoes />} />
-                    <Route path="gestor-page" element={<PaginaGestor />} />
-                    <Route path="historico-gestor" element={<Historico/>}/>
-                    <Route path="historico-func" element={<HistoricoFunc/>}/>
-                    <Route path="colaboradores" element={<Funcionarios />} />
-                    <Route path="/editar/:id" element={<EditarFunc />} />
-                    <Route path="cadastrar" element={<CadastrarFuncionario/>}/>
-                    <Route path="bater-ponto" element={<PaginaUsuario />}/>
-
-                    <Route path="solicitacoes-empresa" element={<SolicitacoesGestor />}/>
-
-                    <Route path="teste" element={<Teste />} />
-                    {/* </Route> */}
-                  </Routes>
-                </>
+                <Routes>
+                  <Route path="home" element={<SemLogin><PaginaUsuario /></SemLogin>} />
+                  <Route path="solicitacoes" element={<SemLogin><Solicitacoes /></SemLogin>} />
+                  <Route path="gestor-page" element={<SemLogin><PaginaGestor /></SemLogin>} />
+                  <Route path="historico-gestor" element={<SemLogin><Historico /></SemLogin>} />
+                  <Route path="historico-func" element={<SemLogin><HistoricoFunc /></SemLogin>} />
+                  <Route path="colaboradores" element={<SemLogin><Funcionarios /></SemLogin>} />
+                  <Route path="/editar/:id" element={<SemLogin><EditarFunc /></SemLogin>} />
+                  <Route path="cadastrar" element={<SemLogin><CadastrarFuncionario /></SemLogin>} />
+                  <Route path="bater-ponto" element={<SemLogin><PaginaUsuario /></SemLogin>} />
+                  <Route path="solicitacoes-empresa" element={<SemLogin><SolicitacoesGestor /></SemLogin>} />
+                  <Route path="teste" element={<SemLogin><Teste /></SemLogin>} />
+                </Routes>
+              </>
               }
             />
           </Routes>
