@@ -4,7 +4,6 @@ import useSolicitacoes from '../../hooks/useSolicitacoes';
 import { FaArrowRight, FaCheck } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
 
-
 type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO';
 type AbsenceReason = 'ATESTADO_MEDICO' | null;
 
@@ -56,14 +55,13 @@ interface ResponsePayload {
   ticket: Solicitacao;
 }
 
-
 export default function SolicitacoesGestor() {
-
   const [modalAberto, setModalAberto] = useState<Solicitacao | null>(null);
   const [justificativa, setJustificativa] = useState<string>('');
   const [mostrarJustificativa, setMostrarJustificativa] = useState<boolean>(false);
   const [pagina, setPagina] = useState<number>(0);
   const [filtroStatus, setFiltroStatus] = useState<TicketStatus[]>(['EM_AGUARDO']);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   const itensPorPagina = 5;
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -80,10 +78,41 @@ export default function SolicitacoesGestor() {
     filtroStatus
   );
 
+  // Efeito para controlar o scroll da página quando o modal abre/fecha
+  useEffect(() => {
+    if (modalAberto) {
+      // Salva a posição do scroll e desabilita
+      setScrollPosition(window.scrollY);
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollPosition}px`;
+      document.body.style.width = '100%';
+    } else {
+      // Restaura o scroll
+      document.body.style.overflow = 'auto';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollPosition);
+    }
+
+    return () => {
+      // Limpeza para garantir que o scroll seja restaurado
+      document.body.style.overflow = 'auto';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      if (scrollPosition) {
+        window.scrollTo(0, scrollPosition);
+      }
+    };
+  }, [modalAberto, scrollPosition]);
+
   const totalPaginas = solicitacoes?.totalPages || 1;
   const paginaAtual = solicitacoes?.number || 0;
   const temProximaPagina = paginaAtual < totalPaginas - 1;
   const temPaginaAnterior = paginaAtual > 0;
+
   const formatarStatus = useCallback((status: string): string => {
     return status.replace(/_/g, ' ');
   }, []);
@@ -107,7 +136,6 @@ export default function SolicitacoesGestor() {
   const truncarTexto = useCallback((texto: string, limite: number): string => {
     return texto.length > limite ? texto.substring(0, limite) + "..." : texto;
   }, []);
-
 
   const enviarResposta = useCallback(async (status_novo: TicketStatus) => {
     if (!modalAberto) return;
@@ -153,7 +181,6 @@ export default function SolicitacoesGestor() {
     setPagina(0);
   }, []);
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -174,12 +201,10 @@ export default function SolicitacoesGestor() {
     };
   }, [modalAberto]);
 
-
   return (
-    <div className="p-6 flex flex-col items-center poppins">
-      <div className="w-full max-w-3xl mt-16 z-20 relative">
-        <h1 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Solicitações</h1>
-
+    <div className="p-6 flex flex-col items-center poppins mt-16">
+      <div className="w-full max-w-3xl z-10 relative">
+        <h1 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center">Solicitações</h1>
         <div className="flex flex-col gap-6">
           {loading ? (
             <p>Carregando...</p>
@@ -216,8 +241,8 @@ export default function SolicitacoesGestor() {
       <div className="mt-6 flex items-center gap-4">
         <button
           className={`px-4 py-2 rounded-lg ${!temPaginaAnterior
-              ? "bg-gray-300 text-gray-500 poppins cursor-not-allowed"
-              : "bg-blue-600 poppins text-white hover:bg-blue-800"
+            ? "bg-gray-300 text-gray-500 poppins cursor-not-allowed"
+            : "bg-blue-600 poppins text-white hover:bg-blue-800"
             }`}
           onClick={() => setPagina(p => Math.max(p - 1, 0))}
           disabled={!temPaginaAnterior}
@@ -229,8 +254,8 @@ export default function SolicitacoesGestor() {
         </span>
         <button
           className={`px-4 py-2 rounded-lg ${!temProximaPagina
-              ? "poppins bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "poppins bg-blue-600 text-white hover:bg-blue-800"
+            ? "poppins bg-gray-300 text-gray-500 cursor-not-allowed"
+            : "poppins bg-blue-600 text-white hover:bg-blue-800"
             }`}
           onClick={() => setPagina(p => Math.min(p + 1, totalPaginas - 1))}
           disabled={!temProximaPagina}
