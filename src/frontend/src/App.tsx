@@ -14,7 +14,7 @@ import HistoricoFunc from "./paginas/historico/historicoFunc";
 import SolicitacoesGestor from "./paginas/solicitacoes/solicitacoesGestor";
 import Funcionarios from "./paginas/gestorAdministraFuncionario/gestorFuncionarios";
 import EditarFunc from "./componentes/conteudoPaginas/colaboradores/editarFunc";
-import SemLogin from "./paginas/semLogin/semLogin";
+import SemLogin from "./paginas/checarLogin/checarLogin";
 
 
 function App() {
@@ -39,17 +39,17 @@ function App() {
               element={
                 <>
                 <Routes>
-                  <Route path="home" element={<SemLogin><PaginaUsuario /></SemLogin>} />
-                  <Route path="solicitacoes" element={<SemLogin><Solicitacoes /></SemLogin>} />
-                  <Route path="gestor-page" element={<SemLogin><PaginaGestor /></SemLogin>} />
-                  <Route path="historico-gestor" element={<SemLogin><Historico /></SemLogin>} />
-                  <Route path="historico-func" element={<SemLogin><HistoricoFunc /></SemLogin>} />
-                  <Route path="colaboradores" element={<SemLogin><Funcionarios /></SemLogin>} />
-                  <Route path="/editar/:id" element={<SemLogin><EditarFunc /></SemLogin>} />
-                  <Route path="cadastrar" element={<SemLogin><CadastrarFuncionario /></SemLogin>} />
-                  <Route path="bater-ponto" element={<SemLogin><PaginaUsuario /></SemLogin>} />
-                  <Route path="solicitacoes-empresa" element={<SemLogin><SolicitacoesGestor /></SemLogin>} />
-                  <Route path="teste" element={<SemLogin><Teste /></SemLogin>} />
+                  <Route path="home" element={<SemLogin cargo="COLABORADOR"><PaginaUsuario /></SemLogin>} />
+                  <Route path="solicitacoes" element={<SemLogin cargo="COLABORADOR"><Solicitacoes /></SemLogin>} />
+                  <Route path="gestor-page" element={<SemLogin cargo="GERENTE"><PaginaGestor /></SemLogin>} />
+                  <Route path="historico-gestor" element={<SemLogin cargo="GERENTE"><Historico /></SemLogin>} />
+                  <Route path="historico-func" element={<SemLogin cargo="COLABORADOR"><HistoricoFunc /></SemLogin>} />
+                  <Route path="colaboradores" element={<SemLogin cargo="GERENTE"><Funcionarios /></SemLogin>} />
+                  <Route path="/editar/:id" element={<SemLogin cargo="GERENTE"><EditarFunc /></SemLogin>} />
+                  <Route path="cadastrar" element={<SemLogin cargo="GERENTE"><CadastrarFuncionario /></SemLogin>} />
+                  <Route path="bater-ponto" element={<SemLogin cargo={''} ><PaginaUsuario /></SemLogin>} />
+                  <Route path="solicitacoes-empresa" element={<SemLogin cargo="GERENTE"><SolicitacoesGestor /></SemLogin>} />
+                  <Route path="teste" element={<SemLogin cargo=""><Teste /></SemLogin>} />
                 </Routes>
               </>
               }
