@@ -114,6 +114,7 @@ export default function ConteudoLogin() {
                     onClick={handleLogin}
                     disabled={isLoading}
                     className="w-32 p-3 my-4 rounded-full bg-blue-600 text-center poppins bg"
+                    type="submit"
                 >
                     {isLoading ? "Carregando..." : "Acessar"}
                 </button>

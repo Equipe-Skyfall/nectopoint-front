@@ -56,8 +56,11 @@ export default function NavBar() {
     // Função para confirmar o logout
     const confirmLogout = () => {
         setShowLogoutModal(false);
-
+        localStorage.clear();
+        sessionStorage.clear();
         api.post('/usuario/logout')
+        
+        
         navigate("/");
     };
 
