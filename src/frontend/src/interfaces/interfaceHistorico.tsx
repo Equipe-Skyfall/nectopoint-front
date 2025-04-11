@@ -8,6 +8,7 @@ export interface HistoricoParams {
     endDate?: string;
     status_turno?: string; 
     id_colaborador?: number;
+    nome_colaborador?: string;
 }
 
 // Define a estrutura de cada registro de ponto retornado pela API

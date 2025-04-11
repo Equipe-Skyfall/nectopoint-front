@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import useHistorico from '../hooks/useHistorico';
 import { useQueryClient } from '@tanstack/react-query';
+import { FaSearch } from 'react-icons/fa';
 
 export default function ConteudoHistorico() {
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [itensPorPagina, setItensPorPagina] = useState(12);
+    const [searchQuery, setSearchQuery] = useState('');
     const queryClient = useQueryClient();
 
     //Ajusta o número de itens por página com base na largura da tela (9 para telas grandes, 12 para telas pequenas). Esta função é usada para responsividade.
@@ -24,12 +26,18 @@ export default function ConteudoHistorico() {
             window.removeEventListener('resize', atualizarItensPorPagina);
         };
     }, [atualizarItensPorPagina]);
-
-    //useMemo memoriza os parametros (page e size) para otimizar o hook, evita re-renderizações a cada mudança
+    useEffect(() => {
+        setPaginaAtual(0);
+    }, [searchQuery]);
+    
     const params = {
         page: paginaAtual,
         size: itensPorPagina,
+        nome_colaborador: searchQuery
     };
+    useEffect(() => {
+        console.log('Params atual:', params); // Debug dos parâmetros
+    }, [params]);
 
 
     const { historico, erro, totalPaginas, isLoading } = useHistorico(params); //aqui estou passando o params para o useHistorico
@@ -84,15 +92,28 @@ export default function ConteudoHistorico() {
     }, [paginaAtual]);
 
     return (
-        <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
+        <div className="flex flex-col items-center justify-center p-4  my-8 w-full overflow-y-hidden overflow-x-hidden">
             <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Pontos</h2>
-
+            <div className="relative mb-5">
+                {/* Input de pesquisa que realiza o search do funcionario basiado no seu Nome */}
+                <input
+                    type="text"
+                    placeholder="Digite o Nome do Colaborador..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-4 pr-10 sm:pr-24  py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    maxLength={255}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <FaSearch className="text-gray-400" />
+                </div>
+            </div>
             {isLoading ? (
                 <p>Carregando...</p>
             ) : erro ? (
                 <p className="text-red-600">{erro}</p>
             ) : historico.length === 0 ? (
-                <p>Nenhum registro encontrado.</p>
+                <p>{searchQuery ? 'Nenhum registro encontrado com este nome' : 'Nenhum registro encontrado'}</p>
             ) : (
                 <>
                     <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden shadow-md">
@@ -127,12 +148,12 @@ export default function ConteudoHistorico() {
 
                     <div className="mt-6 flex items-center gap-4">
                         <button
-                        // Faço uso do retrocederPagina e ainda dou um disable para que o botão não seja clicavel caso seja === 0
+                            // Faço uso do retrocederPagina e ainda dou um disable para que o botão não seja clicavel caso seja === 0
                             onClick={retrocederPagina}
                             disabled={paginaAtual === 0}
                             className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === 0
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-800"
                                 }`}
                         >
                             Anterior
@@ -143,12 +164,12 @@ export default function ConteudoHistorico() {
                         </span>
 
                         <button
-                        // Faço uso do avancarPagina e ainda dou um disable para que o botão não seja clicavel caso seja === totalPaginas - 1
+                            // Faço uso do avancarPagina e ainda dou um disable para que o botão não seja clicavel caso seja === totalPaginas - 1
                             onClick={avancarPagina}
                             disabled={paginaAtual === totalPaginas - 1}
                             className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === totalPaginas - 1
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-800"
                                 }`}
                         >
                             Próxima

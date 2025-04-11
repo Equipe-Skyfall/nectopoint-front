@@ -5,6 +5,16 @@ import { FaUser, FaSearch, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp }
 import api from '../../hooks/api';
 import { toast } from 'react-toastify';
 
+const traduzirJornada = (jornada: string) => {
+    switch (jornada) {
+        case 'CINCO_X_DOIS':
+            return '5 x 2';
+        case 'SEIS_X_UM':
+            return '6 x 1';
+        default:
+            return jornada; // Caso não seja nenhum dos valores esperados
+    }
+};
 const EmployeeList = () => {
     const {
         filteredEmployees,
@@ -18,7 +28,7 @@ const EmployeeList = () => {
         setCurrentPage,
         //Busca e gerencia a lista de colaboradores, pesquisa, paginação e estados de carregamento e erro. 
     } = useColaborador();
-    
+
     //Função feita para formatar a data de nascimento no formato DD/MM/YYYY
     const formatarDataNascimento = (data: string) => {
         if (!data) return 'N/A';
@@ -67,7 +77,7 @@ const EmployeeList = () => {
         try {
             await api.delete(`/usuario/${id}`);
             toast.success('Colaborador excluído com sucesso!');
-            refreshEmployees(); 
+            refreshEmployees();
 
             if (expandedEmployee === id) {
                 setExpandedEmployee(null);
@@ -147,7 +157,7 @@ const EmployeeList = () => {
                                         <div className="bg-blue-100 p-3 rounded-full flex-shrink-0 mr-4">
                                             <FaUser className="text-blue-600 text-xl" />
                                         </div>
-                                        
+
                                         {/* Exibe os dados do colaborador, nomem, id e cpf */}
                                         <div className="text-left">
                                             <h3 className="text-lg font-semibold text-gray-800">{emp.nome}</h3>
@@ -174,8 +184,8 @@ const EmployeeList = () => {
                                             onClick={(e) => handleDelete(emp.id_colaborador, e)}
                                             disabled={isDeleting === emp.id_colaborador}
                                             className={`flex items-center px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-300 ${isDeleting === emp.id_colaborador
-                                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                    : "text-red-600 hover:text-red-800 hover:bg-red-50"
+                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                : "text-red-600 hover:text-red-800 hover:bg-red-50"
                                                 }`}
                                             title="Excluir"
                                         >
@@ -235,7 +245,8 @@ const EmployeeList = () => {
                                                     </div>
                                                     <div>
                                                         <p className="text-xs text-gray-500">Jornada</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.workJourneyType || 'N/A'}</p>
+                                                        <p className="text-sm font-medium">
+                                                            {traduzirJornada(employeeDetails[emp.id_colaborador]?.workJourneyType) || 'N/A'}</p>
                                                     </div>
                                                 </div>
                                             </div>
