@@ -1,24 +1,27 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import useHistorico from '../hooks/useHistorico';
 import { useQueryClient } from '@tanstack/react-query';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt } from 'react-icons/fa';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default function ConteudoHistorico() {
     const [paginaAtual, setPaginaAtual] = useState(0);
-    const [itensPorPagina, setItensPorPagina] = useState(12);
+    const [itensPorPagina, setItensPorPagina] = useState(9);
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusTurno, setStatusTurno] = useState<string>('');
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
     const queryClient = useQueryClient();
 
-    //Ajusta o número de itens por página com base na largura da tela (9 para telas grandes, 12 para telas pequenas). Esta função é usada para responsividade.
     const atualizarItensPorPagina = useCallback(() => {
         const novosItens = window.innerWidth >= 640 ? 9 : 9;
         if (novosItens !== itensPorPagina) {
             setItensPorPagina(novosItens);
-            // Invalida a query quando os itens por página mudam
             queryClient.invalidateQueries({ queryKey: ['historico'] });
         }
     }, [itensPorPagina, queryClient]);
-    //Executa o atualizarItensPorPagina sempre que a largura da tela mudar
+
     useEffect(() => {
         atualizarItensPorPagina();
         window.addEventListener('resize', atualizarItensPorPagina);
@@ -26,23 +29,27 @@ export default function ConteudoHistorico() {
             window.removeEventListener('resize', atualizarItensPorPagina);
         };
     }, [atualizarItensPorPagina]);
+
     useEffect(() => {
         setPaginaAtual(0);
-    }, [searchQuery]);
-    
+    }, [searchQuery, statusTurno, startDate, endDate]);
+
     const params = {
         page: paginaAtual,
         size: itensPorPagina,
-        nome_colaborador: searchQuery
+        nome_colaborador: searchQuery,
+        lista_status_turno: statusTurno,
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString()
     };
+
     useEffect(() => {
-        console.log('Params atual:', params); // Debug dos parâmetros
+        console.log('Params atual:', params);
     }, [params]);
 
+    const { historico, erro, totalPaginas, isLoading } = useHistorico(params);
+    
 
-    const { historico, erro, totalPaginas, isLoading } = useHistorico(params); //aqui estou passando o params para o useHistorico
-
-    //Essa const formata uma string de data e hora para o formato local ("pt-BR") e vai retornar data invalida se não puder ser convertida
     const formatarDataHora = useCallback((dataHora: string) => {
         const data = new Date(dataHora);
         if (isNaN(data.getTime())) {
@@ -51,7 +58,6 @@ export default function ConteudoHistorico() {
         return data.toLocaleString('pt-BR');
     }, []);
 
-    // Traduz o status do turno (por exemplo, "TRABALHANDO" para "Trabalhando").
     const traduzirStatusTurno = useCallback((status: string) => {
         switch (status) {
             case 'TRABALHANDO':
@@ -69,7 +75,6 @@ export default function ConteudoHistorico() {
         }
     }, []);
 
-    //Obtém e formata a data e hora do ultimo ponto marcado no turno. Se não tiver nada, retorna N/A
     const obterFimTurno = useCallback((pontos_marcados: { data_hora: string }[]) => {
         if (pontos_marcados?.length > 0) {
             return formatarDataHora(pontos_marcados[pontos_marcados.length - 1].data_hora);
@@ -77,43 +82,111 @@ export default function ConteudoHistorico() {
         return 'N/A';
     }, [formatarDataHora]);
 
-    //Incrementa o paginaAtual para exibir a proxima pagina
     const avancarPagina = useCallback(() => {
         if (paginaAtual < totalPaginas - 1) {
             setPaginaAtual(paginaAtual + 1);
         }
     }, [paginaAtual, totalPaginas]);
 
-    //Decrementa o paginaAtual para exibir a pagina anterior
     const retrocederPagina = useCallback(() => {
         if (paginaAtual > 0) {
             setPaginaAtual(paginaAtual - 1);
         }
     }, [paginaAtual]);
 
+    const limparFiltros = useCallback(() => {
+        setSearchQuery('');
+        setStatusTurno('');
+        setStartDate(null);
+        setEndDate(null);
+        setPaginaAtual(0);
+    }, []);
+
     return (
-        <div className="flex flex-col items-center justify-center p-4  my-8 w-full overflow-y-hidden overflow-x-hidden">
+        <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
             <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Pontos</h2>
-            <div className="relative mb-5">
-                {/* Input de pesquisa que realiza o search do funcionario basiado no seu Nome */}
-                <input
-                    type="text"
-                    placeholder="Digite o Nome do Colaborador..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-4 pr-10 sm:pr-24  py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    maxLength={255}
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <FaSearch className="text-gray-400" />
+
+            {/* Filtros */}
+            <div className="w-full max-w-4xl mb-5 grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Filtro por nome */}
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Nome do Colaborador"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-4 pr-10 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        maxLength={255}
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <FaSearch className="text-gray-400" />
+                    </div>
+                </div>
+
+                {/* Filtro por status */}
+                <select
+                    value={statusTurno}
+                    onChange={(e) => setStatusTurno(e.target.value)}
+                    className="p-2.5 w-full border border-gray-300 text-center rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Todos os status</option>
+                    <option value="TRABALHANDO">Trabalhando</option>
+                    <option value="INTERVALO">Intervalo</option>
+                    <option value="ENCERRADO">Encerrado</option>
+                    <option value="NAO_COMPARECEU">Não Compareceu</option>
+                    <option value="IRREGULAR">Irregular</option>
+                </select>
+
+                {/* Filtro por data inicial */}
+                <div className="relative">
+                    <DatePicker
+                        selected={startDate}
+                        onChange={(date) => setStartDate(date)}
+                        selectsStart
+                        startDate={startDate}
+                        endDate={endDate}
+                        placeholderText="Data inicial"
+                        className="sm:pl-5 sm:pr-5 pl-12 pr-12 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        dateFormat="dd/MM/yyyy"
+                    />
+                    <div className="absolute inset-y-0 sm:right-0 right-1 pr-3 flex items-center pointer-events-none">
+                        <FaCalendarAlt className="text-gray-400" />
+                    </div>
+                </div>
+
+                {/* Filtro por data final */}
+                <div className="relative">
+                    <DatePicker
+                        selected={endDate}
+                        onChange={(date) => setEndDate(date)}
+                        selectsEnd
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        placeholderText="Data final"
+                        className="sm:pl-5 sm:pr-5 pl-12 pr-12 py-2.5 w-full text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        dateFormat="dd/MM/yyyy"
+                    />
+                    <div className="absolute inset-y-0 sm:right-0 right-1 pr-3 flex items-center pointer-events-none">
+                        <FaCalendarAlt className="text-gray-400" />
+                    </div>
                 </div>
             </div>
+
+            {/* Botão Limpar Filtros */}
+            <button
+                onClick={limparFiltros}
+                className="mb-5 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition poppins"
+            >
+                Limpar Filtros
+            </button>
+
             {isLoading ? (
                 <p>Carregando...</p>
             ) : erro ? (
                 <p className="text-red-600">{erro}</p>
             ) : historico.length === 0 ? (
-                <p>{searchQuery ? 'Nenhum registro encontrado com este nome' : 'Nenhum registro encontrado'}</p>
+                <p className='pb-96'>Nenhum registro encontrado com os filtros atuais</p>
             ) : (
                 <>
                     <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden shadow-md">

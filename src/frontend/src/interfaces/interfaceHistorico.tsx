@@ -6,7 +6,7 @@ export interface HistoricoParams {
     size?: number;
     startDate?: string; 
     endDate?: string;
-    status_turno?: string; 
+    lista_status_turno?: string; 
     id_colaborador?: number;
     nome_colaborador?: string;
 }

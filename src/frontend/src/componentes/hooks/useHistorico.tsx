@@ -18,8 +18,7 @@ const useHistorico = (params: HistoricoParams) => {
                     size: params.size,
                     startDate: startDateISO,
                     endDate: endDateISO,
-                    status_turno: params.status_turno,
-                    id_colaborador: params.id_colaborador,
+                    lista_status_turno: params.lista_status_turno,
                     nome_colaborador: params.nome_colaborador,
                 },
             });
