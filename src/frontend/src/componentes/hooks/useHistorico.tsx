@@ -8,6 +8,7 @@ const useHistorico = (params: HistoricoParams) => {
     const { data, error, isLoading } = useQuery<ApiResponse, Error>({
         queryKey,
         queryFn: async () => {
+            console.log('Enviando para API:', params); 
             const startDateISO = params.startDate ? new Date(params.startDate).toISOString() : undefined;
             const endDateISO = params.endDate ? new Date(params.endDate).toISOString() : undefined;
 
@@ -17,10 +18,11 @@ const useHistorico = (params: HistoricoParams) => {
                     size: params.size,
                     startDate: startDateISO,
                     endDate: endDateISO,
-                    status_turno: params.status_turno,
-                    id_colaborador: params.id_colaborador,
+                    lista_status_turno: params.lista_status_turno,
+                    nome_colaborador: params.nome_colaborador,
                 },
             });
+            console.log('Resposta da API:', response)
 
             if (response.data && Array.isArray(response.data.content)) {
                 // Ordena os registros por data decrescente
