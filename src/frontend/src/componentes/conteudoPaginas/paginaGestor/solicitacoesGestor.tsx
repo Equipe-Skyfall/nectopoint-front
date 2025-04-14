@@ -4,7 +4,11 @@ import useSolicitacoes from '../../hooks/useSolicitacoes';
 import { FaArrowRight, FaCheck } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
 
+<<<<<<< Updated upstream
 type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO';
+=======
+type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO' | 'SOLICITAR_FOLGA' | 'SOLICITAR_HORA_EXTRA' | 'CORRECAO_TURNO';
+>>>>>>> Stashed changes
 type AbsenceReason = 'ATESTADO_MEDICO' | null;
 
 interface BaseTicket {
@@ -33,7 +37,26 @@ interface AbsenceTicket extends BaseTicket {
   abono_final?: string;
 }
 
-type Solicitacao = VacationTicket | AbsenceTicket;
+interface DayOffTicket extends BaseTicket {
+  tipo_ticket: 'SOLICITAR_FOLGA';
+  data_inicio?: string;
+  data_fim?: string;
+}
+
+interface OvertimeTicket extends BaseTicket {
+  tipo_ticket: 'SOLICITAR_HORA_EXTRA';
+  data?: string;
+  horas?: number;
+}
+
+interface ShiftCorrectionTicket extends BaseTicket {
+  tipo_ticket: 'CORRECAO_TURNO';
+  data_correcao?: string;
+  pontos_anterior?: string[];
+  pontos_ajustado?: string[];
+}
+
+type Solicitacao = VacationTicket | AbsenceTicket | DayOffTicket | OvertimeTicket | ShiftCorrectionTicket;
 
 interface PaginatedResponse<T> {
   content: T[];
@@ -121,6 +144,9 @@ export default function SolicitacoesGestor() {
     switch (tipo) {
       case 'PEDIR_FERIAS': return 'Férias';
       case 'PEDIR_ABONO': return 'Abono';
+      case 'SOLICITAR_FOLGA': return 'Folga';
+      case 'SOLICITAR_HORA_EXTRA': return 'Hora Extra';
+      case 'CORRECAO_TURNO': return 'Correção de Turno';
       default: return tipo;
     }
   }, []);
@@ -271,9 +297,30 @@ export default function SolicitacoesGestor() {
             <p className="text-left poppins">Colaborador: <span className="text-gray-700">{modalAberto.nome_colaborador}</span></p>
             <p className="text-left poppins">CPF: <span className="text-gray-700">{modalAberto.cpf_colaborador}</span></p>
             <p className="text-left poppins">Tipo: <span className="text-gray-700">{formatarTipoTicket(modalAberto.tipo_ticket)}</span></p>
+            
             {modalAberto.tipo_ticket === 'PEDIR_ABONO' && (
               <p className="text-left poppins">Motivo Abono: <span className="text-gray-700">{formatarMotivoAbono(modalAberto.motivo_abono)}</span></p>
             )}
+            
+            {modalAberto.tipo_ticket === 'SOLICITAR_FOLGA' && (
+              <p className="text-left poppins">
+                Período: {modalAberto.data_inicio} até {modalAberto.data_fim}
+              </p>
+            )}
+            
+            {modalAberto.tipo_ticket === 'SOLICITAR_HORA_EXTRA' && (
+              <p className="text-left poppins">
+                Data: {modalAberto.data} - Horas: {modalAberto.horas}
+              </p>
+            )}
+            
+            {modalAberto.tipo_ticket === 'CORRECAO_TURNO' && (
+              <div className="text-left">
+                <p className="poppins">Data Correção: {modalAberto.data_correcao}</p>
+                <p className="poppins">Pontos Ajustados: {modalAberto.pontos_ajustado?.join(', ')}</p>
+              </div>
+            )}
+
             <p className="text-left poppins">Mensagem: <span className="text-gray-700">{modalAberto.mensagem}</span></p>
             <p className="text-left poppins">Status: <span className="text-gray-700">{formatarStatus(modalAberto.status_ticket)}</span></p>
             <p className="text-left poppins">Data: <span className="text-gray-700">{new Date(modalAberto.data_ticket).toLocaleString()}</span></p>
