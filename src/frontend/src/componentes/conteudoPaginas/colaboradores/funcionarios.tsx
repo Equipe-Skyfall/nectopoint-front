@@ -4,6 +4,7 @@ import { useEdit } from '../../hooks/useEdit';
 import { FaUser, FaSearch, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import api from '../../hooks/api';
 import { toast } from 'react-toastify';
+import FiltrosColaborador from '../../filtros/filtoColaborador';
 
 const traduzirJornada = (jornada: string) => {
     switch (jornada) {
@@ -17,10 +18,12 @@ const traduzirJornada = (jornada: string) => {
 };
 const EmployeeList = () => {
     const {
-        filteredEmployees,
+        employees,
         loading,
         error,
         searchQuery,
+        jornadaSelecionada,
+        setJornadaSelecionada,
         setSearchQuery,
         refreshEmployees,
         currentPage,
@@ -113,26 +116,23 @@ const EmployeeList = () => {
                 <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-3 md:gap-4">
                     <div className="relative w-full md:flex-grow">
                         <label className="block text-center sm:text-left poppins font-medium text-gray-600 mb-2">Buscar Colaboradores pelo CPF:</label>
-                        <div className="relative">
-                            {/* Input de pesquisa que realiza o search do funcionario basiado no seu CPF */}
-                            <input
-                                type="text"
-                                placeholder="Digite o CPF para pesquisar..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-4 pr-10 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                maxLength={11}
-                            />
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <FaSearch className="text-gray-400" />
-                            </div>
-                        </div>
+                        <FiltrosColaborador
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            jornadaSelecionada={jornadaSelecionada}
+                            setJornadaSelecionada={setJornadaSelecionada}
+                            limparFiltros={() => {
+                                setSearchQuery('');
+                                setJornadaSelecionada('');
+                                setCurrentPage(0);
+                            }}
+                        />  
                     </div>
 
                     {/* Redireciona para a página de cadastro */}
                     <a
                         href="/cadastrar"
-                        className="w-full md:w-auto flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition duration-200"
+                        className="w-full md:w-auto mb-6 flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg transition duration-200"
                     >
                         <FaPlus className="mr-2" />
                         Cadastrar
@@ -145,8 +145,8 @@ const EmployeeList = () => {
 
 
                 <div className="space-y-4">
-                    {filteredEmployees.length > 0 ? (
-                        filteredEmployees.map(emp => (
+                    {employees.length > 0 ? (
+                        employees.map(emp => (
                             // Cria um card para cada colaborador, os dados são puxados referenciando o id_colaborador de cada um
                             <div key={emp.id_colaborador} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200">
                                 <div

@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import useHistorico from '../hooks/useHistorico';
 import { useQueryClient } from '@tanstack/react-query';
-import { FaSearch, FaCalendarAlt } from 'react-icons/fa';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import FiltrosHistorico from '../filtros/filtroHistorico';
 
 export default function ConteudoHistorico() {
     const [paginaAtual, setPaginaAtual] = useState(0);
@@ -106,80 +105,17 @@ export default function ConteudoHistorico() {
         <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
             <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Pontos</h2>
 
-            {/* Filtros */}
-            <div className="w-full max-w-4xl mb-5 grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Filtro por nome */}
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Nome do Colaborador"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-4 pr-10 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        maxLength={255}
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <FaSearch className="text-gray-400" />
-                    </div>
-                </div>
-
-                {/* Filtro por status */}
-                <select
-                    value={statusTurno}
-                    onChange={(e) => setStatusTurno(e.target.value)}
-                    className="p-2.5 w-full border border-gray-300 text-center rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="">Todos os status</option>
-                    <option value="TRABALHANDO">Trabalhando</option>
-                    <option value="INTERVALO">Intervalo</option>
-                    <option value="ENCERRADO">Encerrado</option>
-                    <option value="NAO_COMPARECEU">Não Compareceu</option>
-                    <option value="IRREGULAR">Irregular</option>
-                </select>
-
-                {/* Filtro por data inicial */}
-                <div className="relative">
-                    <DatePicker
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
-                        placeholderText="Data inicial"
-                        className="sm:pl-5 sm:pr-5 pl-12 pr-12 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        dateFormat="dd/MM/yyyy"
-                    />
-                    <div className="absolute inset-y-0 sm:right-0 right-1 pr-3 flex items-center pointer-events-none">
-                        <FaCalendarAlt className="text-gray-400" />
-                    </div>
-                </div>
-
-                {/* Filtro por data final */}
-                <div className="relative">
-                    <DatePicker
-                        selected={endDate}
-                        onChange={(date) => setEndDate(date)}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
-                        placeholderText="Data final"
-                        className="sm:pl-5 sm:pr-5 pl-12 pr-12 py-2.5 w-full text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        dateFormat="dd/MM/yyyy"
-                    />
-                    <div className="absolute inset-y-0 sm:right-0 right-1 pr-3 flex items-center pointer-events-none">
-                        <FaCalendarAlt className="text-gray-400" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Botão Limpar Filtros */}
-            <button
-                onClick={limparFiltros}
-                className="mb-5 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition poppins"
-            >
-                Limpar Filtros
-            </button>
+            <FiltrosHistorico
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                statusTurno={statusTurno}
+                setStatusTurno={setStatusTurno}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                limparFiltros={limparFiltros}
+            />
 
             {isLoading ? (
                 <p>Carregando...</p>
