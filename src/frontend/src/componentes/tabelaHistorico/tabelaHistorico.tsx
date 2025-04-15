@@ -3,6 +3,9 @@ import useHistorico from '../hooks/useHistorico';
 import { useQueryClient } from '@tanstack/react-query';
 import 'react-datepicker/dist/react-datepicker.css';
 import FiltrosHistorico from '../filtros/filtroHistorico';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiChevronLeft, FiChevronRight, FiRefreshCw } from 'react-icons/fi';
+import { useLocation } from 'react-router-dom';
 
 export default function ConteudoHistorico() {
     const [paginaAtual, setPaginaAtual] = useState(0);
@@ -12,9 +15,10 @@ export default function ConteudoHistorico() {
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const queryClient = useQueryClient();
+    const location = useLocation();
 
     const atualizarItensPorPagina = useCallback(() => {
-        const novosItens = window.innerWidth >= 640 ? 9 : 9;
+        const novosItens = window.innerWidth >= 640 ? 5 : 5;
         if (novosItens !== itensPorPagina) {
             setItensPorPagina(novosItens);
             queryClient.invalidateQueries({ queryKey: ['historico'] });
@@ -28,7 +32,17 @@ export default function ConteudoHistorico() {
             window.removeEventListener('resize', atualizarItensPorPagina);
         };
     }, [atualizarItensPorPagina]);
-
+    useEffect(() => {
+        if (location.state?.statusTurno) {
+            setStatusTurno(location.state.statusTurno);
+        }
+        if (location.state?.startDate) {
+            setStartDate(new Date(location.state.startDate));
+        }
+        if (location.state?.endDate) {
+            setEndDate(new Date(location.state.endDate));
+        }
+    }, [location.state]);
     useEffect(() => {
         setPaginaAtual(0);
     }, [searchQuery, statusTurno, startDate, endDate]);
@@ -42,13 +56,8 @@ export default function ConteudoHistorico() {
         endDate: endDate?.toISOString()
     };
 
-    useEffect(() => {
-        console.log('Params atual:', params);
-    }, [params]);
-
     const { historico, erro, totalPaginas, isLoading } = useHistorico(params);
     
-
     const formatarDataHora = useCallback((dataHora: string) => {
         const data = new Date(dataHora);
         if (isNaN(data.getTime())) {
@@ -58,20 +67,18 @@ export default function ConteudoHistorico() {
     }, []);
 
     const traduzirStatusTurno = useCallback((status: string) => {
-        switch (status) {
-            case 'TRABALHANDO':
-                return 'Trabalhando';
-            case 'INTERVALO':
-                return 'Intervalo';
-            case 'ENCERRADO':
-                return 'Encerrado';
-            case 'NAO_COMPARECEU':
-                return 'Não Compareceu';
-            case 'IRREGULAR':
-                return 'Irregular';
-            default:
-                return status;
-        }
+        const statusStyles = {
+            'TRABALHANDO': { text: 'Trabalhando', color: 'bg-green-100 text-green-800' },
+            'INTERVALO': { text: 'Intervalo', color: 'bg-yellow-100 text-yellow-800' },
+            'ENCERRADO': { text: 'Encerrado', color: 'bg-blue-100 text-blue-800' },
+            'NAO_COMPARECEU': { text: 'Não Compareceu', color: 'bg-red-100 text-red-800' },
+            'IRREGULAR': { text: 'Irregular', color: 'bg-purple-100 text-purple-800' }
+        };
+        return (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status]?.color || 'bg-gray-100 text-gray-800'}`}>
+                {statusStyles[status]?.text || status}
+            </span>
+        );
     }, []);
 
     const obterFimTurno = useCallback((pontos_marcados: { data_hora: string }[]) => {
@@ -84,12 +91,14 @@ export default function ConteudoHistorico() {
     const avancarPagina = useCallback(() => {
         if (paginaAtual < totalPaginas - 1) {
             setPaginaAtual(paginaAtual + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [paginaAtual, totalPaginas]);
 
     const retrocederPagina = useCallback(() => {
         if (paginaAtual > 0) {
             setPaginaAtual(paginaAtual - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [paginaAtual]);
 
@@ -102,8 +111,20 @@ export default function ConteudoHistorico() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden">
-            <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Pontos</h2>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center p-4 my-8 w-full overflow-y-hidden overflow-x-hidden"
+        >
+            <motion.h2 
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="overflow-hidden text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent poppins text-center mt-10"
+            >
+                Histórico de Pontos
+            </motion.h2>
 
             <FiltrosHistorico
                 searchQuery={searchQuery}
@@ -118,74 +139,137 @@ export default function ConteudoHistorico() {
             />
 
             {isLoading ? (
-                <p>Carregando...</p>
+                <motion.div 
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="flex items-center justify-center p-8"
+                >
+                    <FiRefreshCw className="text-4xl text-blue-600" />
+                </motion.div>
             ) : erro ? (
-                <p className="text-red-600">{erro}</p>
+                <motion.div 
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    className="p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded shadow-lg"
+                >
+                    <p className="font-medium">{erro}</p>
+                </motion.div>
             ) : historico.length === 0 ? (
-                <p className='pb-96'>Nenhum registro encontrado com os filtros atuais</p>
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pb-96 text-center"
+                >
+                    <div className="inline-block p-6 bg-white rounded-xl shadow-md">
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhum registro encontrado</h3>
+                        <p className="text-gray-500">Tente ajustar os filtros ou verifique os dados</p>
+                    </div>
+                </motion.div>
             ) : (
                 <>
-                    <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden shadow-md">
-                        <table className="w-full border border-gray-300 bg-[#f1f1f1] text-center">
-                            <thead>
-                                <tr className="bg-blue-700 text-white ">
-                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Nome</th>
-                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Status</th>
-                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Início do Turno</th>
-                                    <th className="p-1 sm:p-2 poppins text-xs sm:text-lg">Fim do Turno</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {/* Referencia o item com base no id de registro do colaborador, assim para buscar seu nome se usa item.nome_colaborador por exemplo */}
-                                {historico.map((item, index) => (
-                                    <tr key={`${item.id_registro}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
-                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">{item.nome_colaborador}</td>
-                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">
-                                            {traduzirStatusTurno(item.status_turno)}
-                                        </td>
-                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">
-                                            {formatarDataHora(item.inicio_turno)}
-                                        </td>
-                                        <td className="p-1 sm:p-2 poppins text-[0.65rem] border-r sm:text-base text-black">
-                                            {obterFimTurno(item.pontos_marcados)}
-                                        </td>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="w-[96vw] sm:w-[75vw] rounded-xl overflow-hidden shadow-2xl border border-gray-100"
+                    >
+                        <div className="overflow-x-hidden">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                                        <th className="p-2 sm:p-4 poppins text-xs sm:text-lg text-center">Nome</th>
+                                        <th className="p-2 sm:p-4 poppins text-xs sm:text-lg text-center">Status</th>
+                                        <th className="p-2 sm:p-4 poppins text-xs sm:text-lg text-center">Início do Turno</th>
+                                        <th className="p-2 sm:p-4 poppins text-xs sm:text-lg text-center">Fim do Turno</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    <AnimatePresence>
+                                        {historico.map((item, index) => (
+                                            <motion.tr
+                                                key={`${item.id_registro}-${index}`}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                                exit={{ opacity: 0 }}
+                                                className={`border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                                            >
+                                                <td className="p-2 sm:p-4 poppins text-xs sm:text-base text-gray-800 font-medium">
+                                                    {item.nome_colaborador}
+                                                </td>
+                                                <td className="p-2 sm:p-4 poppins text-xs sm:text-base text-center">
+                                                    {traduzirStatusTurno(item.status_turno)}
+                                                </td>
+                                                <td className="p-2 sm:p-4 poppins text-xs sm:text-base text-center text-gray-600">
+                                                    {formatarDataHora(item.inicio_turno)}
+                                                </td>
+                                                <td className="p-2 sm:p-4 poppins text-xs sm:text-base text-center text-gray-600">
+                                                    {obterFimTurno(item.pontos_marcados)}
+                                                </td>
+                                            </motion.tr>
+                                        ))}
+                                    </AnimatePresence>
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
 
-                    <div className="mt-6 flex items-center gap-4">
-                        <button
-                            // Faço uso do retrocederPagina e ainda dou um disable para que o botão não seja clicavel caso seja === 0
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="mt-8 flex items-center gap-6"
+                    >
+                        <motion.button
+                            whileHover={{ scale: paginaAtual === 0 ? 1 : 1.05 }}
+                            whileTap={{ scale: paginaAtual === 0 ? 1 : 0.95 }}
                             onClick={retrocederPagina}
                             disabled={paginaAtual === 0}
-                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === 0
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-800"
+                            className={`flex items-center px-3 sm:px-6 py-3 rounded-xl transition-all ${paginaAtual === 0
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
                                 }`}
                         >
+                            <FiChevronLeft className="mr-2" />
                             Anterior
-                        </button>
+                        </motion.button>
 
-                        <span className="text-sm md:text-lg poppins text-gray-700">
-                            Página {paginaAtual + 1} de {totalPaginas}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            {Array.from({ length: totalPaginas }, (_, i) => (
+                                <motion.button
+                                    key={i}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => {
+                                        setPaginaAtual(i);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center ${paginaAtual === i
+                                        ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md"
+                                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                                        }`}
+                                >
+                                    {i + 1}
+                                </motion.button>
+                            ))}
+                        </div>
 
-                        <button
-                            // Faço uso do avancarPagina e ainda dou um disable para que o botão não seja clicavel caso seja === totalPaginas - 1
+                        <motion.button
+                            whileHover={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 1.05 }}
+                            whileTap={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 0.95 }}
                             onClick={avancarPagina}
                             disabled={paginaAtual === totalPaginas - 1}
-                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${paginaAtual === totalPaginas - 1
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-800"
+                            className={`flex items-center px-3 sm:px-6 py-3 rounded-xl transition-all ${paginaAtual === totalPaginas - 1
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
                                 }`}
                         >
                             Próxima
-                        </button>
-                    </div>
+                            <FiChevronRight className="ml-2" />
+                        </motion.button>
+                    </motion.div>
                 </>
             )}
-        </div>
+        </motion.div>
     );
 }

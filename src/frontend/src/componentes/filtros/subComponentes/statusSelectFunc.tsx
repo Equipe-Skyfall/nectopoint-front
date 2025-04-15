@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { StatusSelectProps } from "../../../interfaces/interfaceFiltrosSub";
 
-export default function StatusSelect({ value, onChange }: StatusSelectProps) {
+export default function StatusSelectFunc({ value, onChange }: StatusSelectProps) {
     return (
         <motion.div 
             whileHover={{ scale: 1.01 }}
@@ -13,8 +13,6 @@ export default function StatusSelect({ value, onChange }: StatusSelectProps) {
                 className="appearance-none pl-3 pr-8 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer shadow-sm transition-all duration-200"
             >
                 <option value="">Todos os status</option>
-                <option value="TRABALHANDO">Trabalhando</option>
-                <option value="INTERVALO">Intervalo</option>
                 <option value="ENCERRADO">Encerrado</option>
                 <option value="NAO_COMPARECEU">Não Compareceu</option>
                 <option value="IRREGULAR">Irregular</option>

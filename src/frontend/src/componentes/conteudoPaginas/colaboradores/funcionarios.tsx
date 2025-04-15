@@ -1,315 +1,467 @@
 import React, { useState } from 'react';
 import useColaborador from '../../hooks/useColaborador';
 import { useEdit } from '../../hooks/useEdit';
-import { FaUser, FaSearch, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaUser, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FiPlus, FiFilter, FiX } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../hooks/api';
 import { toast } from 'react-toastify';
 import FiltrosColaborador from '../../filtros/filtoColaborador';
 
-const traduzirJornada = (jornada: string) => {
-    switch (jornada) {
-        case 'CINCO_X_DOIS':
-            return '5 x 2';
-        case 'SEIS_X_UM':
-            return '6 x 1';
-        default:
-            return jornada; // Caso não seja nenhum dos valores esperados
-    }
+// Componente para traduzir o tipo de jornada com estilo visual
+const JornadaBadge = ({ jornada }: { jornada: string }) => {
+  const jornadaStyles = {
+    'CINCO_X_DOIS': { text: '5 x 2', color: 'bg-blue-100 text-blue-800' },
+    'SEIS_X_UM': { text: '6 x 1', color: 'bg-purple-100 text-purple-800' },
+    default: { text: jornada, color: 'bg-gray-100 text-gray-800' }
+  };
+
+  const style = jornadaStyles[jornada] || jornadaStyles.default;
+  
+  return (
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${style.color}`}>
+      {style.text}
+    </span>
+  );
 };
+
+// Formata a data de nascimento com tratamento de erros
+const formatarDataNascimento = (data: string) => {
+  if (!data) return 'N/A';
+  try {
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano}`;
+  } catch {
+    return data;
+  }
+};
+
 const EmployeeList = () => {
-    const {
-        employees,
-        loading,
-        error,
-        searchQuery,
-        jornadaSelecionada,
-        setJornadaSelecionada,
-        setSearchQuery,
-        refreshEmployees,
-        currentPage,
-        totalPages,
-        setCurrentPage,
-        //Busca e gerencia a lista de colaboradores, pesquisa, paginação e estados de carregamento e erro. 
-    } = useColaborador();
+  const {
+    employees,
+    loading,
+    error,
+    searchQuery,
+    jornadaSelecionada,
+    setJornadaSelecionada,
+    setSearchQuery,
+    refreshEmployees,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+  } = useColaborador();
 
-    //Função feita para formatar a data de nascimento no formato DD/MM/YYYY
-    const formatarDataNascimento = (data: string) => {
-        if (!data) return 'N/A';
+  const { navigateToEdit } = useEdit();
+  const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);
+  const [employeeDetails, setEmployeeDetails] = useState<any>({});
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-        try {
+  // Expande/contrai os detalhes do colaborador
+  const toggleExpand = async (id: number) => {
+    if (expandedEmployee === id) {
+      setExpandedEmployee(null);
+    } else {
+      try {
+        const response = await api.get(`/usuario/${id}`);
+        setEmployeeDetails(prev => ({ ...prev, [id]: response.data }));
+        setExpandedEmployee(id);
+      } catch (err) {
+        console.error('Erro ao buscar detalhes:', err);
+        toast.error('Erro ao carregar detalhes do colaborador');
+      }
+    }
+  };
 
-            const [ano, mes, dia] = data.split('-');
-            return `${dia}/${mes}/${ano}`;
-        } catch {
-            return data;
-        }
-    };
+  // Exclui um colaborador com confirmação
+  const handleDelete = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
 
-    const { navigateToEdit } = useEdit();
-    const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);
-    const [employeeDetails, setEmployeeDetails] = useState<any>({});
-    const [isDeleting, setIsDeleting] = useState<number | null>(null);
+    if (!window.confirm('Tem certeza que deseja excluir este colaborador?')) {
+      return;
+    }
 
-    //Faz a expansão dos detalhes de um colaborador. Busca os detalhes da API se necessário
-    const toggleExpand = async (id: number) => {
-        if (expandedEmployee === id) {
-            setExpandedEmployee(null);
-        } else {
-            try {
-                const response = await api.get(`/usuario/${id}`);
-                setEmployeeDetails(prev => ({ ...prev, [id]: response.data }));
-                setExpandedEmployee(id);
-            } catch (err) {
-                console.error('Erro ao buscar detalhes:', err);
-            }
-        }
-    };
+    setIsDeleting(id);
+    try {
+      await api.delete(`/usuario/${id}`);
+      toast.success('Colaborador excluído com sucesso!');
+      refreshEmployees();
+      if (expandedEmployee === id) setExpandedEmployee(null);
+    } catch (err) {
+      console.error('Erro ao excluir colaborador:', err);
+      toast.error('Erro ao excluir colaborador');
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
-    //Exclui um colaborador da API e atualiza a lista
-    const handleDelete = async (id: number, e: React.MouseEvent) => {
-        e.stopPropagation();
+  // Navegação entre páginas
+  const avancarPagina = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
-        //Janela de confirmação
-        if (!window.confirm('Tem certeza que deseja excluir este colaborador?')) {
-            return;
-        }
+  const retrocederPagina = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
-        //Deleta referenciado no id do funcionario selecionado
-        setIsDeleting(id);
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="mt-16 min-h-screen p-4 md:p-6 poppins"
+    >
+      <div className="max-w-7xl mx-auto">
+        {/* Título com gradiente */}
+        <motion.h2
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8 text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center"
+        >
+          Colaboradores
+        </motion.h2>
 
-        try {
-            await api.delete(`/usuario/${id}`);
-            toast.success('Colaborador excluído com sucesso!');
-            refreshEmployees();
+        {/* Barra de ferramentas com filtros e botão de cadastro */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div className="w-full md:w-auto">
+            <FiltrosColaborador
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              jornadaSelecionada={jornadaSelecionada}
+              setJornadaSelecionada={setJornadaSelecionada}
+              limparFiltros={() => {
+                setSearchQuery('');
+                setJornadaSelecionada('');
+                setCurrentPage(0);
+              }}
+            />
+          </div>
 
-            if (expandedEmployee === id) {
-                setExpandedEmployee(null);
-            }
-        } catch (err) {
-            console.error('Erro ao excluir colaborador:', err);
-            toast.error('Erro ao excluir colaborador');
-        } finally {
-            setIsDeleting(null);
-        }
-    };
-
-    //Avança para a próxima página, caso haja mais de uma
-    const avancarPagina = () => {
-        if (currentPage < totalPages - 1) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-
-    //Retrocede para a página anterior, caso haja mais de uma
-    const retrocederPagina = () => {
-        if (currentPage > 0) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    return (
-        <div className="mt-16 md:mt-16 min-h-screen p-4 md:p-6 poppins">
-            <div className="max-w-6xl mx-auto">
-                <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins  text-center">Colaboradores</h2>
-
-                <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-3 md:gap-4">
-                    <div className="relative w-full md:flex-grow">
-                        <label className="block text-center sm:text-left poppins font-medium text-gray-600 mb-2">Buscar Colaboradores pelo CPF:</label>
-                        <FiltrosColaborador
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            jornadaSelecionada={jornadaSelecionada}
-                            setJornadaSelecionada={setJornadaSelecionada}
-                            limparFiltros={() => {
-                                setSearchQuery('');
-                                setJornadaSelecionada('');
-                                setCurrentPage(0);
-                            }}
-                        />  
-                    </div>
-
-                    {/* Redireciona para a página de cadastro */}
-                    <a
-                        href="/cadastrar"
-                        className="w-full md:w-auto mb-6 flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg transition duration-200"
-                    >
-                        <FaPlus className="mr-2" />
-                        Cadastrar
-                    </a>
-                </div>
-
-                {/* Mensagens de carregamento e erro */}
-                {loading && <p className="text-center text-gray-500">Carregando...</p>}
-                {error && <p className="text-center text-red-500">Erro: {error}</p>}
-
-
-                <div className="space-y-4">
-                    {employees.length > 0 ? (
-                        employees.map(emp => (
-                            // Cria um card para cada colaborador, os dados são puxados referenciando o id_colaborador de cada um
-                            <div key={emp.id_colaborador} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200">
-                                <div
-                                    className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 cursor-pointer  hover:bg-gray-50 transition-colors duration-300"
-                                    onClick={() => toggleExpand(emp.id_colaborador)} //Expande os detalhes do colaborador, baseado no seu id
-                                >
-                                    <div className="flex items-center w-full sm:w-auto ">
-                                        <div className="bg-blue-100 p-3 rounded-full flex-shrink-0 mr-4">
-                                            <FaUser className="text-blue-600 text-xl" />
-                                        </div>
-
-                                        {/* Exibe os dados do colaborador, nomem, id e cpf */}
-                                        <div className="text-left">
-                                            <h3 className="text-lg font-semibold text-gray-800">{emp.nome}</h3>
-                                            <p className='text-sm text-gray-600'>ID: {emp.id_colaborador}</p>
-                                            <p className="text-sm text-gray-600">CPF: {emp.cpf}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="w-full   flex  justify-center sm:justify-end mt-4 sm:mt-0 ml-auto">
-                                        {/* Botão que redirecionado para a páginad de Edição */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigateToEdit(emp.id_colaborador);
-                                            }}
-                                            className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition duration-200"
-                                            title="Editar"
-                                        >
-                                            <span className="mr-2">Editar</span>
-                                            <FaEdit className="text-lg" />
-                                        </button>
-                                        {/* Botão que é responsavel pela exclusão do colaborador, puxa a função handleDelete */}
-                                        <button
-                                            onClick={(e) => handleDelete(emp.id_colaborador, e)}
-                                            disabled={isDeleting === emp.id_colaborador}
-                                            className={`flex items-center px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-300 ${isDeleting === emp.id_colaborador
-                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                : "text-red-600 hover:text-red-800 hover:bg-red-50"
-                                                }`}
-                                            title="Excluir"
-                                        >
-                                            {isDeleting === emp.id_colaborador ? (
-                                                <span className="mr-2">Excluindo...</span>
-                                            ) : (
-                                                <>
-                                                    <span className="mr-2">Deletar</span>
-                                                    <FaTrash className="text-lg" />
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    <div className="sm:ml-auto justify-center flex w-full sm:w-auto ">
-                                        {expandedEmployee === emp.id_colaborador ? (
-                                            <FaChevronUp className="text-gray-500" />
-                                        ) : (
-                                            <FaChevronDown className="text-gray-500" />
-                                        )}
-                                    </div>
-                                </div>
-                                {/* Div onde exibe os detalhes expandidos do colaborador */}
-                                {expandedEmployee === emp.id_colaborador && (
-                                    <div className="px-6 pb-52 sm:pb-6 pt-0 mt-5  overflow-scroll">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-down">
-                                            {/* Informações pessoais */}
-                                            <div className="p-4 rounded-lg shadow-md border hover:bg-gray-100 transition-colors duration-300 border-gray-100">
-                                                <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Informações Pessoais</h4>
-                                                <div className="space-y-2">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Email</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.email || 'N/A'}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Data de Nascimento</p>
-                                                        <p className="text-sm font-medium">{formatarDataNascimento(employeeDetails[emp.id_colaborador]?.birthDate) || 'N/A'}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Informações Profissionais */}
-                                            <div className="hover:bg-gray-100 p-4 rounded-lg shadow-md border transition-colors duration-300 border-gray-100">
-                                                <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Informações Profissionais</h4>
-                                                <div className="space-y-2">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Cargo</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.title || emp.cargo}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Departamento</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.department || emp.departamento}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Número</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.employeeNumber || 'N/A'}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Jornada</p>
-                                                        <p className="text-sm font-medium">
-                                                            {traduzirJornada(employeeDetails[emp.id_colaborador]?.workJourneyType) || 'N/A'}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Horas */}
-                                            <div className="hover:bg-gray-100 shadow-md p-4 rounded-lg  border transition-colors duration-300 border-gray-100">
-                                                <h4 className="font-semibold text-blue-600 mb-3 pb-2 border-b border-gray-200">Horas</h4>
-                                                <div className="space-y-2">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Banco de Horas</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.bankOfHours ?? emp.banco_de_horas}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Horas Diárias</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.dailyHours ?? emp.horas_diarias}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-center text-gray-500">
-                            {searchQuery ? 'Nenhum funcionário encontrado com este CPF' : 'Nenhum funcionário cadastrado'}
-                        </p>
-                    )}
-                </div>
-
-                {/* Paginação dos colaboradores */}
-                {totalPages > 1 && (
-                    <div className="mt-6 flex items-center justify-center gap-4">
-                        <button
-                            onClick={retrocederPagina}
-                            disabled={currentPage === 0}
-                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${currentPage === 0
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-800"
-                                }`}
-                        >
-                            Anterior
-                        </button>
-
-                        <span className="text-sm md:text-lg poppins text-gray-700">
-                            Página {currentPage + 1} de {totalPages}
-                        </span>
-
-                        <button
-                            onClick={avancarPagina}
-                            disabled={currentPage === totalPages - 1}
-                            className={`px-4 py-2 rounded-lg transition poppins text-sm md:text-base ${currentPage === totalPages - 1
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-800"
-                                }`}
-                        >
-                            Próxima
-                        </button>
-                    </div>
-                )}
-            </div>
+          {/* Botão de cadastro com animação */}
+          <motion.a
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            href="/cadastrar"
+            className="flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 mt-10 rounded-xl shadow-lg hover:shadow-xl transition-all"
+          >
+            <FiPlus className="mr-2" />
+            Cadastrar Colaborador
+          </motion.a>
         </div>
-    );
+
+        {/* Estados de carregamento e erro */}
+        {loading ? (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+            className="flex justify-center p-12"
+          >
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-lg shadow-md"
+          >
+            <p className="font-medium">Erro: {error}</p>
+          </motion.div>
+        ) : employees.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-20"
+          >
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                {searchQuery || jornadaSelecionada ? 'Nenhum resultado encontrado' : 'Nenhum colaborador cadastrado'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {searchQuery || jornadaSelecionada 
+                  ? 'Tente ajustar os filtros de busca' 
+                  : 'Cadastre seu primeiro colaborador'}
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <>
+            {/* Lista de colaboradores */}
+            <div className="space-y-4">
+              <AnimatePresence>
+                {employees.map((emp, index) => (
+                  <motion.div
+                    key={emp.id_colaborador}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    exit={{ opacity: 0 }}
+                    className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+                  >
+                    {/* Cabeçalho do card do colaborador */}
+                    <motion.div
+                      whileHover={{ backgroundColor: 'rgba(249, 250, 251, 1)' }}
+                      className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 cursor-pointer transition-colors"
+                      onClick={() => toggleExpand(emp.id_colaborador)}
+                    >
+                      {/* Avatar e informações básicas */}
+                      <div className="flex items-center w-full sm:w-auto flex-1 min-w-0">
+                        <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-full flex-shrink-0 mr-4">
+                          <FaUser className="text-blue-600 text-xl" />
+                        </div>
+
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-semibold text-gray-800 text-start truncate">{emp.nome}</h3>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            <span className="text-sm text-gray-600">ID: {emp.id_colaborador}</span>
+                            <span className="text-sm text-gray-600">CPF: {emp.cpf}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ações */}
+                      <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateToEdit(emp.id_colaborador);
+                          }}
+                          className="flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                          title="Editar"
+                        >
+                          <FaEdit className="mr-2" />
+                          <span className="hidden sm:inline">Editar</span>
+                        </motion.button>
+
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => handleDelete(emp.id_colaborador, e)}
+                          disabled={isDeleting === emp.id_colaborador}
+                          className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                            isDeleting === emp.id_colaborador
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : "bg-red-50 text-red-600 hover:bg-red-100"
+                          }`}
+                          title="Excluir"
+                        >
+                          <FaTrash className="mr-2" />
+                          <span className="hidden sm:inline">
+                            {isDeleting === emp.id_colaborador ? 'Excluindo...' : 'Excluir'}
+                          </span>
+                        </motion.button>
+
+                        <div className="ml-2 text-gray-400">
+                          {expandedEmployee === emp.id_colaborador ? (
+                            <FaChevronUp />
+                          ) : (
+                            <FaChevronDown />
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Detalhes expandidos do colaborador */}
+                    <AnimatePresence>
+                      {expandedEmployee === emp.id_colaborador && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                              {/* Informações Pessoais */}
+                              <motion.div 
+                                whileHover={{ y: -2 }}
+                                className="bg-white p-5 rounded-lg shadow-sm border border-gray-100"
+                              >
+                                <h4 className="font-semibold text-blue-600 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                                  <span className="bg-blue-100 p-1 rounded mr-2">
+                                    <FaUser className="text-blue-600" />
+                                  </span>
+                                  Informações Pessoais
+                                </h4>
+                                <div className="space-y-3">
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Email</p>
+                                    <p className="text-sm text-gray-800">
+                                      {employeeDetails[emp.id_colaborador]?.email || 'N/A'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Data de Nascimento</p>
+                                    <p className="text-sm text-gray-800">
+                                      {formatarDataNascimento(employeeDetails[emp.id_colaborador]?.birthDate) || 'N/A'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </motion.div>
+
+                              {/* Informações Profissionais */}
+                              <motion.div 
+                                whileHover={{ y: -2 }}
+                                className="bg-white p-5 rounded-lg shadow-sm border border-gray-100"
+                              >
+                                <h4 className="font-semibold text-blue-600 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                                  <span className="bg-blue-100 p-1 rounded mr-2">
+                                    <FaUser className="text-blue-600" />
+                                  </span>
+                                  Informações Profissionais
+                                </h4>
+                                <div className="space-y-3">
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Cargo</p>
+                                    <p className="text-sm text-gray-800">
+                                      {employeeDetails[emp.id_colaborador]?.title || emp.cargo || 'N/A'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Departamento</p>
+                                    <p className="text-sm text-gray-800">
+                                      {employeeDetails[emp.id_colaborador]?.department || emp.departamento || 'N/A'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Jornada</p>
+                                    <div className="text-sm">
+                                      {employeeDetails[emp.id_colaborador]?.workJourneyType ? (
+                                        <JornadaBadge jornada={employeeDetails[emp.id_colaborador].workJourneyType} />
+                                      ) : (
+                                        'N/A'
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+
+                              {/* Horas */}
+                              <motion.div 
+                                whileHover={{ y: -2 }}
+                                className="bg-white p-5 rounded-lg shadow-sm border border-gray-100"
+                              >
+                                <h4 className="font-semibold text-blue-600 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                                  <span className="bg-blue-100 p-1 rounded mr-2">
+                                    <FaUser className="text-blue-600" />
+                                  </span>
+                                  Horas
+                                </h4>
+                                <div className="space-y-3">
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Banco de Horas</p>
+                                    <p className="text-sm text-gray-800">
+                                      {employeeDetails[emp.id_colaborador]?.bankOfHours ?? emp.banco_de_horas ?? 'N/A'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium">Horas Diárias</p>
+                                    <p className="text-sm text-gray-800">
+                                      {employeeDetails[emp.id_colaborador]?.dailyHours ?? emp.horas_diarias ?? 'N/A'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+              >
+                <div className="text-sm text-gray-600">
+                  Mostrando página {currentPage + 1} de {totalPages}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <motion.button
+                    whileHover={{ scale: currentPage === 0 ? 1 : 1.05 }}
+                    whileTap={{ scale: currentPage === 0 ? 1 : 0.95 }}
+                    onClick={retrocederPagina}
+                    disabled={currentPage === 0}
+                    className={`flex items-center px-4 py-2 rounded-xl ${
+                      currentPage === 0
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    Anterior
+                  </motion.button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i;
+                      } else if (currentPage <= 2) {
+                        pageNum = i;
+                      } else if (currentPage >= totalPages - 3) {
+                        pageNum = totalPages - 5 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <motion.button
+                          key={pageNum}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => {
+                            setCurrentPage(pageNum);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            currentPage === pageNum
+                              ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
+                              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                          }`}
+                        >
+                          {pageNum + 1}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: currentPage === totalPages - 1 ? 1 : 1.05 }}
+                    whileTap={{ scale: currentPage === totalPages - 1 ? 1 : 0.95 }}
+                    onClick={avancarPagina}
+                    disabled={currentPage === totalPages - 1}
+                    className={`flex items-center px-4 py-2 rounded-xl ${
+                      currentPage === totalPages - 1
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    Próxima
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </>
+        )}
+      </div>
+    </motion.div>
+  );
 };
 
 export default EmployeeList;
