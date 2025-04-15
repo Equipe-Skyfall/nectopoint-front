@@ -11,7 +11,7 @@ interface FormData {
     cpf: string;
     title: 'GERENTE' | 'COLABORADOR';
     department: string;
-    workJourneyType: string;
+    workJourneyType: 'CINCO_X_DOIS' | 'SEIS_X_UM';
     employeeNumber: string;
     dailyHours: number;
     bankOfHours: number;
@@ -30,7 +30,7 @@ const EditarFuncionario = () => {
         cpf: '',
         title: 'COLABORADOR',
         department: '',
-        workJourneyType: '',
+        workJourneyType: 'CINCO_X_DOIS',
         employeeNumber: '',
         bankOfHours: 0,
         dailyHours: 8,
@@ -60,7 +60,7 @@ const EditarFuncionario = () => {
                     cpf: formatCPF(employee.cpf || ''),
                     title: employee.title || 'COLABORADOR',
                     department: employee.department || '',
-                    workJourneyType: employee.workJourneyType || '',
+                    workJourneyType: employee.workJourneyType || 'CINCO_X_DOIS',
                     employeeNumber: employee.employeeNumber || '',
                     bankOfHours: Number(employee.bankOfHours) || 0,
                     dailyHours: Number(employee.dailyHours) || 8,
@@ -230,14 +230,17 @@ const EditarFuncionario = () => {
 
                         <div className="space-y-2">
                             <label className="block text-gray-700">Tipo de Jornada*</label>
-                            <input
-                                type="text"
+                            <select
                                 name="workJourneyType"
                                 value={formData.workJourneyType}
                                 onChange={handleChange}
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border text-center rounded"
                                 required
-                            />
+                            >
+                                <option value="CINCO_X_DOIS">5x2 (5 dias trabalhados, 2 folgas)</option>
+                                <option value="SEIS_X_UM">6x1 (6 dias trabalhados, 1 folga)</option>
+                            </select>
+
                         </div>
 
                         <div className="space-y-2">

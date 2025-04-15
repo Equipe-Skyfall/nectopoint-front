@@ -4,13 +4,26 @@ import { useEdit } from '../../hooks/useEdit';
 import { FaUser, FaSearch, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import api from '../../hooks/api';
 import { toast } from 'react-toastify';
+import FiltrosColaborador from '../../filtros/filtoColaborador';
 
+const traduzirJornada = (jornada: string) => {
+    switch (jornada) {
+        case 'CINCO_X_DOIS':
+            return '5 x 2';
+        case 'SEIS_X_UM':
+            return '6 x 1';
+        default:
+            return jornada; // Caso não seja nenhum dos valores esperados
+    }
+};
 const EmployeeList = () => {
     const {
-        filteredEmployees,
+        employees,
         loading,
         error,
         searchQuery,
+        jornadaSelecionada,
+        setJornadaSelecionada,
         setSearchQuery,
         refreshEmployees,
         currentPage,
@@ -18,7 +31,7 @@ const EmployeeList = () => {
         setCurrentPage,
         //Busca e gerencia a lista de colaboradores, pesquisa, paginação e estados de carregamento e erro. 
     } = useColaborador();
-    
+
     //Função feita para formatar a data de nascimento no formato DD/MM/YYYY
     const formatarDataNascimento = (data: string) => {
         if (!data) return 'N/A';
@@ -67,7 +80,7 @@ const EmployeeList = () => {
         try {
             await api.delete(`/usuario/${id}`);
             toast.success('Colaborador excluído com sucesso!');
-            refreshEmployees(); 
+            refreshEmployees();
 
             if (expandedEmployee === id) {
                 setExpandedEmployee(null);
@@ -103,26 +116,23 @@ const EmployeeList = () => {
                 <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-3 md:gap-4">
                     <div className="relative w-full md:flex-grow">
                         <label className="block text-center sm:text-left poppins font-medium text-gray-600 mb-2">Buscar Colaboradores pelo CPF:</label>
-                        <div className="relative">
-                            {/* Input de pesquisa que realiza o search do funcionario basiado no seu CPF */}
-                            <input
-                                type="text"
-                                placeholder="Digite o CPF para pesquisar..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-4 pr-10 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                maxLength={11}
-                            />
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <FaSearch className="text-gray-400" />
-                            </div>
-                        </div>
+                        <FiltrosColaborador
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            jornadaSelecionada={jornadaSelecionada}
+                            setJornadaSelecionada={setJornadaSelecionada}
+                            limparFiltros={() => {
+                                setSearchQuery('');
+                                setJornadaSelecionada('');
+                                setCurrentPage(0);
+                            }}
+                        />  
                     </div>
 
                     {/* Redireciona para a página de cadastro */}
                     <a
                         href="/cadastrar"
-                        className="w-full md:w-auto flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition duration-200"
+                        className="w-full md:w-auto mb-6 flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg transition duration-200"
                     >
                         <FaPlus className="mr-2" />
                         Cadastrar
@@ -135,8 +145,8 @@ const EmployeeList = () => {
 
 
                 <div className="space-y-4">
-                    {filteredEmployees.length > 0 ? (
-                        filteredEmployees.map(emp => (
+                    {employees.length > 0 ? (
+                        employees.map(emp => (
                             // Cria um card para cada colaborador, os dados são puxados referenciando o id_colaborador de cada um
                             <div key={emp.id_colaborador} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200">
                                 <div
@@ -147,7 +157,7 @@ const EmployeeList = () => {
                                         <div className="bg-blue-100 p-3 rounded-full flex-shrink-0 mr-4">
                                             <FaUser className="text-blue-600 text-xl" />
                                         </div>
-                                        
+
                                         {/* Exibe os dados do colaborador, nomem, id e cpf */}
                                         <div className="text-left">
                                             <h3 className="text-lg font-semibold text-gray-800">{emp.nome}</h3>
@@ -174,8 +184,8 @@ const EmployeeList = () => {
                                             onClick={(e) => handleDelete(emp.id_colaborador, e)}
                                             disabled={isDeleting === emp.id_colaborador}
                                             className={`flex items-center px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-300 ${isDeleting === emp.id_colaborador
-                                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                    : "text-red-600 hover:text-red-800 hover:bg-red-50"
+                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                : "text-red-600 hover:text-red-800 hover:bg-red-50"
                                                 }`}
                                             title="Excluir"
                                         >
@@ -235,7 +245,8 @@ const EmployeeList = () => {
                                                     </div>
                                                     <div>
                                                         <p className="text-xs text-gray-500">Jornada</p>
-                                                        <p className="text-sm font-medium">{employeeDetails[emp.id_colaborador]?.workJourneyType || 'N/A'}</p>
+                                                        <p className="text-sm font-medium">
+                                                            {traduzirJornada(employeeDetails[emp.id_colaborador]?.workJourneyType) || 'N/A'}</p>
                                                     </div>
                                                 </div>
                                             </div>

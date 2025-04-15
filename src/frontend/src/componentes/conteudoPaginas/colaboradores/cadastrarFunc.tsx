@@ -12,7 +12,7 @@ const CadastrarFunc = () => {
         cpf: '',
         title: 'COLABORADOR',
         department: '',
-        workJourneyType: '',
+        workJourneyType: 'CINCO_X_DOIS',
         employeeNumber: '',
         dailyHours: 8,
         bankOfHours: 0,
@@ -164,14 +164,17 @@ const CadastrarFunc = () => {
 
                         <div className="space-y-2">
                             <label className="block text-gray-700">Tipo de Jornada*</label>
-                            <input
-                                type="text"
+                            <select
                                 name="workJourneyType"
                                 value={formData.workJourneyType}
                                 onChange={handleChange}
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border text-center rounded"
                                 required
-                            />
+                            >
+                                <option value="CINCO_X_DOIS">5x2 (5 dias trabalhados, 2 folgas)</option>
+                                <option value="SEIS_X_UM">6x1 (6 dias trabalhados, 1 folga)</option>
+                            </select>
+
                         </div>
 
                         <div className="space-y-2">
