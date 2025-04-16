@@ -1,9 +1,9 @@
 import { FaCalendarAlt } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { motion } from 'framer-motion';
 import { DateRangePickerProps } from '../../../interfaces/interfaceFiltrosSub';
-// Componente de data, é o filtro individual sem estar ligado em uma página, cuidado com estilizações nele, irá mudar em todas páginas aplicadas.
-// Aqui a data pega o periodo de inicio e fim.
+
 export default function DateRangePicker({
     startDate,
     endDate,
@@ -11,8 +11,15 @@ export default function DateRangePicker({
     setEndDate
 }: DateRangePickerProps) {
     return (
-        <>
-            <div className="relative">
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-3 col-span-2"
+        >
+            <motion.div 
+                whileHover={{ scale: 1.01 }}
+                className="relative"
+            >
                 <DatePicker
                     selected={startDate}
                     onChange={(date) => setStartDate(date)}
@@ -21,15 +28,18 @@ export default function DateRangePicker({
                     endDate={endDate}
                     maxDate={endDate instanceof Date ? endDate : new Date()}
                     placeholderText="Data inicial"
-                    className="pl-12 pr-10 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="pl-16 sm:pl-10   pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     dateFormat="dd/MM/yyyy"
                 />
-                <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaCalendarAlt className="text-gray-400" />
                 </div>
-            </div>
+            </motion.div>
 
-            <div className="relative">
+            <motion.div 
+                whileHover={{ scale: 1.01 }}
+                className="relative"
+            >
                 <DatePicker
                     selected={endDate}
                     onChange={(date) => setEndDate(date)}
@@ -38,13 +48,13 @@ export default function DateRangePicker({
                     endDate={endDate}
                     minDate={startDate instanceof Date ? startDate : undefined}
                     placeholderText="Data final"
-                    className="pl-12 pr-10 py-2.5 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="pl-16 sm:pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     dateFormat="dd/MM/yyyy"
                 />
-                <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaCalendarAlt className="text-gray-400" />
                 </div>
-            </div>
-        </>
+            </motion.div>
+        </motion.div>
     );
 }
