@@ -8,7 +8,7 @@ import ConteudoHistorico from "../../componentes/tabelaHistorico/tabelaHistorico
 export default function Historico() {
 
     return (
-        <div className="Historico">
+        <div className="Historico !overflow-hidden">
             <NavBar/>
             <ConteudoHistorico />
         </div>

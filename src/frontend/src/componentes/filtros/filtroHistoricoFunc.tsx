@@ -1,13 +1,10 @@
 import { motion } from 'framer-motion';
-import SearchBar from './subComponentes/searchBar';
-import StatusSelect from './subComponentes/statusSelect';
 import DateRangePicker from './subComponentes/datePicker';
 import { FiltrosHistoricoProps } from '../../interfaces/interfaceFiltrosSub';
 import { FiFilter, FiX } from 'react-icons/fi';
+import StatusSelectFunc from './subComponentes/statusSelectFunc';
 
-export default function FiltrosHistorico({
-    searchQuery,
-    setSearchQuery,
+export default function FiltrosHistoricoFunc({
     statusTurno,
     setStatusTurno,
     startDate,
@@ -16,7 +13,7 @@ export default function FiltrosHistorico({
     setEndDate,
     limparFiltros
 }: FiltrosHistoricoProps) {
-    const hasFilters = searchQuery || statusTurno || startDate || endDate;
+    const hasFilters = statusTurno || startDate || endDate;
 
     return (
         <motion.div 
@@ -43,9 +40,8 @@ export default function FiltrosHistorico({
                 )}
             </div>
 
-            <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <SearchBar value={searchQuery} onChange={setSearchQuery} />
-                <StatusSelect value={statusTurno} onChange={setStatusTurno} />
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <StatusSelectFunc value={statusTurno} onChange={setStatusTurno} />
                 <DateRangePicker
                     startDate={startDate}
                     endDate={endDate}

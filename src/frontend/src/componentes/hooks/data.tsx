@@ -40,8 +40,8 @@ export default function Data(): JSX.Element {
         <>
             <div className="overflow-hidden font-['Poppins']">      
                 <div className="text-center justify-center my-8">
-                    <h1 className='text-blue-600 text-xl font-semibold'>Olá, {userName}</h1>
-                    <p className="text-gray-600">{formatarData()}</p>
+                    <h1 className='text-white text-xl font-semibold'>Olá, {userName}</h1>
+                    <p className="text-gray-50">{formatarData()}</p>
                 </div>
             </div>
         </>
