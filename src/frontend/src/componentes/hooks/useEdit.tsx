@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../hooks/api';
+import recarregar from './hooksChamarBackend/recarregar';
 
 interface EmployeeData {
     id?: number;
@@ -41,13 +42,10 @@ export const useEdit = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.put(`/usuario/${id}`, data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            
+            const response = await api.put(`/usuario/${id}`, data);
+
+           
+                
             
             return response.data;
         } catch (err: any) {
