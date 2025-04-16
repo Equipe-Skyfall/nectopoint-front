@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import InputPadrao from "../../inputPadrao/inputPadrao";
 import { useAuthContext } from "../../../Provider/AuthProvider";
+import VerificationModal from "./verificationModal";
 
 export default function ConteudoLogin() {
     const [cpf, setCpf] = useState("");
     const [senha, setSenha] = useState("");
     const [lembrarMe, setLembrarMe] = useState(false);
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [verificationCode, setVerificationCode] = useState("");
+    const [userId, setUserId] = useState("");
     const navigate = useNavigate();
     
-    // Usa o AuthContext ao invés de um fetch
-    const { login, isLoading, error, user, isAuthenticated } = useAuthContext();
+    // Usa o AuthContext
+    const { login, verifyCode, isLoading, error, user, isAuthenticated } = useAuthContext();
    
     // Função para redirecionar baseado no cargo
     const redirectBasedOnRole = (cargo) => {
@@ -26,7 +30,7 @@ export default function ConteudoLogin() {
         document.body.classList.add("overflow-hidden");
 
         if (isAuthenticated && user) {
-            redirectBasedOnRole(user.cargo);
+            redirectBasedOnRole(user.dados_usuario.cargo);
         }
 
         return () => {
@@ -39,16 +43,76 @@ export default function ConteudoLogin() {
         const cpfFormatado = cpf.replace(/\D/g, "");
         const senhaFormatada = senha.trim();
         
+        // Validação simples
+        // if (cpfFormatado.length !== 11) {
+        //     alert("CPF deve conter 11 dígitos");
+        //     return;
+        // }
+        
+        // if (senhaFormatada.length < 3) {
+        //     alert("Senha muito curta");
+        //     return;
+        // }
+        
+        console.log("Enviando requisição de login:", { cpf: cpfFormatado, password: senhaFormatada });
+        
         login(
             { cpf: cpfFormatado, password: senhaFormatada },
             {
                 onSuccess: (response) => {
+                    console.log("Login bem sucedido:", response);
+                    // Exibe o modal de verificação e armazena o userId
+                    setShowVerificationModal(true);
+                    setUserId(response.data.userId);
+                },
+                onError: (error) => {
+                    console.error("Erro no login:", error);
+                    // Exibe mensagem de erro específica se disponível
+                    const errorMessage = error.response?.data?.message || "Erro ao realizar login. Verifique suas credenciais.";
+                    alert(errorMessage);
+                }
+            }
+        );
+    };
+
+    // Função para enviar o código de verificação
+    const handleVerification = async (code) => {
+        if (!code || code.length !== 6) {
+            alert("Por favor, insira o código de verificação de 6 dígitos");
+            return;
+        }
+        
+        console.log("Enviando verificação:", { userId, verificationCode: code });
+        
+        verifyCode(
+            { userId, verificationCode: code },
+            {
+                onSuccess: (response) => {
+                    console.log("Verificação bem sucedida:", response);
+                    setShowVerificationModal(false);
+                    
                     if (!lembrarMe) {
                         sessionStorage.setItem('sessionAuth', 'true');
                     }
                     
-                    const cargo = response.data.dados_usuario.cargo;
-                    redirectBasedOnRole(cargo);
+                    try {
+                        if (response.data && response.data.dados_usuario && response.data.dados_usuario.cargo) {
+                            const cargo = response.data.dados_usuario.cargo;
+                            redirectBasedOnRole(cargo);
+                        } else {
+                            console.error("Dados de resposta incompletos:", response.data);
+                            alert("Erro ao processar dados do usuário. Por favor, tente novamente.");
+                        }
+                    } catch (error) {
+                        console.error("Erro ao processar resposta de verificação:", error);
+                        alert("Erro inesperado. Por favor, tente novamente.");
+                    }
+                },
+                onError: (error) => {
+                    console.error("Erro na verificação:", error);
+                    // Não fecha o modal para permitir nova tentativa
+                    const errorMessage = error.response?.data?.message || "Código de verificação inválido. Tente novamente.";
+                    alert(errorMessage);
                 }
             }
         );
@@ -120,6 +184,18 @@ export default function ConteudoLogin() {
                 </button>
 
             </div>
+
+            {/* Modal de Verificação */}
+            <VerificationModal 
+                isOpen={showVerificationModal}
+                onClose={() => setShowVerificationModal(false)}
+                onVerify={(code) => {
+                    // Pass the code directly to handleVerification
+                    handleVerification(code);
+                }}
+                isLoading={isLoading}
+                error={error}
+            />
         </>
     );
 }
