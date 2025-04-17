@@ -1,67 +1,19 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { FaPaperclip, FaBell, FaCheck, FaChevronDown } from 'react-icons/fa';
-import axios, { AxiosError } from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTicketForm } from '../../hooks/useTicketForm';
+import { useTicketApi } from '../../hooks/useTicketApi';
+import { TicketData, TICKET_SUCCESS_MESSAGES } from '../../hooks/useTicketTypes';
 
-// Tipos para os tickets (mantidos os mesmos)
-type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO';
-type AbsenceReason = 'ATESTADO_MEDICO';
-
-interface BaseTicket {
-  tipo_ticket: TicketType;
-  mensagem: string;
-}
-
-interface VacationTicket extends BaseTicket {
-  tipo_ticket: 'PEDIR_FERIAS';
-  data_inicio_ferias: string;
-  dias_ferias: number;
-}
-
-interface AbsenceTicket extends BaseTicket {
-  tipo_ticket: 'PEDIR_ABONO';
-  motivo_abono: AbsenceReason;
-  dias_abono: string[];
-  abono_inicio: string;
-  abono_final: string;
-}
-
-type TicketData = VacationTicket | AbsenceTicket;
-
-// Estado do formulário
-interface FormState {
-  selectedOption: 'ferias' | 'abono' | '';
-  description: string;
-  startDate: string;
-  vacationDays: string;
-  absenceDays: string[];
-  absenceStart: string;
-  absenceEnd: string;
-  file: File | null;
-  filePreview: string | null;
-  error: string;
-  successMessage: string;
-}
-
-// Mensagens de sucesso
-const TICKET_SUCCESS_MESSAGES = {
-  ferias: 'Solicitação de férias enviada com sucesso!',
-  abono: 'Solicitação de abono enviada com sucesso!'
+const formatarDataBrasileira = (dataISO: string) => {
+  if (!dataISO) return '';
+  const [ano, mes, dia] = dataISO.split('T')[0].split('-');
+  return `${dia}/${mes}/${ano}`;
 };
 
-// Valores iniciais do formulário
-const INITIAL_FORM_STATE: FormState = {
-  selectedOption: '',
-  description: '',
-  startDate: '',
-  vacationDays: '',
-  absenceDays: [],
-  absenceStart: '',
-  absenceEnd: '',
-  file: null,
-  filePreview: null,
-  error: '',
-  successMessage: ''
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
 };
 
 // Componente de Select Personalizado
@@ -146,143 +98,100 @@ const Textarea = ({ value, onChange, label }: {
   );
 };
 
-// Componente principal
 const ConteudoSolicitacoes: React.FC = () => {
-  const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    formState,
+    handleOptionChange,
+    handleDescriptionChange,
+    handleDateChange,
+    handleFileChange,
+    removeFile,
+    addAbsenceDay,
+    removeAbsenceDay,
+    setFormState,
+    resetForm
+  } = useTicketForm();
 
-  // Manipuladores de eventos
-  const handleOptionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as 'ferias' | 'abono';
-    setFormState(prev => ({
-      ...prev,
-      selectedOption: value,
-      error: '',
-      successMessage: ''
-    }));
-  }, []);
+  const { submitTicket } = useTicketApi();
 
-  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormState(prev => ({
-      ...prev,
-      description: e.target.value,
-      error: ''
-    }));
-  }, []);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormState(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }, []);
+  const createTicketData = (): TicketData => {
+    const baseData = { mensagem: formState.description };
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormState(prev => ({
-          ...prev,
-          file,
-          filePreview: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
+    switch (formState.selectedOption) {
+      case 'ferias':
+        return {
+          ...baseData,
+          tipo_ticket: 'PEDIR_FERIAS',
+          data_inicio_ferias: `${formState.startDate}T00:00:00.000Z`,
+          dias_ferias: parseInt(formState.vacationDays) || 0
+        };
+
+      case 'abono':
+        return {
+          ...baseData,
+          tipo_ticket: 'PEDIR_ABONO',
+          motivo_abono: 'ATESTADO_MEDICO',
+          dias_abono: formState.absenceDays.map(day => new Date(day).toISOString())
+        };
+
+      default:
+        throw new Error('Tipo de solicitação inválido');
     }
-  }, []);
+  };
 
-  // Cria os dados do ticket baseado no estado do formulário
-  const createTicketData = useCallback((): TicketData => {
-    const baseData = {
-      mensagem: formState.description,
-    };
-
-    if (formState.selectedOption === 'ferias') {
-      return {
-        ...baseData,
-        tipo_ticket: 'PEDIR_FERIAS',
-        data_inicio_ferias: new Date(formState.startDate).toISOString(),
-        dias_ferias: parseInt(formState.vacationDays) || 0
-      };
-    } else {
-      return {
-        ...baseData,
-        tipo_ticket: 'PEDIR_ABONO',
-        motivo_abono: 'ATESTADO_MEDICO',
-        dias_abono: formState.absenceDays.map(day => new Date(day).toISOString()),
-        abono_inicio: new Date(formState.absenceStart).toISOString(),
-        abono_final: new Date(formState.absenceEnd).toISOString()
-      };
-    }
-  }, [formState]);
-
-  // Validação do formulário
-  const validateForm = useCallback((): boolean => {
+  const validateForm = (): boolean => {
     if (!formState.selectedOption) {
-      setFormState(prev => ({ ...prev, error: 'Por favor, selecione um tipo de solicitação.' }));
+      setFormState(prev => ({ ...prev, error: 'Por favor, selecione uma opção.' }));
       return false;
     }
 
     if (!formState.description.trim()) {
-      setFormState(prev => ({ ...prev, error: 'Por favor, escreva uma descrição detalhada.' }));
+      setFormState(prev => ({ ...prev, error: 'Por favor, escreva uma descrição.' }));
       return false;
     }
 
     if (formState.selectedOption === 'ferias') {
-      if (!formState.startDate) {
-        setFormState(prev => ({ ...prev, error: 'Por favor, informe a data de início das férias.' }));
+      if (!formState.startDate || !formState.vacationDays) {
+        setFormState(prev => ({ ...prev, error: 'Preencha todos os campos obrigatórios para férias.' }));
         return false;
       }
-      if (!formState.vacationDays || parseInt(formState.vacationDays) <= 0) {
-        setFormState(prev => ({ ...prev, error: 'Por favor, informe a quantidade de dias de férias.' }));
+      if (new Date(formState.startDate) < new Date(getTodayDate())) {
+        setFormState(prev => ({ ...prev, error: 'A data de início das férias deve ser a partir de hoje.' }));
         return false;
       }
-    } else {
-      if (!formState.absenceStart || !formState.absenceEnd) {
-        setFormState(prev => ({ ...prev, error: 'Por favor, informe o período completo do abono.' }));
-        return false;
-      }
-      if (!formState.file) {
-        setFormState(prev => ({ ...prev, error: 'Por favor, anexe o atestado médico.' }));
-        return false;
-      }
+    }
+
+    if (formState.selectedOption === 'abono' && formState.absenceDays.length === 0) {
+      setFormState(prev => ({ ...prev, error: 'Selecione pelo menos um dia para abonar.' }));
+      return false;
     }
 
     return true;
-  }, [formState]);
+  };
 
-  // Submissão do formulário
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    try {
-      const ticketData = createTicketData();
-      const response = await axios.post('/tickets/postar', ticketData);
+    const ticketData = createTicketData();
 
-      if (response.status === 200) {
-        setFormState({
-          ...INITIAL_FORM_STATE,
-          successMessage: TICKET_SUCCESS_MESSAGES[formState.selectedOption as 'ferias' | 'abono']
-        });
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError;
+    const { success, error } = await submitTicket(ticketData, formState.files);
+
+    if (success) {
+      resetForm();
       setFormState(prev => ({
         ...prev,
-        error: axiosError.response
-          ? `Erro ao enviar: ${(axiosError.response.data as any).message || 'Erro desconhecido'}`
-          : 'Erro de conexão. Tente novamente.'
+        successMessage: TICKET_SUCCESS_MESSAGES[formState.selectedOption as keyof typeof TICKET_SUCCESS_MESSAGES]
       }));
-    } finally {
-      setIsSubmitting(false);
+    } else if (error) {
+      setFormState(prev => ({ ...prev, error }));
     }
-  }, [validateForm, createTicketData, formState.selectedOption, formState.file]);
+    setIsSubmitting(false);
+  };
 
-  // Renderiza campos adicionais baseados na seleção
-  const renderAdditionalFields = useCallback(() => {
+  const renderAdditionalFields = () => {
     switch (formState.selectedOption) {
       case 'ferias':
         return (
@@ -297,20 +206,20 @@ const ConteudoSolicitacoes: React.FC = () => {
               name="startDate"
               value={formState.startDate}
               onChange={handleDateChange}
-              label="Data de Início"
-              min={new Date().toISOString().split('T')[0]}
+              label="Data de Início das Férias"
+              min={getTodayDate()}
             />
             <Input
               type="number"
               name="vacationDays"
               value={formState.vacationDays}
               onChange={(e) => setFormState(prev => ({ ...prev, vacationDays: e.target.value }))}
-              label="Duração (dias)"
+              label="Quantidade de Dias"
               min="1"
-              max="30"
             />
           </motion.div>
         );
+
       case 'abono':
         return (
           <motion.div
@@ -319,46 +228,88 @@ const ConteudoSolicitacoes: React.FC = () => {
             transition={{ duration: 0.4 }}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                type="datetime-local"
-                name="absenceStart"
-                value={formState.absenceStart}
-                onChange={handleDateChange}
-                label="Início do Abono"
-              />
-              <Input
-                type="datetime-local"
-                name="absenceEnd"
-                value={formState.absenceEnd}
-                onChange={handleDateChange}
-                label="Término do Abono"
-              />
-            </div>
-            
             <div className="mb-4">
               <label className="block mb-3 text-sm font-medium text-gray-600 uppercase tracking-wider">
-                Anexar Atestado
+                Dias para Abonar (anteriores a hoje)
+              </label>
+              <input
+                type="date"
+                onChange={(e) => {
+                  if (e.target.value && new Date(e.target.value) < new Date(getTodayDate())) {
+                    addAbsenceDay(e.target.value);
+                  }
+                }}
+                className="w-full p-4 pl-6 border-2 border-gray-200 rounded-xl bg-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300"
+                max={new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]}
+              />
+              <div className="mt-4 flex flex-wrap gap-2">
+                {formState.absenceDays.map((day, index) => (
+                  <motion.span
+                    key={index}
+                    className="bg-gray-100 px-3 py-1 rounded-lg flex items-center"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                  >
+                    {formatarDataBrasileira(day)}
+                    <button
+                      onClick={() => removeAbsenceDay(index)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      ×
+                    </button>
+                  </motion.span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-3 text-sm font-medium text-gray-600 uppercase tracking-wider">
+                Anexar Documentos
               </label>
               <label className="flex flex-col items-center mb-3 justify-center w-full p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all duration-300">
-                <input type="file" onChange={handleFileChange} className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                />
                 <FaPaperclip className="w-8 h-8 mb-3 text-blue-500" />
                 <p className="text-sm text-gray-600">
-                  {formState.file ? formState.file.name : 'Arraste ou clique para enviar o atestado'}
+                  {formState.files.length > 0
+                    ? `${formState.files.length} arquivo(s) selecionado(s)`
+                    : 'Arraste ou clique para enviar documentos'}
                 </p>
-                {formState.filePreview && formState.file.type.startsWith('image/') && (
-                  <div className="mt-4 w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
-                    <img src={formState.filePreview} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
               </label>
+
+              <div className="mt-4 space-y-2">
+                {formState.files.map((file, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-4 py-2 rounded-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <span className="text-sm text-gray-600 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      ×
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         );
       default:
         return null;
     }
-  }, [formState, handleDateChange, handleFileChange]);
+  };
+
 
   return (
     <motion.div
@@ -477,11 +428,10 @@ const ConteudoSolicitacoes: React.FC = () => {
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className={`w-full py-4 px-6 rounded-xl shadow-lg font-medium text-white transition-all duration-300 ${
-                    isSubmitting
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-xl'
-                  }`}
+                  className={`w-full py-4 px-6 rounded-xl shadow-lg font-medium text-white transition-all duration-300 ${isSubmitting
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-xl'
+                    }`}
                 >
                   {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
                 </motion.button>
