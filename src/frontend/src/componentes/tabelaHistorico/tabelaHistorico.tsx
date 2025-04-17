@@ -51,7 +51,7 @@ export default function ConteudoHistorico() {
         page: paginaAtual,
         size: itensPorPagina,
         nome_colaborador: searchQuery,
-        lista_status_turno: statusTurno,
+        lista_status: statusTurno,
         startDate: startDate?.toISOString(),
         endDate: endDate?.toISOString()
     };

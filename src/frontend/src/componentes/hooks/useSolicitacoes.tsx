@@ -39,7 +39,16 @@ interface PageData {
     empty: boolean;
 }
 
-const useSolicitacoes = (page: number, size: number, statusTicket?: string[]) => {
+interface UseSolicitacoesParams {
+    page: number;
+    size: number;
+    statusTicket?: string[];
+    startDate?: Date | null;
+    endDate?: Date | null;
+}
+
+
+const useSolicitacoes = ({ page, size, statusTicket, startDate, endDate }: UseSolicitacoesParams) => {
     const [solicitacoes, setSolicitacoes] = useState<PageData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -48,17 +57,23 @@ const useSolicitacoes = (page: number, size: number, statusTicket?: string[]) =>
         setLoading(true);
         setError(null);
         try {
+
+            const params: any = {
+                page,
+                size,
+                lista_status: statusTicket?.join(','),
+                startDate: startDate?.toISOString(),
+                endDate: endDate?.toISOString()
+            };
+
             const response = await axios.get('/tickets/listar', {
-                params: {
-                    page,
-                    size,
-                    lista_status_ticket: statusTicket?.join(','), // Envia como string separada por vírgulas
-                },
+                params,
                 paramsSerializer: {
-                    indexes: null // Isso permite enviar arrays como lista_status_ticket=EM_AGUARDO,APROVADO
+                    indexes: null
                 },
                 withCredentials: true,
             });
+
             setSolicitacoes(response.data);
         } catch (err: any) {
             setError(err.message || 'Erro ao buscar solicitações');
@@ -88,7 +103,7 @@ const useSolicitacoes = (page: number, size: number, statusTicket?: string[]) =>
 
     useEffect(() => {
         fetchSolicitacoes();
-    }, [page, size, statusTicket]);
+    }, [page, size, statusTicket,  startDate, endDate]);
 
     return { solicitacoes, loading, error, fetchSolicitacoes, atualizarSolicitacoes };
 };

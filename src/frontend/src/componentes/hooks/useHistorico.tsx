@@ -19,7 +19,7 @@ const useHistorico = (params: HistoricoParams) => {
                     size: params.size,
                     startDate: startDateISO,
                     endDate: endDateISO,
-                    lista_status_turno: params.lista_status_turno,
+                    lista_status: params.lista_status,
                     nome_colaborador: params.nome_colaborador, 
                 },
             });

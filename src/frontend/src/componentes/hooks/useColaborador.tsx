@@ -25,7 +25,7 @@ const useColaborador = () => {
                     page: currentPage,
                     size: pageSize,
                     nome_colaborador: searchQuery || undefined,
-                    workJourneyType: jornadaSelecionada || undefined 
+                    tipo_escala: jornadaSelecionada || undefined 
                 }
             });
             const employeesData = Array.isArray(response.data.content) ? response.data.content : [];

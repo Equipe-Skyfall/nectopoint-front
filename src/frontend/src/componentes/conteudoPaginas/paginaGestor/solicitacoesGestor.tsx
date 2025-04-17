@@ -5,6 +5,7 @@ import { FaArrowRight, FaCheck, FaUser } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import FiltrosSoli from "../../filtros/filtroSoli";
 
 type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO';
 type AbsenceReason = 'ATESTADO_MEDICO' | null;
@@ -63,6 +64,8 @@ export default function SolicitacoesGestor() {
   const [mostrarJustificativa, setMostrarJustificativa] = useState<boolean>(false);
   const [pagina, setPagina] = useState<number>(0);
   const [filtroStatus, setFiltroStatus] = useState<TicketStatus[]>(['EM_AGUARDO']);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const itensPorPagina = 5;
   const modalRef = useRef<HTMLDivElement | null>(null);
 
@@ -72,11 +75,13 @@ export default function SolicitacoesGestor() {
     error,
     fetchSolicitacoes,
     atualizarSolicitacoes
-  } = useSolicitacoes<PaginatedResponse<Solicitacao>>(
-    pagina,
-    itensPorPagina,
-    filtroStatus
-  );
+  } = useSolicitacoes({
+    page: pagina,
+    size: itensPorPagina,
+    statusTicket: filtroStatus,
+    startDate,
+    endDate
+  });
 
   const totalPaginas = solicitacoes?.totalPages || 1;
   const paginaAtual = solicitacoes?.number || 0;
@@ -187,6 +192,11 @@ export default function SolicitacoesGestor() {
       </span>
     );
   };
+  const limparFiltros = useCallback(() => {
+    setStartDate(null);
+    setEndDate(null);
+    setPagina(0);
+  }, []);
 
   return (
     <motion.div
@@ -207,7 +217,7 @@ export default function SolicitacoesGestor() {
         </motion.h1>
 
         {/* Filtros de status */}
-        <div className="flex flex-wrap gap-3 mb-6 justify-center">
+        <div className="flex flex-wrap gap-3 mb-4 justify-center">
           {Object.keys(TicketStatus).map((status) => (
             <motion.button
               key={status}
@@ -215,14 +225,22 @@ export default function SolicitacoesGestor() {
               whileTap={{ scale: 0.95 }}
               onClick={() => toggleFiltroStatus(status as TicketStatus)}
               className={`px-4 py-2 rounded-xl border transition-all ${filtroStatus.includes(status as TicketStatus)
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }`}
             >
               {formatarStatus(status)}
             </motion.button>
           ))}
+
         </div>
+        <FiltrosSoli
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          limparFiltros={limparFiltros}
+        />
 
         {/* Lista de solicitações */}
         <div className="space-y-4">
@@ -304,8 +322,8 @@ export default function SolicitacoesGestor() {
                       whileHover={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 1.1 : 1 }}
                       whileTap={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 0.9 : 1 }}
                       className={`text-blue-600 text-lg ml-60 px-3 py-2 rounded-md poppins transition-colors ${podeAprovarOuReprovar(solicitacao.status_ticket)
-                          ? 'hover:text-blue-800 cursor-pointer'
-                          : 'text-gray-400 cursor-not-allowed'
+                        ? 'hover:text-blue-800 cursor-pointer'
+                        : 'text-gray-400 cursor-not-allowed'
                         }`}
                       onClick={() => {
                         if (podeAprovarOuReprovar(solicitacao.status_ticket)) {
@@ -343,8 +361,8 @@ export default function SolicitacoesGestor() {
                 onClick={() => setPagina(p => Math.max(p - 1, 0))}
                 disabled={!temPaginaAnterior}
                 className={`flex items-center px-3 sm:px-6 py-3 rounded-xl ${!temPaginaAnterior
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white "
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white "
                   }`}
               >
                 <FiChevronLeft className="mr-2" />
@@ -371,8 +389,8 @@ export default function SolicitacoesGestor() {
                       whileTap={{ scale: 0.9 }}
                       onClick={() => setPagina(pageNum)}
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${paginaAtual === pageNum
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
-                          : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
                         }`}
                     >
                       {pageNum + 1}
@@ -387,11 +405,11 @@ export default function SolicitacoesGestor() {
                 onClick={() => setPagina(p => Math.min(p + 1, totalPaginas - 1))}
                 disabled={!temProximaPagina}
                 className={`flex items-center px-3 sm:px-6 py-3 rounded-xl ${!temProximaPagina
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white "
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white "
                   }`}
               >
-                
+
                 Próxima
                 <FiChevronRight className="ml-2" />
               </motion.button>
@@ -510,8 +528,8 @@ export default function SolicitacoesGestor() {
                         }
                       }}
                       className={`flex items-center text-sm sm:text-base justify-center px-6 py-3 rounded-xl shadow-md transition-all ${mostrarJustificativa && justificativa.trim()
-                          ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
-                          : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
+                        ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
+                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
                         }`}
                     >
                       <FaX className="mr-2" />
