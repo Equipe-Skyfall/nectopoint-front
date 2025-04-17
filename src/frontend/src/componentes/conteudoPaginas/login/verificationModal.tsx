@@ -72,7 +72,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
             <button
               type="submit"
               disabled={isLoading || code.length !== 6}
-              className={`px-4 py-2 rounded ${
+              className={`px-4 mx-auto py-2 rounded ${
                 isLoading || code.length !== 6
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'

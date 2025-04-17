@@ -54,14 +54,19 @@ export default function NavBar() {
 
 
     // Função para confirmar o logout
-    const confirmLogout = () => {
+    const confirmLogout = async () => {
+        
         setShowLogoutModal(false);
+        await api.post('/usuario/logout')
         localStorage.clear();
         sessionStorage.clear();
-        api.post('/usuario/logout')
-        
         
         navigate("/");
+        
+        window.location.reload();
+       
+        
+       
     };
 
     // Hook para detectar cliques fora da sidebar
