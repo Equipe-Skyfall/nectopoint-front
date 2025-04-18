@@ -94,7 +94,7 @@ const useAuth = () => {
         jornadas_irregulares: responseData.jornadas_irregulares,
         tickets_usuario: responseData.tickets_usuario,
       };
-
+      
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       queryClient.invalidateQueries({ queryKey: ['user'] });
