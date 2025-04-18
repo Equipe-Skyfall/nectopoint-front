@@ -28,11 +28,20 @@ export interface FiltrosColaboradorProps {
     limparFiltros: () => void;
 }
 
+
 export interface FiltrosHistoricoProps {
     searchQuery: string;
     setSearchQuery: (value: string) => void;
     statusTurno: string;
     setStatusTurno: (value: string) => void;
+    startDate: Date | null;
+    setStartDate: (date: Date | null) => void;
+    endDate: Date | null;
+    setEndDate: (date: Date | null) => void;
+    limparFiltros: () => void;
+}
+
+export interface FiltrosSoliProps {
     startDate: Date | null;
     setStartDate: (date: Date | null) => void;
     endDate: Date | null;

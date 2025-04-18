@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import InputPadrao from "../../inputPadrao/inputPadrao";
 import { useAuthContext } from "../../../Provider/AuthProvider";
+import VerificationModal from "./verificationModal";
 import { motion } from "framer-motion";
-import { FaUser, FaLock, FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaLock, FaUser } from "react-icons/fa";
 
 export default function ConteudoLogin() {
     const [cpf, setCpf] = useState("");
     const [senha, setSenha] = useState("");
     const [lembrarMe, setLembrarMe] = useState(false);
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [verificationCode, setVerificationCode] = useState("");
+    const [userId, setUserId] = useState("");
     const navigate = useNavigate();
-
-    const { login, isLoading, error, user, isAuthenticated } = useAuthContext();
-
+    
+    // Usa o AuthContext
+    const { login, verifyCode, isLoading, error, user, isAuthenticated } = useAuthContext();
+   
+    // Função para redirecionar baseado no cargo
     const redirectBasedOnRole = (cargo) => {
         if (cargo === "COLABORADOR") {
             navigate("/home");
@@ -21,34 +27,94 @@ export default function ConteudoLogin() {
         }
     };
 
+    // Checa a autenticação ao montar o componente e redireciona baseado no cargo
     useEffect(() => {
         document.body.classList.add("overflow-hidden");
-        document.body.classList.add("bg-white");
 
         if (isAuthenticated && user) {
-            redirectBasedOnRole(user.cargo);
+            redirectBasedOnRole(user.dados_usuario.cargo);
         }
 
         return () => {
             document.body.classList.remove("overflow-hidden");
-            document.body.classList.remove("bg-white");
         };
     }, [isAuthenticated, user, navigate]);
 
+    // Função para submit do login
     const handleLogin = async () => {
         const cpfFormatado = cpf.replace(/\D/g, "");
         const senhaFormatada = senha.trim();
-
+        
+        // Validação simples
+        // if (cpfFormatado.length !== 11) {
+        //     alert("CPF deve conter 11 dígitos");
+        //     return;
+        // }
+        
+        // if (senhaFormatada.length < 3) {
+        //     alert("Senha muito curta");
+        //     return;
+        // }
+        
+        console.log("Enviando requisição de login:", { cpf: cpfFormatado, password: senhaFormatada });
+        
         login(
             { cpf: cpfFormatado, password: senhaFormatada },
             {
                 onSuccess: (response) => {
+                    console.log("Login bem sucedido:", response);
+                    // Exibe o modal de verificação e armazena o userId
+                    setShowVerificationModal(true);
+                    setUserId(response.data.userId);
+                },
+                onError: (error) => {
+                    console.error("Erro no login:", error);
+                    // Exibe mensagem de erro específica se disponível
+                    const errorMessage = error.response?.data?.message || "Erro ao realizar login. Verifique suas credenciais.";
+                    alert(errorMessage);
+                }
+            }
+        );
+    };
+
+    // Função para enviar o código de verificação
+    const handleVerification = async (code) => {
+        if (!code || code.length !== 6) {
+            alert("Por favor, insira o código de verificação de 6 dígitos");
+            return;
+        }
+        
+        console.log("Enviando verificação:", { userId, verificationCode: code });
+        
+        verifyCode(
+            { userId, verificationCode: code },
+            {
+                onSuccess: (response) => {
+                    console.log("Verificação bem sucedida:", response);
+                    setShowVerificationModal(false);
+                    
                     if (!lembrarMe) {
                         sessionStorage.setItem('sessionAuth', 'true');
                     }
-
-                    const cargo = response.data.dados_usuario.cargo;
-                    redirectBasedOnRole(cargo);
+                    
+                    try {
+                        if (response.data && response.data.dados_usuario && response.data.dados_usuario.cargo) {
+                            const cargo = response.data.dados_usuario.cargo;
+                            redirectBasedOnRole(cargo);
+                        } else {
+                            console.error("Dados de resposta incompletos:", response.data);
+                            alert("Erro ao processar dados do usuário. Por favor, tente novamente.");
+                        }
+                    } catch (error) {
+                        console.error("Erro ao processar resposta de verificação:", error);
+                        alert("Erro inesperado. Por favor, tente novamente.");
+                    }
+                },
+                onError: (error) => {
+                    console.error("Erro na verificação:", error);
+                    // Não fecha o modal para permitir nova tentativa
+                    const errorMessage = error.response?.data?.message || "Código de verificação inválido. Tente novamente.";
+                    alert(errorMessage);
                 }
             }
         );
@@ -104,8 +170,7 @@ export default function ConteudoLogin() {
                         <div className="mb-6">
                             <label className="block text-base font-bold text-gray-700 text-start -mb-2 ml-2">CPF</label>
                             <div className="relative">
-                                <motion.div
-                                    whileHover={{ scale: 1.03 }}>
+                                <motion.div whileHover={{ scale: 1.03 }}>
                                     <div className="absolute inset-y-0 left-5 pl-3 flex items-center pointer-events-none">
                                         <FaUser className="text-gray-400" />
                                     </div>
@@ -126,20 +191,20 @@ export default function ConteudoLogin() {
                         <div className="mb-6">
                             <label className="block text-base font-bold text-gray-700 text-start -mb-2 ml-2">SENHA</label>
                             <div className="relative">
-                            <motion.div
-                                    whileHover={{ scale: 1.03 }}>
-                                <div className="absolute inset-y-0 left-5 pl-3 flex items-center pointer-events-none">
-                                    <FaLock className="text-gray-400" />
-                                </div>
-                                <InputPadrao
-                                    placeholder="Digite sua senha"
-                                    length={20}
-                                    pattern="[0-9]A-Za-z"
-                                    id="senha"
-                                    type="password"
-                                    value={senha}
-                                    onChange={(e) => setSenha(e.target.value)}
-                                />
+                                <motion.div whileHover={{ scale: 1.03 }}>
+                                    <div className="absolute inset-y-0 left-5 pl-3 flex items-center pointer-events-none">
+                                        <FaLock className="text-gray-400" />
+                                    </div>
+                                    <InputPadrao
+                                        placeholder="Digite sua senha"
+                                        length={20}
+                                        pattern="[0-9]A-Za-z"
+                                        id="senha"
+                                        type="password"
+                                        value={senha}
+                                        onChange={(e) => setSenha(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    />
                                 </motion.div>
                             </div>
                         </div>
@@ -159,7 +224,6 @@ export default function ConteudoLogin() {
                                 />
                                 <span className="ml-3 text-sm text-gray-700">Lembrar-me</span>
                             </label>
-
                         </motion.div>
 
                         {/* Botão de Login */}
@@ -182,8 +246,15 @@ export default function ConteudoLogin() {
                             )}
                         </motion.button>
                     </div>
-
                 </div>
+                
+                <VerificationModal 
+                    isOpen={showVerificationModal}
+                    onClose={() => setShowVerificationModal(false)}
+                    onVerify={(code) => handleVerification(code)}
+                    isLoading={isLoading}
+                    error={error}
+                />
             </motion.div>
         </div>
     );
