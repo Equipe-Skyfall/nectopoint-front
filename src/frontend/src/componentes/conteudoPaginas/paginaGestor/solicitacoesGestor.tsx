@@ -240,6 +240,11 @@ export default function SolicitacoesGestor() {
       </span>
     );
   };
+  const limparFiltros = useCallback(() => {
+    setStartDate(null);
+    setEndDate(null);
+    setPagina(0);
+  }, []);
 
   const limparFiltros = useCallback(() => {
     setStartDate(null);
@@ -281,7 +286,15 @@ export default function SolicitacoesGestor() {
               {formatarStatus(status)}
             </motion.button>
           ))}
+
         </div>
+        <FiltrosSoli
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          limparFiltros={limparFiltros}
+        />
 
         <FiltrosSoli
           startDate={startDate}

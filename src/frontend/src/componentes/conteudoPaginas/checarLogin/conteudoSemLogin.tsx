@@ -1,5 +1,5 @@
-import React, { JSX } from "react"
-import { Navigate, useNavigate } from "react-router-dom"
+import  { JSX } from "react"
+import {  useNavigate } from "react-router-dom"
 export default function ConteudoChecarLogin():JSX.Element {
     const navigate = useNavigate()
         return (
