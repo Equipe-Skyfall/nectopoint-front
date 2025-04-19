@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import FiltrosSoli from "../../filtros/filtroSoli";
 
-type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO';
+type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO' | 'PEDIR_HORA_EXTRA' | 'SOLICITAR_FOLGA';
 type AbsenceReason = 'ATESTADO_MEDICO' | null;
 
 interface BaseTicket {
@@ -36,7 +36,21 @@ interface AbsenceTicket extends BaseTicket {
   abono_final?: string;
 }
 
-type Solicitacao = VacationTicket | AbsenceTicket;
+interface OvertimeTicket extends BaseTicket {
+  tipo_ticket: 'PEDIR_HORA_EXTRA';
+  horas_solicitadas: number;
+  data_hora_extra: string;
+  motivo_hora_extra?: string;
+}
+
+interface DayOffTicket extends BaseTicket {
+  tipo_ticket: 'SOLICITAR_FOLGA';
+  dia_folga: string;
+  motivo_folga?: string;
+}
+
+
+type Solicitacao = VacationTicket | AbsenceTicket | OvertimeTicket | DayOffTicket;
 
 interface PaginatedResponse<T> {
   content: T[];
@@ -69,6 +83,30 @@ export default function SolicitacoesGestor() {
   const itensPorPagina = 5;
   const modalRef = useRef<HTMLDivElement | null>(null);
 
+  // Função para formatar datas no horário do Brasil
+  const formatarDataBrasil = (dataISO: string) => {
+    if (!dataISO) return 'Não informado';
+
+    const data = new Date(dataISO);
+    // Ajusta para o fuso horário do Brasil (UTC-3)
+    data.setHours(data.getHours() - 3);
+
+    return data.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Função para formatar os dias de abono
+  const formatarDiasAbono = (dias: string[] | null | undefined) => {
+    if (!dias || dias.length === 0) return null;
+
+    return dias.map(dia => formatarDataBrasil(dia)).join(', ');
+  };
+
   const {
     solicitacoes,
     loading,
@@ -96,9 +134,12 @@ export default function SolicitacoesGestor() {
     switch (tipo) {
       case 'PEDIR_FERIAS': return 'Férias';
       case 'PEDIR_ABONO': return 'Abono';
+      case 'PEDIR_HORA_EXTRA': return 'Hora Extra';
+      case 'SOLICITAR_FOLGA': return 'Folga';
       default: return tipo;
     }
   }, []);
+
   const podeAprovarOuReprovar = useCallback((status: TicketStatus) => {
     return status === 'EM_AGUARDO';
   }, []);
@@ -127,26 +168,33 @@ export default function SolicitacoesGestor() {
       const payload: ResponsePayload = {
         novo_status: status_novo,
         ...(status_novo === 'REPROVADO' && { justificativa }),
-        ticket: {
-          ...modalAberto,
-          status_ticket: status_novo
-        }
+        ticket: modalAberto
       };
+
+      // Adicionar lógica específica para cada tipo de ticket
+      if (status_novo === 'APROVADO') {
+        switch (modalAberto.tipo_ticket) {
+          case 'PEDIR_HORA_EXTRA':
+            // Lógica específica para aprovar hora extra
+            break;
+          case 'SOLICITAR_FOLGA':
+            // Lógica específica para aprovar folga
+            break;
+        }
+      }
 
       const response = await axios.post('/tickets/responder', payload);
 
-      if (response.status === 200 || response.data.success) {
+      if (response.status === 200) {
         await fetchSolicitacoes();
         setModalAberto(null);
         setJustificativa('');
         setMostrarJustificativa(false);
-      } else {
-        alert('Erro ao processar a resposta. Tente novamente.');
+        toast.success('Solicitação processada com sucesso!');
       }
     } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error('Erro ao enviar resposta:', axiosError);
-      alert(axiosError.response?.data?.message || 'Erro ao enviar resposta. Tente novamente.');
+      console.error('Erro ao enviar resposta:', error);
+      toast.error('Erro ao processar solicitação');
     }
   }, [modalAberto, justificativa, fetchSolicitacoes]);
 
@@ -198,6 +246,12 @@ export default function SolicitacoesGestor() {
     setPagina(0);
   }, []);
 
+  const limparFiltros = useCallback(() => {
+    setStartDate(null);
+    setEndDate(null);
+    setPagina(0);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -234,6 +288,14 @@ export default function SolicitacoesGestor() {
           ))}
 
         </div>
+        <FiltrosSoli
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          limparFiltros={limparFiltros}
+        />
+
         <FiltrosSoli
           startDate={startDate}
           setStartDate={setStartDate}
@@ -302,7 +364,7 @@ export default function SolicitacoesGestor() {
                           {solicitacao.nome_colaborador}
                         </h3>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <span className="text-sm text-gray-600 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent  ">
+                          <span className="text-sm text-gray-600 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                             {formatarTipoTicket(solicitacao.tipo_ticket)}
                           </span>
                           {solicitacao.tipo_ticket === 'PEDIR_ABONO' && (
@@ -313,7 +375,7 @@ export default function SolicitacoesGestor() {
                           <StatusBadge status={solicitacao.status_ticket} />
                         </div>
                         <p className="poppins text-xs text-gray-600 mt-1 text-start">
-                          {new Date(solicitacao.data_ticket).toLocaleDateString()}
+                          {formatarDataBrasil(solicitacao.data_ticket)}
                         </p>
                       </div>
                     </div>
@@ -353,7 +415,6 @@ export default function SolicitacoesGestor() {
             transition={{ delay: 0.3 }}
             className="mt-8 flex flex-col sm:flex-row items-center font-normal justify-center gap-4"
           >
-
             <div className="flex items-center gap-3">
               <motion.button
                 whileHover={{ scale: !temPaginaAnterior ? 1 : 1.05 }}
@@ -409,7 +470,6 @@ export default function SolicitacoesGestor() {
                   : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white "
                   }`}
               >
-
                 Próxima
                 <FiChevronRight className="ml-2" />
               </motion.button>
@@ -448,7 +508,7 @@ export default function SolicitacoesGestor() {
                     <h3 className="font-semibold text-blue-600 mb-2">Detalhes da Solicitação</h3>
                     <p className="text-sm"><span className="font-medium">Tipo:</span> {formatarTipoTicket(modalAberto.tipo_ticket)}</p>
                     <p className="text-sm p-1"><span className="font-medium">Status:</span> <StatusBadge status={modalAberto.status_ticket} /></p>
-                    <p className="text-sm"><span className="font-medium">Data:</span> {new Date(modalAberto.data_ticket).toLocaleString()}</p>
+                    <p className="text-sm"><span className="font-medium">Data:</span> {formatarDataBrasil(modalAberto.data_ticket)}</p>
                   </div>
                 </div>
 
@@ -457,7 +517,7 @@ export default function SolicitacoesGestor() {
                   {modalAberto.tipo_ticket === 'PEDIR_FERIAS' && (
                     <div className="bg-blue-50 p-2 sm:p-4 rounded-lg">
                       <h3 className="font-semibold text-blue-600 mb-2">Detalhes das Férias</h3>
-                      <p className="text-sm"><span className="font-medium">Data de Início:</span> {modalAberto.data_inicio_ferias || 'Não informado'}</p>
+                      <p className="text-sm"><span className="font-medium">Data de Início:</span> {modalAberto.data_inicio_ferias ? formatarDataBrasil(modalAberto.data_inicio_ferias) : 'Não informado'}</p>
                       <p className="text-sm"><span className="font-medium">Duração:</span> {modalAberto.dias_ferias ? `${modalAberto.dias_ferias} dias` : 'Não informado'}</p>
                     </div>
                   )}
@@ -467,11 +527,40 @@ export default function SolicitacoesGestor() {
                       <h3 className="font-semibold text-purple-600 mb-2">Detalhes do Abono</h3>
                       <p className="text-sm"><span className="font-medium">Motivo:</span> {formatarMotivoAbono(modalAberto.motivo_abono) || 'Não informado'}</p>
                       {modalAberto.abono_inicio && (
-                        <p className="text-sm"><span className="font-medium">Período:</span> {modalAberto.abono_inicio} {modalAberto.abono_final && `a ${modalAberto.abono_final}`}</p>
+                        <p className="text-sm">
+                          <span className="font-medium">Período:</span> {formatarDataBrasil(modalAberto.abono_inicio)}
+                          {modalAberto.abono_final && ` a ${formatarDataBrasil(modalAberto.abono_final)}`}
+                        </p>
                       )}
                       {modalAberto.dias_abono?.length ? (
-                        <p className="text-sm"><span className="font-medium">Dias selecionados:</span> {modalAberto.dias_abono.join(', ')}</p>
+                        <p className="text-sm">
+                          <span className="font-medium">Dias selecionados:</span> {formatarDiasAbono(modalAberto.dias_abono)}
+                        </p>
                       ) : null}
+                    </div>
+                  )}
+
+                  {modalAberto.tipo_ticket === 'PEDIR_HORA_EXTRA' && (
+                    <div className="bg-purple-50 p-2 sm:p-4 rounded-lg">
+                      {modalAberto.motivo_hora_extra && (
+                        <p className="text-sm">
+                          <span className="font-medium">Motivo:</span> {modalAberto.motivo_hora_extra}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {modalAberto.tipo_ticket === 'SOLICITAR_FOLGA' && (
+                    <div className="bg-green-50 p-2 sm:p-4 rounded-lg">
+                      <h3 className="font-semibold text-green-600 mb-2">Detalhes da Folga</h3>
+                      <p className="text-sm">
+                        <span className="font-medium">Data:</span> {formatarDataBrasil(modalAberto.dia_folga)}
+                      </p>
+                      {modalAberto.motivo_folga && (
+                        <p className="text-sm">
+                          <span className="font-medium">Motivo:</span> {modalAberto.motivo_folga}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
