@@ -1,62 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import axios, { AxiosError } from 'axios';
-import useSolicitacoes from '../../hooks/useSolicitacoes';
-import { FaArrowRight, FaCheck, FaUser } from "react-icons/fa";
+import { useState, useRef, useEffect } from "react";
+import { FaArrowRight, FaCheck, FaUser, FaFilePdf, FaFileImage, FaDownload, FaExclamationTriangle } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import FiltrosSoli from "../../filtros/filtroSoli";
-
-type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO' | 'PEDIR_HORA_EXTRA' | 'SOLICITAR_FOLGA';
-type AbsenceReason = 'ATESTADO_MEDICO' | null;
-
-interface BaseTicket {
-  id_ticket: string;
-  id_colaborador: number;
-  nome_colaborador: string;
-  cpf_colaborador: string;
-  tipo_ticket: TicketType;
-  mensagem: string;
-  status_ticket: TicketStatus;
-  data_ticket: string;
-  aviso_atrelado?: string;
-}
-
-interface VacationTicket extends BaseTicket {
-  tipo_ticket: 'PEDIR_FERIAS';
-  data_inicio_ferias?: string;
-  dias_ferias?: number;
-}
-
-interface AbsenceTicket extends BaseTicket {
-  tipo_ticket: 'PEDIR_ABONO';
-  motivo_abono: AbsenceReason;
-  dias_abono?: string[];
-  abono_inicio?: string;
-  abono_final?: string;
-}
-
-interface OvertimeTicket extends BaseTicket {
-  tipo_ticket: 'PEDIR_HORA_EXTRA';
-  horas_solicitadas: number;
-  data_hora_extra: string;
-  motivo_hora_extra?: string;
-}
-
-interface DayOffTicket extends BaseTicket {
-  tipo_ticket: 'SOLICITAR_FOLGA';
-  dia_folga: string;
-  motivo_folga?: string;
-}
-
-
-type Solicitacao = VacationTicket | AbsenceTicket | OvertimeTicket | DayOffTicket;
-
-interface PaginatedResponse<T> {
-  content: T[];
-  number: number;
-  totalPages: number;
-}
+import useSolicitacoes from '../../hooks/useSolicitacoes';
 
 const TicketStatus = {
   EM_AGUARDO: 'EM_AGUARDO',
@@ -65,54 +13,63 @@ const TicketStatus = {
 } as const;
 
 type TicketStatus = keyof typeof TicketStatus;
+type TicketType = 'PEDIR_FERIAS' | 'PEDIR_ABONO' | 'PEDIR_HORA_EXTRA' | 'SOLICITAR_FOLGA' | 'ALTERAR_PONTOS';
+type AbsenceReason = 'ATESTADO_MEDICO' | null;
 
-interface ResponsePayload {
-  novo_status: TicketStatus;
-  justificativa?: string;
-  ticket: Solicitacao;
+interface Solicitacao {
+  id_ticket: string;
+  id_colaborador: number;
+  nome_colaborador: string;
+  cpf_colaborador: string;
+  tipo_ticket: TicketType;
+  mensagem: string;
+  status_ticket: TicketStatus;
+  data_ticket: string;
+  id_gerente?: number | null;
+  nome_gerente?: string | null;
+  justificativa?: string | null;
+  data_inicio_ferias?: string;
+  dias_ferias?: number;
+  motivo_abono?: AbsenceReason;
+  dias_abono?: string[];
+  id_registro?: string;
+  id_aviso?: string;
+  pontos_anterior?: any[];
+  pontos_ajustado?: any[];
+  lista_horas?: string[];
+  filePath?: string;
 }
 
-export default function SolicitacoesGestor() {
+const SolicitacoesGestor = () => {
   const [modalAberto, setModalAberto] = useState<Solicitacao | null>(null);
-  const [justificativa, setJustificativa] = useState<string>('');
-  const [mostrarJustificativa, setMostrarJustificativa] = useState<boolean>(false);
-  const [pagina, setPagina] = useState<number>(0);
+  const [ticketDetalhado, setTicketDetalhado] = useState<Solicitacao | null>(null);
+  const [loadingModal, setLoadingModal] = useState(false);
+  const [justificativa, setJustificativa] = useState('');
+  const [mostrarJustificativa, setMostrarJustificativa] = useState(false);
+  const [pagina, setPagina] = useState(0);
   const [filtroStatus, setFiltroStatus] = useState<TicketStatus[]>(['EM_AGUARDO']);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const itensPorPagina = 5;
   const modalRef = useRef<HTMLDivElement | null>(null);
-
-  // Função para formatar datas no horário do Brasil
-  const formatarDataBrasil = (dataISO: string) => {
-    if (!dataISO) return 'Não informado';
-
-    const data = new Date(dataISO);
-    // Ajusta para o fuso horário do Brasil (UTC-3)
-    data.setHours(data.getHours() - 3);
-
-    return data.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Função para formatar os dias de abono
-  const formatarDiasAbono = (dias: string[] | null | undefined) => {
-    if (!dias || dias.length === 0) return null;
-
-    return dias.map(dia => formatarDataBrasil(dia)).join(', ');
-  };
 
   const {
     solicitacoes,
     loading,
     error,
-    fetchSolicitacoes,
-    atualizarSolicitacoes
+    formatarDataBrasil,
+    formatarDiasAbono,
+    formatarStatus,
+    formatarTipoTicket,
+    formatarMotivoAbono,
+    podeAprovarOuReprovar,
+    abrirModalDetalhes,
+    enviarResposta,
+    toggleFiltroStatus,
+    limparFiltros,
+    getFileDownloadUrl,
+    checkFileAccessibility
   } = useSolicitacoes({
     page: pagina,
     size: itensPorPagina,
@@ -121,91 +78,11 @@ export default function SolicitacoesGestor() {
     endDate
   });
 
-  const totalPaginas = solicitacoes?.totalPages || 1;
-  const paginaAtual = solicitacoes?.number || 0;
-  const temProximaPagina = paginaAtual < totalPaginas - 1;
-  const temPaginaAnterior = paginaAtual > 0;
-
-  const formatarStatus = useCallback((status: string): string => {
-    return status.replace(/_/g, ' ');
-  }, []);
-
-  const formatarTipoTicket = useCallback((tipo: TicketType): string => {
-    switch (tipo) {
-      case 'PEDIR_FERIAS': return 'Férias';
-      case 'PEDIR_ABONO': return 'Abono';
-      case 'PEDIR_HORA_EXTRA': return 'Hora Extra';
-      case 'SOLICITAR_FOLGA': return 'Folga';
-      default: return tipo;
+  useEffect(() => {
+    if (solicitacoes === null || (solicitacoes.content.length === 0 && pagina > 0)) {
+      setPagina(p => Math.max(p - 1, 0));
     }
-  }, []);
-
-  const podeAprovarOuReprovar = useCallback((status: TicketStatus) => {
-    return status === 'EM_AGUARDO';
-  }, []);
-
-  const formatarMotivoAbono = useCallback((motivo: AbsenceReason): string => {
-    if (!motivo) return '';
-    switch (motivo) {
-      case 'ATESTADO_MEDICO': return 'Atestado Médico';
-      default: return motivo;
-    }
-  }, []);
-
-  const truncarTexto = useCallback((texto: string, limite: number): string => {
-    return texto.length > limite ? texto.substring(0, limite) + "..." : texto;
-  }, []);
-
-  const enviarResposta = useCallback(async (status_novo: TicketStatus) => {
-    if (!modalAberto) return;
-
-    if (status_novo === 'REPROVADO' && !justificativa.trim()) {
-      alert('Por favor, insira uma justificativa para reprovar a solicitação.');
-      return;
-    }
-
-    try {
-      const payload: ResponsePayload = {
-        novo_status: status_novo,
-        ...(status_novo === 'REPROVADO' && { justificativa }),
-        ticket: modalAberto
-      };
-
-      // Adicionar lógica específica para cada tipo de ticket
-      if (status_novo === 'APROVADO') {
-        switch (modalAberto.tipo_ticket) {
-          case 'PEDIR_HORA_EXTRA':
-            // Lógica específica para aprovar hora extra
-            break;
-          case 'SOLICITAR_FOLGA':
-            // Lógica específica para aprovar folga
-            break;
-        }
-      }
-
-      const response = await axios.post('/tickets/responder', payload);
-
-      if (response.status === 200) {
-        await fetchSolicitacoes();
-        setModalAberto(null);
-        setJustificativa('');
-        setMostrarJustificativa(false);
-        toast.success('Solicitação processada com sucesso!');
-      }
-    } catch (error) {
-      console.error('Erro ao enviar resposta:', error);
-      toast.error('Erro ao processar solicitação');
-    }
-  }, [modalAberto, justificativa, fetchSolicitacoes]);
-
-  const toggleFiltroStatus = useCallback((status: TicketStatus) => {
-    setFiltroStatus(prev =>
-      prev.includes(status)
-        ? prev.filter(s => s !== status)
-        : [...prev, status]
-    );
-    setPagina(0);
-  }, []);
+  }, [solicitacoes, pagina]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -213,6 +90,7 @@ export default function SolicitacoesGestor() {
         setModalAberto(null);
         setJustificativa('');
         setMostrarJustificativa(false);
+        setFileError(null);
       }
     };
 
@@ -227,7 +105,16 @@ export default function SolicitacoesGestor() {
     };
   }, [modalAberto]);
 
-  // Estilo para badges de status
+  useEffect(() => {
+    if (ticketDetalhado?.tipo_ticket === 'PEDIR_ABONO' && ticketDetalhado.filePath) {
+      checkFileAccessibility(ticketDetalhado.id_ticket)
+        .then(() => setFileError(null))
+        .catch((err) => setFileError(err.message));
+    } else if (ticketDetalhado?.tipo_ticket === 'PEDIR_ABONO' && !ticketDetalhado.filePath) {
+      setFileError('Nenhum anexo foi enviado com esta solicitação.');
+    }
+  }, [ticketDetalhado, checkFileAccessibility]);
+
   const StatusBadge = ({ status }: { status: TicketStatus }) => {
     const statusStyles = {
       EM_AGUARDO: 'bg-yellow-100 text-yellow-800',
@@ -241,11 +128,27 @@ export default function SolicitacoesGestor() {
     );
   };
 
-  const limparFiltros = useCallback(() => {
-    setStartDate(null);
-    setEndDate(null);
-    setPagina(0);
-  }, []);
+  const handleDownload = async (ticketId: string, fileName: string) => {
+    try {
+      await checkFileAccessibility(ticketId);
+
+      const downloadUrl = `http://localhost:3000/tickets/files/${ticketId}`;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName || 'anexo';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      console.error('Erro ao baixar arquivo:', err);
+      setFileError(err.message || 'Não foi possível baixar o arquivo. Tente novamente.');
+    }
+  };
+
+  const totalPaginas = solicitacoes?.totalPages || 1;
+  const paginaAtual = solicitacoes?.number || 0;
+  const temProximaPagina = paginaAtual < totalPaginas - 1;
+  const temPaginaAnterior = paginaAtual > 0;
 
   return (
     <motion.div
@@ -255,7 +158,6 @@ export default function SolicitacoesGestor() {
       className="mt-16 min-h-screen p-4 md:p-6 poppins"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Título com gradiente */}
         <motion.h1
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -265,14 +167,13 @@ export default function SolicitacoesGestor() {
           Solicitações
         </motion.h1>
 
-        {/* Filtros de status */}
         <div className="flex flex-wrap gap-3 mb-4 justify-center">
           {Object.keys(TicketStatus).map((status) => (
             <motion.button
               key={status}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => toggleFiltroStatus(status as TicketStatus)}
+              onClick={() => toggleFiltroStatus(status as TicketStatus, setFiltroStatus, setPagina)}
               className={`px-4 py-2 rounded-xl border transition-all ${filtroStatus.includes(status as TicketStatus)
                 ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -288,10 +189,9 @@ export default function SolicitacoesGestor() {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          limparFiltros={limparFiltros}
+          limparFiltros={() => limparFiltros(setStartDate, setEndDate, setPagina)}
         />
 
-        {/* Lista de solicitações */}
         <div className="space-y-4">
           {loading ? (
             <motion.div
@@ -354,7 +254,7 @@ export default function SolicitacoesGestor() {
                           <span className="text-sm text-gray-600 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                             {formatarTipoTicket(solicitacao.tipo_ticket)}
                           </span>
-                          {solicitacao.tipo_ticket === 'PEDIR_ABONO' && (
+                          {solicitacao.tipo_ticket === 'PEDIR_ABONO' && solicitacao.motivo_abono && (
                             <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
                               {formatarMotivoAbono(solicitacao.motivo_abono)}
                             </span>
@@ -370,13 +270,13 @@ export default function SolicitacoesGestor() {
                     <motion.button
                       whileHover={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 1.1 : 1 }}
                       whileTap={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 0.9 : 1 }}
-                      className={`text-blue-600 text-lg ml-60 px-3 py-2 rounded-md poppins transition-colors ${podeAprovarOuReprovar(solicitacao.status_ticket)
+                      className={`text-blue-600 text-lg px-3 py-2 rounded-md poppins transition-colors ${podeAprovarOuReprovar(solicitacao.status_ticket)
                         ? 'hover:text-blue-800 cursor-pointer'
                         : 'text-gray-400 cursor-not-allowed'
                         }`}
                       onClick={() => {
                         if (podeAprovarOuReprovar(solicitacao.status_ticket)) {
-                          setModalAberto(solicitacao);
+                          abrirModalDetalhes(solicitacao, setTicketDetalhado, setLoadingModal, setModalAberto);
                         }
                       }}
                       title={
@@ -394,7 +294,6 @@ export default function SolicitacoesGestor() {
           )}
         </div>
 
-        {/* Paginação */}
         {totalPaginas > 1 && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -464,7 +363,6 @@ export default function SolicitacoesGestor() {
           </motion.div>
         )}
 
-        {/* Modal de detalhes */}
         <AnimatePresence>
           {modalAberto && podeAprovarOuReprovar(modalAberto.status_ticket) && (
             <motion.div
@@ -480,152 +378,187 @@ export default function SolicitacoesGestor() {
                 ref={modalRef}
                 className="bg-white p-6 poppins rounded-xl shadow-xl md:w-2/3 lg:w-1/2 max-w-2xl relative"
               >
-                <h2 className="sm:text-2xl text-xl font-bold mb-2 sm:mb-6 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center">
-                  Detalhes da Solicitação
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 sm:mb-6">
-                  <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
-                    <h3 className="font-semibold text-blue-600 mb-2">Informações do Colaborador</h3>
-                    <p className="text-sm"><span className="font-medium">Nome:</span> {modalAberto.nome_colaborador}</p>
-                    <p className="text-sm"><span className="font-medium">CPF:</span> {modalAberto.cpf_colaborador}</p>
+                {loadingModal ? (
+                  <div className="flex justify-center p-12">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                   </div>
+                ) : (
+                  ticketDetalhado && (
+                    <>
+                      <h2 className="sm:text-2xl text-xl font-bold mb-2 sm:mb-6 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center">
+                        Detalhes da Solicitação
+                      </h2>
 
-                  <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
-                    <h3 className="font-semibold text-blue-600 mb-2">Detalhes da Solicitação</h3>
-                    <p className="text-sm"><span className="font-medium">Tipo:</span> {formatarTipoTicket(modalAberto.tipo_ticket)}</p>
-                    <p className="text-sm p-1"><span className="font-medium">Status:</span> <StatusBadge status={modalAberto.status_ticket} /></p>
-                    <p className="text-sm"><span className="font-medium">Data:</span> {formatarDataBrasil(modalAberto.data_ticket)}</p>
-                  </div>
-                </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 sm:mb-6">
+                        <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
+                          <h3 className="font-semibold text-blue-600 mb-2">Informações do Colaborador</h3>
+                          <p className="text-sm"><span className="font-medium">Nome:</span> {ticketDetalhado.nome_colaborador}</p>
+                          <p className="text-sm"><span className="font-medium">CPF:</span> {ticketDetalhado.cpf_colaborador}</p>
+                        </div>
 
-                {/* Detalhes específicos por tipo */}
-                <div className="mb-2 sm:mb-6">
-                  {modalAberto.tipo_ticket === 'PEDIR_FERIAS' && (
-                    <div className="bg-blue-50 p-2 sm:p-4 rounded-lg">
-                      <h3 className="font-semibold text-blue-600 mb-2">Detalhes das Férias</h3>
-                      <p className="text-sm"><span className="font-medium">Data de Início:</span> {modalAberto.data_inicio_ferias ? formatarDataBrasil(modalAberto.data_inicio_ferias) : 'Não informado'}</p>
-                      <p className="text-sm"><span className="font-medium">Duração:</span> {modalAberto.dias_ferias ? `${modalAberto.dias_ferias} dias` : 'Não informado'}</p>
-                    </div>
-                  )}
+                        <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
+                          <h3 className="font-semibold text-blue-600 mb-2">Detalhes da Solicitação</h3>
+                          <p className="text-sm"><span className="font-medium">Tipo:</span> {formatarTipoTicket(ticketDetalhado.tipo_ticket)}</p>
+                          <p className="text-sm p-1"><span className="font-medium">Status:</span> <StatusBadge status={ticketDetalhado.status_ticket} /></p>
+                          <p className="text-sm"><span className="font-medium">Data:</span> {formatarDataBrasil(ticketDetalhado.data_ticket)}</p>
+                        </div>
+                      </div>
 
-                  {modalAberto.tipo_ticket === 'PEDIR_ABONO' && (
-                    <div className="bg-purple-50 p-2 sm:p-4 rounded-lg">
-                      <h3 className="font-semibold text-purple-600 mb-2">Detalhes do Abono</h3>
-                      <p className="text-sm"><span className="font-medium">Motivo:</span> {formatarMotivoAbono(modalAberto.motivo_abono) || 'Não informado'}</p>
-                      {modalAberto.abono_inicio && (
-                        <p className="text-sm">
-                          <span className="font-medium">Período:</span> {formatarDataBrasil(modalAberto.abono_inicio)}
-                          {modalAberto.abono_final && ` a ${formatarDataBrasil(modalAberto.abono_final)}`}
-                        </p>
+                      {ticketDetalhado.tipo_ticket === 'PEDIR_FERIAS' && (
+                        <div className="bg-blue-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
+                          <h3 className="font-semibold text-blue-600 mb-2">Detalhes das Férias</h3>
+                          <p className="text-sm"><span className="font-medium">Data de Início:</span> {ticketDetalhado.data_inicio_ferias ? formatarDataBrasil(ticketDetalhado.data_inicio_ferias) : 'Não informado'}</p>
+                          <p className="text-sm"><span className="font-medium">Duração:</span> {ticketDetalhado.dias_ferias ? `${ticketDetalhado.dias_ferias} dias` : 'Não informado'}</p>
+                        </div>
                       )}
-                      {modalAberto.dias_abono?.length ? (
-                        <p className="text-sm">
-                          <span className="font-medium">Dias selecionados:</span> {formatarDiasAbono(modalAberto.dias_abono)}
-                        </p>
-                      ) : null}
-                    </div>
-                  )}
 
-                  {modalAberto.tipo_ticket === 'PEDIR_HORA_EXTRA' && (
-                    <div className="bg-purple-50 p-2 sm:p-4 rounded-lg">
-                      {modalAberto.motivo_hora_extra && (
-                        <p className="text-sm">
-                          <span className="font-medium">Motivo:</span> {modalAberto.motivo_hora_extra}
-                        </p>
+                      {ticketDetalhado.tipo_ticket === 'PEDIR_ABONO' && (
+                        <div className="bg-purple-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
+                          <h3 className="font-semibold text-purple-600 mb-2">Detalhes do Abono</h3>
+                          <p className="text-sm"><span className="font-medium">Motivo:</span> {formatarMotivoAbono(ticketDetalhado.motivo_abono) || 'Não informado'}</p>
+                          {ticketDetalhado.dias_abono?.length ? (
+                            <p className="text-sm">
+                              <span className="font-medium">Dias selecionados:</span> {formatarDiasAbono(ticketDetalhado.dias_abono)}
+                            </p>
+                          ) : null}
+                        </div>
                       )}
-                    </div>
-                  )}
 
-                  {modalAberto.tipo_ticket === 'SOLICITAR_FOLGA' && (
-                    <div className="bg-green-50 p-2 sm:p-4 rounded-lg">
-                      <h3 className="font-semibold text-green-600 mb-2">Detalhes da Folga</h3>
-                      <p className="text-sm">
-                        <span className="font-medium">Data:</span> {formatarDataBrasil(modalAberto.dia_folga)}
-                      </p>
-                      {modalAberto.motivo_folga && (
-                        <p className="text-sm">
-                          <span className="font-medium">Motivo:</span> {modalAberto.motivo_folga}
-                        </p>
+                      {ticketDetalhado.tipo_ticket === 'SOLICITAR_FOLGA' && ticketDetalhado.id_registro && (
+                        <div className="bg-green-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
+                          <h3 className="font-semibold text-green-600 mb-2">Detalhes da Folga</h3>
+                          <p className="text-sm">
+                            <span className="font-medium">ID do Registro:</span> {ticketDetalhado.id_registro}
+                          </p>
+                        </div>
                       )}
-                    </div>
-                  )}
-                </div>
 
-                {/* Mensagem */}
-                <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-700 mb-2">Mensagem</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{modalAberto.mensagem}</p>
-                </div>
+                      {ticketDetalhado.tipo_ticket === 'ALTERAR_PONTOS' && ticketDetalhado.id_registro && (
+                        <div className="bg-yellow-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
+                          <h3 className="font-semibold text-yellow-600 mb-2">Detalhes do Ajuste</h3>
+                          <p className="text-sm">
+                            <span className="font-medium">ID do Registro:</span> {ticketDetalhado.id_registro}
+                          </p>
+                          {ticketDetalhado.id_aviso && (
+                            <p className="text-sm">
+                              <span className="font-medium">ID do Aviso:</span> {ticketDetalhado.id_aviso}
+                            </p>
+                          )}
+                        </div>
+                      )}
 
-                {/* Justificativa */}
-                {mostrarJustificativa && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    className="mb-2 sm:mb-6 overflow-hidden"
-                  >
-                    <div className="bg-yellow-50 p-2 sm:p-4 rounded-lg">
-                      <h3 className="font-semibold text-yellow-700 mb-1 sm:mb-2">Justificativa para Reprovação</h3>
-                      <textarea
-                        placeholder="Insira a justificativa aqui (Máximo 500 caracteres)"
-                        value={justificativa}
-                        maxLength={500}
-                        onChange={(e) => setJustificativa(e.target.value)}
-                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        rows={3}
-                        required
-                      />
-                    </div>
-                  </motion.div>
+                      <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
+                        <h3 className="font-semibold text-gray-700 mb-2">Mensagem</h3>
+                        <p className="text-gray-700 whitespace-pre-line">{ticketDetalhado.mensagem}</p>
+                      </div>
+
+                      {ticketDetalhado.tipo_ticket === 'PEDIR_ABONO' && (
+                        <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
+                          <h3 className="font-semibold text-gray-700 mb-2">Anexo</h3>
+                          {fileError ? (
+                            <p className="text-red-600 text-sm flex items-center">
+                              <FaExclamationTriangle className="mr-2" />
+                              {fileError}
+                            </p>
+                          ) : ticketDetalhado.filePath ? (
+                            <div className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                {ticketDetalhado.filePath.match(/\.(pdf)$/i) ? (
+                                  <FaFilePdf className="text-red-500 text-xl" />
+                                ) : (
+                                  <FaFileImage className="text-green-500 text-xl" />
+                                )}
+                                <span className="text-sm text-gray-600 truncate max-w-[200px]">
+                                  {ticketDetalhado.filePath.split('/').pop() || 'Anexo sem nome'}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => handleDownload(ticketDetalhado.id_ticket, ticketDetalhado.filePath.split('/').pop() || 'anexo')}
+                                className="flex items-center text-blue-600 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors"
+                              >
+                                <FaDownload className="mr-2" />
+                                Baixar
+                              </button>
+                            </div>
+                          ) : (
+                            <p className="text-gray-600 text-sm flex items-center">
+                              <FaExclamationTriangle className="mr-2 text-yellow-500" />
+                              Nenhum anexo foi enviado com esta solicitação.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {mostrarJustificativa && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          className="mb-2 sm:mb-6 overflow-hidden"
+                        >
+                          <div className="bg-yellow-50 p-2 sm:p-4 rounded-lg">
+                            <h3 className="font-semibold text-yellow-700 mb-1 sm:mb-2">Justificativa para Reprovação</h3>
+                            <textarea
+                              placeholder="Insira a justificativa aqui (Máximo 500 caracteres)"
+                              value={justificativa}
+                              maxLength={500}
+                              onChange={(e) => setJustificativa(e.target.value)}
+                              className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              rows={3}
+                              required
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row justify-between gap-4 mt-2 sm:mt-6">
+                        <div className="flex gap-3 justify-center">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => enviarResposta('APROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa)}
+                            className="flex items-center text-sm sm:text-base justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-600 transition-all"
+                          >
+                            <FaCheck className="mr-2" />
+                            Aprovar
+                          </motion.button>
+
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                              if (mostrarJustificativa && justificativa.trim()) {
+                                enviarResposta('REPROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa);
+                              } else {
+                                setMostrarJustificativa(true);
+                              }
+                            }}
+                            className={`flex items-center text-sm sm:text-base justify-center px-6 py-3 rounded-xl shadow-md transition-all ${mostrarJustificativa && justificativa.trim()
+                              ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
+                              : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
+                              }`}
+                          >
+                            <FaX className="mr-2" />
+                            {mostrarJustificativa ? 'Confirmar Reprovação' : 'Reprovar'}
+                          </motion.button>
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            setModalAberto(null);
+                            setJustificativa('');
+                            setMostrarJustificativa(false);
+                            setFileError(null);
+                          }}
+                          className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
+                        >
+                          Fechar
+                        </motion.button>
+                      </div>
+                    </>
+                  )
                 )}
-
-                {/* Ações */}
-                <div className="flex flex-col sm:flex-row justify-between gap-4 mt-2 sm:mt-6">
-                  <div className="flex gap-3 justify-center">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => enviarResposta('APROVADO')}
-                      className="flex items-center text-sm sm:text-base justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-600 transition-all"
-                    >
-                      <FaCheck className="mr-2" />
-                      Aprovar
-                    </motion.button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        if (mostrarJustificativa && justificativa.trim()) {
-                          enviarResposta('REPROVADO');
-                        } else {
-                          setMostrarJustificativa(true);
-                        }
-                      }}
-                      className={`flex items-center text-sm sm:text-base justify-center px-6 py-3 rounded-xl shadow-md transition-all ${mostrarJustificativa && justificativa.trim()
-                        ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
-                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
-                        }`}
-                    >
-                      <FaX className="mr-2" />
-                      {mostrarJustificativa ? 'Confirmar Reprovação' : 'Reprovar'}
-                    </motion.button>
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setModalAberto(null);
-                      setJustificativa('');
-                      setMostrarJustificativa(false);
-                    }}
-                    className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
-                  >
-                    Fechar
-                  </motion.button>
-                </div>
               </motion.div>
             </motion.div>
           )}
@@ -633,4 +566,6 @@ export default function SolicitacoesGestor() {
       </div>
     </motion.div>
   );
-}
+};
+
+export default SolicitacoesGestor;

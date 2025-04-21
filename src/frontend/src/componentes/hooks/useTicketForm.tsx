@@ -2,10 +2,12 @@ import { useState, useCallback } from 'react';
 import { FormState, INITIAL_FORM_STATE, TICKET_SUCCESS_MESSAGES, TicketData } from './useTicketTypes';
 
 export const useTicketForm = () => {
-  const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
+  const [formState, setFormState] = useState<FormState>({
+    ...INITIAL_FORM_STATE,
+    userStatus: 'FORA_DO_EXPEDIENTE'
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handlers
   const handleOptionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as FormState['selectedOption'];
     setFormState(prev => ({
@@ -40,19 +42,19 @@ export const useTicketForm = () => {
   }, []);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
+    if (e.target.files && e.target.files.length > 0) {
+      const newFile = e.target.files[0];
       setFormState(prev => ({
         ...prev,
-        files: [...prev.files, ...newFiles]
+        file: newFile
       }));
     }
   }, []);
 
-  const removeFile = useCallback((index: number) => {
+  const removeFile = useCallback(() => {
     setFormState(prev => ({
       ...prev,
-      files: prev.files.filter((_, i) => i !== index)
+      file: null
     }));
   }, []);
 
@@ -81,7 +83,6 @@ export const useTicketForm = () => {
     }));
   }, []);
 
-  // Helpers
   const getTodayDate = useCallback(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -93,11 +94,10 @@ export const useTicketForm = () => {
     return `${dia}/${mes}/${ano}`;
   }, []);
 
-  // Form logic
   const createTicketData = useCallback((): TicketData => {
-    const baseData = { 
+    const baseData = {
       mensagem: formState.description,
-      status_usuario: formState.userStatus as any
+      status_usuario: formState.userStatus
     };
 
     switch (formState.selectedOption) {
@@ -127,7 +127,8 @@ export const useTicketForm = () => {
       case 'hora_extra':
         return {
           ...baseData,
-          tipo_ticket: 'PEDIR_HORA_EXTRA'
+          tipo_ticket: 'PEDIR_HORA_EXTRA',
+          status_usuario: 'FORA_DO_EXPEDIENTE'
         };
 
       default:
@@ -157,9 +158,15 @@ export const useTicketForm = () => {
       }
     }
 
-    if (formState.selectedOption === 'abono' && formState.absenceDays.length === 0) {
-      setFormState(prev => ({ ...prev, error: 'Selecione pelo menos um dia para abonar.' }));
-      return false;
+    if (formState.selectedOption === 'abono') {
+      if (formState.absenceDays.length === 0) {
+        setFormState(prev => ({ ...prev, error: 'Selecione pelo menos um dia para abonar.' }));
+        return false;
+      }
+      if (!formState.file) {
+        setFormState(prev => ({ ...prev, error: 'É obrigatório anexar o atestado médico para solicitação de abono.' }));
+        return false;
+      }
     }
 
     if (formState.selectedOption === 'folga' && !formState.dayOff) {
@@ -183,6 +190,7 @@ export const useTicketForm = () => {
   const resetFormWithSuccess = useCallback(() => {
     setFormState(prev => ({
       ...INITIAL_FORM_STATE,
+      userStatus: 'FORA_DO_EXPEDIENTE',
       successMessage: TICKET_SUCCESS_MESSAGES[prev.selectedOption as keyof typeof TICKET_SUCCESS_MESSAGES] || ''
     }));
   }, []);

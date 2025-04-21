@@ -4,6 +4,7 @@ export type AbsenceReason = 'ATESTADO_MEDICO';
 export interface BaseTicket {
   tipo_ticket: TicketType;
   mensagem: string;
+  status_usuario?: 'ESCALADO' | 'FORA_DO_EXPEDIENTE' | 'FOLGA' | 'FERIAS' | 'INATIVO';
 }
 
 export interface VacationTicket extends BaseTicket {
@@ -21,7 +22,6 @@ export interface AbsenceTicket extends BaseTicket {
 export interface DayOffTicket extends BaseTicket {
   tipo_ticket: 'SOLICITAR_FOLGA';
   dia_folga: string;
-  status_usuario: 'ESCALADO' | 'FORA_DO_EXPEDIENTE' | 'FOLGA' | 'FERIAS' | 'INATIVO';
 }
 
 export interface OvertimeTicket extends BaseTicket {
@@ -38,8 +38,8 @@ export interface FormState {
   vacationDays: string;
   absenceDays: string[];
   dayOff: string;
-  userStatus: string;
-  files: File[];
+  userStatus: 'ESCALADO' | 'FORA_DO_EXPEDIENTE' | 'FOLGA' | 'FERIAS' | 'INATIVO' | '';
+  file: File | null;
   error: string;
   successMessage: string;
 }
@@ -58,8 +58,15 @@ export const INITIAL_FORM_STATE: FormState = {
   vacationDays: '',
   absenceDays: [],
   dayOff: '',
-  userStatus: '',
-  files: [],
+  userStatus: 'FORA_DO_EXPEDIENTE',
+  file: null,
   error: '',
   successMessage: ''
 };
+
+export interface TicketApi {
+  submitTicket: (ticketData: TicketData, file: File | null) => Promise<{
+    success: boolean;
+    error: string | null;
+  }>;
+}

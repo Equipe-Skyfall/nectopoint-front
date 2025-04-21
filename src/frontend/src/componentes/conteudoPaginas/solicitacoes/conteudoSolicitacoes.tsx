@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTicketForm } from '../../hooks/useTicketForm';
 import { useTicketApi } from '../../hooks/useTicketApi';
 
-// Componentes de UI (mantidos iguais)
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
   value: string;
@@ -32,7 +31,6 @@ const Select = ({ options, value, onChange, label }: {
           <FaChevronDown className="text-gray-400" />
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
     </div>
   );
 };
@@ -97,7 +95,6 @@ const ConteudoSolicitacoes: React.FC = () => {
     removeFile,
     addAbsenceDay,
     removeAbsenceDay,
-    setUserStatus,
     getTodayDate,
     formatarDataBrasileira,
     createTicketData,
@@ -108,17 +105,13 @@ const ConteudoSolicitacoes: React.FC = () => {
 
   const { submitTicket } = useTicketApi();
 
-  React.useEffect(() => {
-    setUserStatus('FORA_DO_EXPEDIENTE');
-  }, [setUserStatus]);
-
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     const ticketData = createTicketData();
 
-    const { success, error } = await submitTicket(ticketData, formState.files);
+    const { success, error } = await submitTicket(ticketData, formState.file);
 
     if (success) {
       resetFormWithSuccess();
@@ -195,48 +188,6 @@ const ConteudoSolicitacoes: React.FC = () => {
                       ×
                     </button>
                   </motion.span>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block mb-3 text-sm font-medium text-gray-600 uppercase tracking-wider">
-                Anexar Documentos
-              </label>
-              <label className="flex flex-col items-center mb-3 justify-center w-full p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all duration-300">
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  multiple
-                />
-                <FaPaperclip className="w-8 h-8 mb-3 text-blue-500" />
-                <p className="text-sm text-gray-600">
-                  {formState.files.length > 0
-                    ? `${formState.files.length} arquivo(s) selecionado(s)`
-                    : 'Arraste ou clique para enviar documentos'}
-                </p>
-              </label>
-
-              <div className="mt-4 space-y-2">
-                {formState.files.map((file, index) => (
-                  <motion.div
-                    key={index}
-                    className="flex items-center justify-between bg-gray-100 px-4 py-2 rounded-lg"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <span className="text-sm text-gray-600 truncate">
-                      {file.name}
-                    </span>
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="text-red-500 hover:text-red-700 ml-2"
-                    >
-                      ×
-                    </button>
-                  </motion.div>
                 ))}
               </div>
             </div>
@@ -323,7 +274,7 @@ const ConteudoSolicitacoes: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="bg-blue-100 text-blue-600 rounded-full -mt-1 px-3 py-1 mr-3">3</span>
-                  Anexe documentos se necessário
+                  Anexe um documento se necessário
                 </li>
                 <li className="flex items-start">
                   <span className="bg-blue-100 text-blue-600 rounded-full -mt-1 px-3 py-1 mr-3">4</span>
@@ -383,6 +334,45 @@ const ConteudoSolicitacoes: React.FC = () => {
                 <AnimatePresence mode="wait">
                   {renderAdditionalFields()}
                 </AnimatePresence>
+
+                {formState.selectedOption === 'abono' && (
+                  <div className="mb-4">
+                    <label className="block mb-3 text-sm font-medium text-gray-600 uppercase tracking-wider">
+                      Anexar Atestado Médico (Obrigatório)
+                    </label>
+                    <label className="flex flex-col items-center mb-3 justify-center w-full p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all duration-300">
+                      <input
+                        type="file"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        required
+                      />
+                      <FaPaperclip className="w-8 h-8 mb-3 text-blue-500" />
+                      <p className="text-sm text-gray-600">
+                        {formState.file ? formState.file.name : 'Arraste ou clique para enviar o atestado médico'}
+                      </p>
+                    </label>
+
+                    {formState.file && (
+                      <motion.div
+                        className="mt-4 flex items-center justify-between bg-gray-100 px-4 py-2 rounded-lg"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <span className="text-sm text-gray-600 truncate">
+                          {formState.file.name}
+                        </span>
+                        <button
+                          onClick={removeFile}
+                          className="text-red-500 hover:text-red-700 ml-2"
+                        >
+                          ×
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
 
                 <Textarea
                   value={formState.description}
