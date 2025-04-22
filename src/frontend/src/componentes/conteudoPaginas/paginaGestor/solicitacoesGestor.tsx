@@ -271,13 +271,9 @@ const SolicitacoesGestor = () => {
                       whileHover={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 1.1 : 1 }}
                       whileTap={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 0.9 : 1 }}
                       className={`text-blue-600 text-lg px-3 py-2 rounded-md poppins transition-colors ${podeAprovarOuReprovar(solicitacao.status_ticket)
-                        ? 'hover:text-blue-800 cursor-pointer'
-                        : 'text-gray-400 cursor-not-allowed'
                         }`}
                       onClick={() => {
-                        if (podeAprovarOuReprovar(solicitacao.status_ticket)) {
-                          abrirModalDetalhes(solicitacao, setTicketDetalhado, setLoadingModal, setModalAberto);
-                        }
+                        abrirModalDetalhes(solicitacao, setTicketDetalhado, setLoadingModal, setModalAberto);
                       }}
                       title={
                         !podeAprovarOuReprovar(solicitacao.status_ticket)
@@ -364,7 +360,7 @@ const SolicitacoesGestor = () => {
         )}
 
         <AnimatePresence>
-          {modalAberto && podeAprovarOuReprovar(modalAberto.status_ticket) && (
+          {modalAberto && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -489,7 +485,7 @@ const SolicitacoesGestor = () => {
                         </div>
                       )}
 
-                      {mostrarJustificativa && (
+                      {ticketDetalhado.status_ticket === 'EM_AGUARDO' && mostrarJustificativa && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -509,53 +505,87 @@ const SolicitacoesGestor = () => {
                           </div>
                         </motion.div>
                       )}
+                      {ticketDetalhado.status_ticket === 'EM_AGUARDO' ? (
+                        <div className="flex flex-col sm:flex-row justify-between gap-4 mt-2 sm:mt-6">
+                          <div className="flex gap-3 justify-center">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => enviarResposta('APROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa)}
+                              className="flex items-center text-sm sm:text-base justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-600 transition-all"
+                            >
+                              <FaCheck className="mr-2" />
+                              Aprovar
+                            </motion.button>
 
-                      <div className="flex flex-col sm:flex-row justify-between gap-4 mt-2 sm:mt-6">
-                        <div className="flex gap-3 justify-center">
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => enviarResposta('APROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa)}
-                            className="flex items-center text-sm sm:text-base justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-600 transition-all"
-                          >
-                            <FaCheck className="mr-2" />
-                            Aprovar
-                          </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                if (mostrarJustificativa && justificativa.trim()) {
+                                  enviarResposta('REPROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa);
+                                } else {
+                                  setMostrarJustificativa(true);
+                                }
+                              }}
+                              className={`flex items-center text-sm sm:text-base justify-center px-6 py-3 rounded-xl shadow-md transition-all ${mostrarJustificativa && justificativa.trim()
+                                ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
+                                : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
+                                }`}
+                            >
+                              <FaX className="mr-2" />
+                              {mostrarJustificativa ? 'Confirmar Reprovação' : 'Reprovar'}
+                            </motion.button>
+                          </div>
 
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
-                              if (mostrarJustificativa && justificativa.trim()) {
-                                enviarResposta('REPROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa);
-                              } else {
-                                setMostrarJustificativa(true);
-                              }
+                              setModalAberto(null);
+                              setJustificativa('');
+                              setMostrarJustificativa(false);
+                              setFileError(null);
                             }}
-                            className={`flex items-center text-sm sm:text-base justify-center px-6 py-3 rounded-xl shadow-md transition-all ${mostrarJustificativa && justificativa.trim()
-                              ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
-                              : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
-                              }`}
+                            className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
                           >
-                            <FaX className="mr-2" />
-                            {mostrarJustificativa ? 'Confirmar Reprovação' : 'Reprovar'}
+                            Fechar
                           </motion.button>
                         </div>
-
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => {
-                            setModalAberto(null);
-                            setJustificativa('');
-                            setMostrarJustificativa(false);
-                            setFileError(null);
-                          }}
-                          className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
-                        >
-                          Fechar
-                        </motion.button>
-                      </div>
+                      ) : (
+                        <>
+                        {ticketDetalhado.nome_gerente && (
+                            <div className="mb-4 bg-gray-50 p-4 rounded-lg">
+                              <h3 className="font-semibold text-gray-700 mb-2">
+                                {ticketDetalhado.status_ticket === 'APROVADO' ? 'Aprovado por' : 'Reprovado por'}
+                              </h3>
+                              <p className="text-sm">{ticketDetalhado.nome_gerente}</p>
+                              {ticketDetalhado.justificativa && (
+                                <>
+                                  <h3 className="font-semibold text-gray-700 mt-2 mb-1">Justificativa</h3>
+                                  <p className="text-sm text-gray-600 whitespace-pre-line">{ticketDetalhado.justificativa}</p>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="flex justify-center mt-2 sm:mt-6">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                setModalAberto(null);
+                                setJustificativa('');
+                                setMostrarJustificativa(false);
+                                setFileError(null);
+                              }}
+                              className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
+                            >
+                              Fechar
+                            </motion.button>
+                          </div>
+                        </>
+                      )}
                     </>
                   )
                 )}
