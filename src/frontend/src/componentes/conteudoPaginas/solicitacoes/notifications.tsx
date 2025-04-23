@@ -207,7 +207,7 @@ export function useNotifications() {
                     <div className="divide-y divide-gray-200">
                         {/* Cabeçalho do dropdown */}
                         <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 flex justify-center text-center">
-                            <h3 className="text-lg font-medium text-white">Minhas Notificações</h3>
+                            <h3 className="text-lg font-medium text-white">Minhas Solicitações</h3>
                             {/* Botão para marcar todas como lidas (só aparece se houver não lidas) */}
                             {unreadCount > 0 && (
                                 <button
@@ -222,7 +222,7 @@ export function useNotifications() {
                         {/* Lista de notificações ou mensagem de vazio */}
                         {recentNotifications.length === 0 ? (
                             <div className="px-4 py-6 text-center">
-                                <p className="text-gray-500">Nenhuma notificação recente</p>
+                                <p className="text-gray-500">Nenhuma solicitação recente</p>
                             </div>
                         ) : (
                             <div className="max-h-96 overflow-y-auto">
@@ -302,7 +302,7 @@ export function useNotifications() {
                     >
                         {/* Cabeçalho do modal */}
                         <div className="p-6 border-b flex justify-between border-gray-200 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-t-xl">
-                            <h2 className="sm:text-2xl mt-1 sm:mt-0 font-bold text-white">Todas as Minhas Notificações</h2>
+                            <h2 className="sm:text-2xl mt-1 sm:mt-0 font-bold text-white">Todas as Minhas Solicitações</h2>
                             <button
                                 onClick={() => {
                                     markAllAsRead();
@@ -318,7 +318,7 @@ export function useNotifications() {
                         <div className="flex-1 overflow-y-auto">
                             {paginatedNotifications.length === 0 ? (
                                 <div className="text-center py-8">
-                                    <p className="text-gray-500">Nenhuma notificação encontrada</p>
+                                    <p className="text-gray-500">Nenhuma solicitação encontrada</p>
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
