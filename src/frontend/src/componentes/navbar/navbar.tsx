@@ -3,7 +3,7 @@ import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt } from "react-
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
 import { motion } from 'framer-motion';
-import { useNotifications } from "./notifications";
+import { useNotifications } from "../conteudoPaginas/solicitacoes/notifications";
 
 function useOutsideClick(ref: React.RefObject<HTMLElement>, callback: () => void) {
     useEffect(() => {
@@ -192,10 +192,6 @@ export default function NavBar() {
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
-                        <div className="relative">
-                            <NotificationIcon />
-                            <NotificationDropdown />
-                        </div>
                         <img src="/nectopoint.png" width={80} alt="Logo" />
                     </div>
                 </nav>
@@ -270,7 +266,6 @@ export default function NavBar() {
                     </div>
                 )}
 
-                <AllNotificationsModal />
             </>
         );
     }
