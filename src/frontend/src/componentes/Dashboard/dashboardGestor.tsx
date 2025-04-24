@@ -60,7 +60,7 @@ export default function DashboardGestor() {
         fetchData();
     }, [])
     
-
+   
     const trabalhando = data.filter((item: any) => item.status === "TRABALHANDO");
     const trabalhandoCount = trabalhando.length;
     const ausentes = data.filter((item: any) => item.status === "NAO_COMPARECEU");
@@ -74,7 +74,7 @@ export default function DashboardGestor() {
             } 
         });
     };
-
+    
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -126,6 +126,36 @@ export default function DashboardGestor() {
                             </p>
                             <p className="text-white text-2xl font-bold poppins">
                                 {ausentesCount}
+                            </p>
+                        </div>
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => redirecionarComFiltro("INTERVALO") }
+                        className="flex items-center bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                    >
+                        <div className="flex items-center px-4">
+                            <p className="text-white text-lg font-bold poppins mr-3">
+                                Intervalo:
+                            </p>
+                            <p className="text-white text-2xl font-bold poppins">
+                                {trabalhandoCount}
+                            </p>
+                        </div>
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => redirecionarComFiltro("TRABALHANDO") }
+                        className="flex items-center bg-gradient-to-r from-blue-500 to-cyan-700 hover:from-blue-700 hover:to-cyan-800 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                    >
+                        <div className="flex items-center px-4">
+                            <p className="text-white text-lg font-bold poppins mr-3">
+                                Trabalhando:
+                            </p>
+                            <p className="text-white text-2xl font-bold poppins">
+                                {trabalhandoCount}
                             </p>
                         </div>
                     </motion.button>
