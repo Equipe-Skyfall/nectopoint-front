@@ -66,17 +66,117 @@ export default function ConteudoHistorico() {
         return data.toLocaleString('pt-BR');
     }, []);
 
+    const PaginationControls = ({ totalPaginas, paginaAtual, setPaginaAtual }: {
+        totalPaginas: number;
+        paginaAtual: number;
+        setPaginaAtual: (page: number) => void;
+    }) => {
+        const maxVisibleButtons = 5; // Máximo de botões numéricos visíveis
+    
+        // Calcula quais botões mostrar
+        const getVisiblePages = () => {
+            let startPage = Math.max(0, paginaAtual - Math.floor(maxVisibleButtons / 2));
+            let endPage = startPage + maxVisibleButtons - 1;
+    
+            if (endPage >= totalPaginas - 1) {
+                endPage = totalPaginas - 1;
+                startPage = Math.max(0, endPage - maxVisibleButtons + 1);
+            }
+    
+            return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+        };
+    
+        const visiblePages = getVisiblePages();
+    
+        return (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-8 flex items-center gap-3 sm:gap-6"
+            >
+                {/* Botão Anterior */}
+                <motion.button
+                    whileHover={{ scale: paginaAtual === 0 ? 1 : 1.05 }}
+                    whileTap={{ scale: paginaAtual === 0 ? 1 : 0.95 }}
+                    onClick={() => {
+                        if (paginaAtual > 0) {
+                            setPaginaAtual(paginaAtual - 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}
+                    disabled={paginaAtual === 0}
+                    className={`flex items-center text-sm sm:text-base px-2 sm:px-6 py-3 rounded-xl transition-all ${
+                        paginaAtual === 0
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
+                    }`}
+                >
+                    <FiChevronLeft className="mr-2" />
+                    Anterior
+                </motion.button>
+    
+                {/* Botões numéricos (limitados a 5) */}
+                <div className="flex items-center gap-2">
+                    {visiblePages.map((page) => (
+                        <motion.button
+                            key={page}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                                setPaginaAtual(page);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`sm:w-10 w-5 h-10 sm:h-10 rounded-full flex items-center justify-center ${
+                                paginaAtual === page
+                                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md"
+                                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                            }`}
+                        >
+                            {page + 1}
+                        </motion.button>
+                    ))}
+                </div>
+    
+                {/* Botão Próximo */}
+                <motion.button
+                    whileHover={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 1.05 }}
+                    whileTap={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 0.95 }}
+                    onClick={() => {
+                        if (paginaAtual < totalPaginas - 1) {
+                            setPaginaAtual(paginaAtual + 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}
+                    disabled={paginaAtual === totalPaginas - 1}
+                    className={`flex items-center px-2 text-sm sm:text-base sm:px-6 py-3 rounded-xl transition-all ${
+                        paginaAtual === totalPaginas - 1
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
+                    }`}
+                >
+                    Próxima
+                    <FiChevronRight className="ml-2" />
+                </motion.button>
+            </motion.div>
+        );
+    };
+
     const traduzirStatusTurno = useCallback((status: string) => {
         const statusStyles = {
             'TRABALHANDO': { text: 'Trabalhando', color: 'bg-green-100 text-green-800' },
             'INTERVALO': { text: 'Intervalo', color: 'bg-yellow-100 text-yellow-800' },
             'ENCERRADO': { text: 'Encerrado', color: 'bg-blue-100 text-blue-800' },
-            'NAO_COMPARECEU': { text: 'Não Compareceu', color: 'bg-red-100 text-red-800' },
-            'IRREGULAR': { text: 'Irregular', color: 'bg-purple-100 text-purple-800' }
+            'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
+            'IRREGULAR': { text: 'Irregular', color: 'bg-purple-100 text-purple-800' },
+            'NAO_INICIADO': { text: 'Não Iniciado', color: 'bg-gray-100 text-gray-800' }
         };
         return (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status]?.color || 'bg-gray-100 text-gray-800'}`}>
-                {statusStyles[status]?.text || status}
+                {/* Texto completo em telas médias para cima */}
+                <span className="hidden md:inline">{statusStyles[status]?.text || status}</span>
+                {/* Texto abreviado em telas pequenas */}
+                <span className="md:hidden">{statusStyles[status]?.shortText || status}</span>
             </span>
         );
     }, []);
@@ -214,60 +314,11 @@ export default function ConteudoHistorico() {
                         </div>
                     </motion.div>
 
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className="mt-8 flex items-center gap-6"
-                    >
-                        <motion.button
-                            whileHover={{ scale: paginaAtual === 0 ? 1 : 1.05 }}
-                            whileTap={{ scale: paginaAtual === 0 ? 1 : 0.95 }}
-                            onClick={retrocederPagina}
-                            disabled={paginaAtual === 0}
-                            className={`flex items-center px-3 sm:px-6 py-3 rounded-xl transition-all ${paginaAtual === 0
-                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
-                                }`}
-                        >
-                            <FiChevronLeft className="mr-2" />
-                            Anterior
-                        </motion.button>
-
-                        <div className="flex items-center gap-2">
-                            {Array.from({ length: totalPaginas }, (_, i) => (
-                                <motion.button
-                                    key={i}
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => {
-                                        setPaginaAtual(i);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center ${paginaAtual === i
-                                        ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md"
-                                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-                                        }`}
-                                >
-                                    {i + 1}
-                                </motion.button>
-                            ))}
-                        </div>
-
-                        <motion.button
-                            whileHover={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 1.05 }}
-                            whileTap={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 0.95 }}
-                            onClick={avancarPagina}
-                            disabled={paginaAtual === totalPaginas - 1}
-                            className={`flex items-center px-3 sm:px-6 py-3 rounded-xl transition-all ${paginaAtual === totalPaginas - 1
-                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
-                                }`}
-                        >
-                            Próxima
-                            <FiChevronRight className="ml-2" />
-                        </motion.button>
-                    </motion.div>
+                    <PaginationControls
+                        totalPaginas={totalPaginas}
+                        paginaAtual={paginaAtual}
+                        setPaginaAtual={setPaginaAtual}
+                    />
                 </>
             )}
         </motion.div>

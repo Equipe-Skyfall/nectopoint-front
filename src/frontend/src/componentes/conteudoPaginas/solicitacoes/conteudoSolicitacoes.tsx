@@ -3,7 +3,6 @@ import { FaPaperclip, FaBell, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTicketForm } from '../../hooks/useTicketForm';
 import { useTicketApi } from '../../hooks/useTicketApi';
-import { useNotifications } from './notifications';
 
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
@@ -104,11 +103,6 @@ const ConteudoSolicitacoes: React.FC = () => {
     setIsSubmitting
   } = useTicketForm();
 
-  const {
-          NotificationIcon,
-          NotificationDropdown,
-          AllNotificationsModal,
-      } = useNotifications();
   const { submitTicket } = useTicketApi();
 
   const handleSubmit = async () => {
@@ -249,10 +243,6 @@ const ConteudoSolicitacoes: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="text-center mb-2"
         >
-          <div className="absolute right-8 sm:right-20 top-24">
-            <NotificationIcon />
-            <NotificationDropdown />
-          </div>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mt-5 pb-4">
             Solicitações
           </h1>
@@ -409,7 +399,6 @@ const ConteudoSolicitacoes: React.FC = () => {
           </motion.div>
         </div>
       </div>
-      <AllNotificationsModal />
     </motion.div>
   );
 };

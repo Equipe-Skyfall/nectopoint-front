@@ -26,6 +26,8 @@ export default function NavBar() {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
     const [userData, setUserData] = useState({ nome: '', cpf: '', dados_usuario: { cargo: '' } });
+    const { user } = useAuthContext();
+    const userId = user?.id_colaborador;
 
     const {
         NotificationIcon,
@@ -33,7 +35,7 @@ export default function NavBar() {
         AllNotificationsModal,
         showNotifications,
         setShowNotifications
-    } = useNotifications({ userCpf: userData.cpf });
+    } = useNotifications({userId: Number(userId)});
 
     useOutsideClick(sidebarRef, () => setIsOpen(false));
 
@@ -192,6 +194,10 @@ export default function NavBar() {
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
+                        <div className="relative">
+                            <NotificationIcon />
+                            <NotificationDropdown />
+                        </div>
                         <img src="/nectopoint.png" width={80} alt="Logo" />
                     </div>
                 </nav>
@@ -266,6 +272,7 @@ export default function NavBar() {
                     </div>
                 )}
 
+                <AllNotificationsModal />
             </>
         );
     }
