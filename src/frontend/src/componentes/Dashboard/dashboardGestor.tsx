@@ -95,9 +95,9 @@ export default function DashboardGestor() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="w-full max-w-4xl bg-white rounded-xl shadow-xl mb-7 overflow-hidden border border-gray-200 p-6"
+                className="w-full max-w-4xl h-[300px] bg-white rounded-xl shadow-xl mb-7 overflow-hidden border border-gray-200 p-6"
             >
-                <div className="flex flex-wrap justify-center gap-4 mb-8">
+                <div className="flex flex-wrap justify-center gap-16 mb-8">
                     <motion.button
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
@@ -106,11 +106,9 @@ export default function DashboardGestor() {
                     >
                         <div className="flex items-center px-4">
                             <p className="text-white text-lg font-bold poppins mr-3">
-                                Trabalhando:
+                                Trabalhando
                             </p>
-                            <p className="text-white text-2xl font-bold poppins">
-                                {trabalhandoCount}
-                            </p>
+                           
                         </div>
                     </motion.button>
 
@@ -122,11 +120,9 @@ export default function DashboardGestor() {
                     >
                         <div className="flex items-center px-4">
                             <p className="text-white text-lg font-bold poppins mr-3">
-                                Ausentes:
+                                Ausentes
                             </p>
-                            <p className="text-white text-2xl font-bold poppins">
-                                {ausentesCount}
-                            </p>
+                            
                         </div>
                     </motion.button>
                     <motion.button
@@ -137,11 +133,9 @@ export default function DashboardGestor() {
                     >
                         <div className="flex items-center px-4">
                             <p className="text-white text-lg font-bold poppins mr-3">
-                                Intervalo:
+                                Intervalo
                             </p>
-                            <p className="text-white text-2xl font-bold poppins">
-                                {trabalhandoCount}
-                            </p>
+                           
                         </div>
                     </motion.button>
                     <motion.button
@@ -152,11 +146,9 @@ export default function DashboardGestor() {
                     >
                         <div className="flex items-center px-4">
                             <p className="text-white text-lg font-bold poppins mr-3">
-                                Trabalhando:
+                                Trabalhando
                             </p>
-                            <p className="text-white text-2xl font-bold poppins">
-                                {trabalhandoCount}
-                            </p>
+                            
                         </div>
                     </motion.button>
                 </div>
@@ -167,7 +159,7 @@ export default function DashboardGestor() {
                     transition={{ delay: 0.4 }}
                     className="w-full"
                 >
-                    <GraficoDashboard />
+                    
                 </motion.div>
             </motion.div>
         </motion.div>

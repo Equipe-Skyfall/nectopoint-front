@@ -7,14 +7,15 @@ import baterPonto from "../../hooks/baterPonto";
 import encerrarTurno from "../../hooks/encerrarPonto";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiLogIn, FiLogOut, FiPower } from "react-icons/fi";
-
+import formatarMinutosEmHorasEMinutos from "../../hooks/formatarHoras";
 
 export default function ConteudoHome() {
 
     const [modalConfirmacao, setModalConfirmacao] = useState(false);
     const dadosInicias= useUserData();
     const [userData, setUserData] = useState(dadosInicias);
-    
+   // "09:48" (para verificar se o erro vem de um valor errado)
+
 
     
     
@@ -27,7 +28,6 @@ export default function ConteudoHome() {
     const up_tipo = pontos.length >= 2 ? (pontos[pontos.length - 1].tipo_ponto) : ''
     const ultimoPonto = pontos.length >= 2 ? { "tipo_ponto": up_tipo, up_hora } : { 'tipo_ponto': null, up_hora: null }
     const banco_de_horas = (userData.jornada_trabalho.banco_de_horas)
-
 
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -174,3 +174,4 @@ export default function ConteudoHome() {
     </motion.div>
     );
 }   
+

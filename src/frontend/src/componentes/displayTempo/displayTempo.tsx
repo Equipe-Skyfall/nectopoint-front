@@ -1,3 +1,4 @@
+import formatarMinutosEmHorasEMinutos from "../hooks/formatarHoras";
 
 type Display = {
     entrada: string;
@@ -22,8 +23,10 @@ export default function DisplayTempo(props: Display) {
 
         return tempoFormatado
     }
-
-
+    console.log(formatarMinutosEmHorasEMinutos(528)); // "08:48"
+    console.log(formatarMinutosEmHorasEMinutos(661)); // "09:01"
+    console.log(banco_de_horas);
+    
     return (
         <>
 
@@ -35,7 +38,7 @@ export default function DisplayTempo(props: Display) {
                     </div>
                     <span className='flex items-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl text-center w-auto p-2'>
                         <img src='./time-left.png' className="w-8 h-8 m-2 p-1"></img>
-                        <p className={'text-white poppins'}> {(banco_de_horas / 60).toFixed(3)}h</p>
+                        <p className={'text-white poppins'}> {formatarMinutosEmHorasEMinutos(banco_de_horas)}h</p>
                     </span>
 
                 </span>

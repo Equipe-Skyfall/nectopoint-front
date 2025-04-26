@@ -28,7 +28,7 @@ export default function DateRangePicker({
                     endDate={endDate}
                     maxDate={endDate instanceof Date ? endDate : new Date()}
                     placeholderText="Data inicial"
-                    className="pl-16 sm:pl-10   pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                    className="pl-16 sm:pl-10   pr-10 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     dateFormat="dd/MM/yyyy"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -48,7 +48,7 @@ export default function DateRangePicker({
                     endDate={endDate}
                     minDate={startDate instanceof Date ? startDate : undefined}
                     placeholderText="Data final"
-                    className="pl-16 sm:pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                    className="pl-16 sm:pl-10 pr-10 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     dateFormat="dd/MM/yyyy"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

@@ -5,7 +5,6 @@ import refetch from "./hooksChamarBackend/refetch";
 export default async function baterPonto(setDados) { 
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const id_colaborador = userData.id_colaborador; 
-
     try {
         
         const response = await api.post('/turno/bater-ponto');
@@ -27,3 +26,5 @@ export default async function baterPonto(setDados) {
         throw error;
     }
 }
+
+
