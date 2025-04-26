@@ -1,4 +1,4 @@
-import ConteudoLogin from "../componentes/conteudoPaginas/login/conteudoLogin";
+import ConteudoLogin from "../../componentes/conteudoPaginas/login/conteudoLogin";
 
 
 

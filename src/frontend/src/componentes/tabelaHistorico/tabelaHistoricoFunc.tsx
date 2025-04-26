@@ -1,44 +1,47 @@
-import React, { useCallback, useEffect, useState } from 'react';
-
-interface HistoricoJornada {
-    data: string;
-    inicioTurno: string;
-    fimTurno: string;
-    statusTurno: string;
-    pontos: PontoFormatado[];
-}
-
-interface PontoFormatado {
-    tipo: string;
-    horario: string;
-}
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiChevronLeft, FiChevronRight, FiRefreshCw, FiFilter, FiX } from 'react-icons/fi';
+import FiltrosHistoricoFunc from '../filtros/filtroHistoricoFunc';
+import { HistoricoJornada } from '../../interfaces/interfaceHistoricoFunc';
 
 export default function ConteudoHistoricoFunc() {
-    const [historicoJornadas, setHistoricoJornadas] = useState<HistoricoJornada[]>([]);
+    const [dadosOriginais, setDadosOriginais] = useState<HistoricoJornada[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
     const [paginaAtual, setPaginaAtual] = useState(0);
-    const [itensPorPagina, setItensPorPagina] = useState(12);
-        const atualizarItensPorPagina = useCallback(() => {
-            if (window.innerWidth >= 640) { // sm breakpoint do Tailwind
-                setItensPorPagina(9);
-            } else {
-                setItensPorPagina(12);
-            }
-        }, []);
-    
-        useEffect(() => {
-            // Atualiza no carregamento inicial
-            atualizarItensPorPagina();
-            
-            // Adiciona listener para mudanças de tamanho de tela
-            window.addEventListener('resize', atualizarItensPorPagina);
-            
-            // Remove listener ao desmontar
-            return () => {
-                window.removeEventListener('resize', atualizarItensPorPagina);
-            };
-        }, [atualizarItensPorPagina]);
+    const [itensPorPagina, setItensPorPagina] = useState(8);
+    const [statusTurno, setStatusTurno] = useState<string>('');
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
+
+    // Filtra os dados com base nos filtros selecionados
+    const historicoJornadas = useMemo(() => {
+        return dadosOriginais.filter(jornada => {
+            // Filtro por status
+            const statusMatch = !statusTurno ||
+                (statusTurno === 'ENCERRADO' && jornada.statusTurno.props.children === 'Encerrado') ||
+                (statusTurno === 'NAO_COMPARECEU' && jornada.statusTurno.props.children === 'Não Compareceu') ||
+                (statusTurno === 'IRREGULAR' && jornada.statusTurno.props.children === 'Irregular');
+
+            // Filtro por data
+            const [dia, mes, ano] = jornada.data.split('/');
+            const dataJornada = new Date(`${ano}-${mes}-${dia}`);
+            dataJornada.setHours(0, 0, 0, 0); // Normaliza para início do dia
+
+            const start = startDate ? new Date(startDate) : null;
+            if (start) start.setHours(0, 0, 0, 0);
+
+            const end = endDate ? new Date(endDate) : null;
+            if (end) end.setHours(23, 59, 59, 999);
+
+            const dataMatch = (!start || dataJornada >= start) &&
+                (!end || dataJornada <= end);
+
+            return statusMatch && dataMatch;
+        });
+    }, [dadosOriginais, statusTurno, startDate, endDate]);
+
+
     const buscarHistoricoJornadas = () => {
         try {
             setCarregando(true);
@@ -49,82 +52,76 @@ export default function ConteudoHistoricoFunc() {
                 setErro('Nenhum dado de usuário encontrado no localStorage.');
                 return;
             }
+
             const userData = JSON.parse(userDataString);
-            console.log('Dados do localStorage:', userData);
 
-            if (userData) {
-                // Processa jornadas históricas
-                const historicoFormatado = userData.jornadas_historico
-                    ?.map(formatarJornada)
-                    ?.sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime()) || [];
+            const formatarJornada = (jornada: any) => {
+                const dataInicio = new Date(jornada.inicio_turno);
+                const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
 
-                // Processa jornadas irregulares
-                const irregularFormatado = userData.jornadas_irregulares
-                    ?.map(formatarJornada)
-                    ?.sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime()) || [];
+                const pontosFormatados = jornada.pontos_marcados?.map((ponto: any) => ({
+                    tipo: ponto.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída',
+                    horario: new Date(ponto.data_hora).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                })) || [];
 
+                return {
+                    data: dataInicio.toLocaleDateString('pt-BR'),
+                    inicioTurno: dataInicio.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }),
+                    fimTurno: dataFim ? dataFim.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'N/A',
+                    statusTurno: formatarStatus(jornada.status_turno),
+                    pontos: pontosFormatados,
+                    dataOriginal: dataInicio
+                };
+            };
 
-                // Combina e ordena todos os registros
-                const todosRegistros = [...historicoFormatado, ...irregularFormatado]
-                    .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime())
-                    .map(({ dataOriginal, ...rest }) => rest);
+            const formatarStatus = (status: string) => {
+                const statusStyles = {
+                    'ENCERRADO': { text: 'Encerrado', color: 'bg-green-100 text-green-800' },
+                    'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
+                    'IRREGULAR': { text: 'Irregular', color: 'bg-yellow-100 text-yellow-800' },
+                    default: { text: status, shortText: status, color: 'bg-gray-100 text-gray-800' }
+                };
 
-                setHistoricoJornadas(todosRegistros);
-            } else {
-                setErro('Dados inválidos no localStorage ou nenhum histórico encontrado.');
-            }
+                return (
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[status]?.color || statusStyles.default.color}`}>
+                        {/* Texto completo em telas médias para cima */}
+                        <span className="hidden sm:inline">{statusStyles[status]?.text || statusStyles.default.text}</span>
+                        {/* Texto abreviado em telas pequenas */}
+                        <span className="sm:hidden">{statusStyles[status]?.shortText || statusStyles.default.shortText}</span>
+                    </span>
+                );
+            };
+
+            const historicoFormatado = userData.jornadas_historico?.map(formatarJornada) || [];
+            const irregularFormatado = userData.jornadas_irregulares?.map(formatarJornada) || [];
+
+            const todosRegistros = [...historicoFormatado, ...irregularFormatado]
+                .sort((a, b) => b.dataOriginal.getTime() - a.dataOriginal.getTime())
+                .map(({ dataOriginal, ...rest }) => rest);
+
+            setDadosOriginais(todosRegistros);
         } catch (error) {
-
-            console.error('Erro ao processar dados do localStorage:', error);
-
-            setErro('Erro ao carregar o histórico de jornadas. Tente novamente mais tarde.');
+            console.error('Erro ao processar dados:', error);
+            setErro('Erro ao carregar o histórico. Tente novamente mais tarde.');
         } finally {
             setCarregando(false);
         }
     };
-
-    const formatarJornada = (jornada: any) => {
-        const dataInicio = new Date(jornada.inicio_turno);
-        const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
-
-        // Formata os pontos marcados
-        const pontosFormatados = jornada.pontos_marcados?.map((ponto: any) => ({
-            tipo: ponto.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída',
-            horario: new Date(ponto.data_hora).toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            })
-        })) || [];
-
-        return {
-            data: dataInicio.toLocaleDateString('pt-BR'),
-            inicioTurno: dataInicio.toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            }),
-            fimTurno: dataFim ? dataFim.toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            }) : 'N/A',
-            statusTurno: formatarStatus(jornada.status_turno),
-            pontos: pontosFormatados,
-            dataOriginal: dataInicio
-        };
-    };
-
-    const formatarStatus = (status: string) => {
-        switch (status) {
-            case 'ENCERRADO':
-                return 'Encerrado';
-            case 'NAO_COMPARECEU':
-                return 'Não Compareceu';
-            case 'IRREGULAR':
-                return 'Irregular';
-            default:
-                return status;
-        }
-    };
-
+    const limparFiltros = useCallback(() => {
+        setStatusTurno('');
+        setStartDate(null);
+        setEndDate(null);
+        setPaginaAtual(0);
+    }, []);
     useEffect(() => {
         buscarHistoricoJornadas();
     }, []);
@@ -136,93 +133,203 @@ export default function ConteudoHistoricoFunc() {
         return historicoJornadas.slice(inicio, fim);
     };
 
-    const avancarPagina = () => {
-        if (paginaAtual < totalPaginas - 1) {
-            setPaginaAtual(paginaAtual + 1);
-        }
-    };
+    const PaginationControls = () => {
+        const maxVisibleButtons = 5; // Máximo de botões numéricos visíveis
 
-    const retrocederPagina = () => {
-        if (paginaAtual > 0) {
-            setPaginaAtual(paginaAtual - 1);
-        }
+        // Calcula quais botões mostrar
+        const getVisiblePages = () => {
+            let startPage = Math.max(0, paginaAtual - Math.floor(maxVisibleButtons / 2));
+            let endPage = startPage + maxVisibleButtons - 1;
+
+            if (endPage >= totalPaginas - 1) {
+                endPage = totalPaginas - 1;
+                startPage = Math.max(0, endPage - maxVisibleButtons + 1);
+            }
+
+            return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+        };
+
+        const visiblePages = getVisiblePages();
+
+        return (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-8 flex sm:flex-row items-center justify-center sm:gap-4 gap-2 w-full"
+            >
+                {/* Botão Anterior */}
+                <motion.button
+                    whileHover={{ scale: paginaAtual === 0 ? 1 : 1.05 }}
+                    whileTap={{ scale: paginaAtual === 0 ? 1 : 0.95 }}
+                    onClick={() => {
+                        if (paginaAtual > 0) {
+                            setPaginaAtual(paginaAtual - 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}
+                    disabled={paginaAtual === 0}
+                    className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === 0
+                        ? "bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed"
+                        : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                        }`}
+                >
+                    <FiChevronLeft className="mr-1" />
+                    Anterior
+                </motion.button>
+
+                {/* Botões numéricos (limitados a 5) */}
+                <div className="flex items-center gap-2">
+                    {visiblePages.map((page) => (
+                        <motion.button
+                            key={page}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                setPaginaAtual(page);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`sm:w-10 h-9 w-5 sm:h-10 rounded-full flex items-center justify-center text-sm ${paginaAtual === page
+                                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
+                                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                                }`}
+                        >
+                            {page + 1}
+                        </motion.button>
+                    ))}
+                </div>
+
+                {/* Botão Próximo */}
+                <motion.button
+                    whileHover={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 1.05 }}
+                    whileTap={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 0.95 }}
+                    onClick={() => {
+                        if (paginaAtual < totalPaginas - 1) {
+                            setPaginaAtual(paginaAtual + 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}
+                    disabled={paginaAtual === totalPaginas - 1}
+                    className={`flex items-center  text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === totalPaginas - 1
+                        ? "bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed"
+                        : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                        }`}
+                >
+                    Próxima
+                    <FiChevronRight className="ml-1" />
+                </motion.button>
+            </motion.div>
+        );
     };
 
     return (
-        <div className="flex flex-col items-center justify-center p-4 my-4 w-full overflow-y-hidden overflow-x-hidden">
-            <h2 className="mb-6 text-2xl font-semibold text-blue-600 poppins text-center mt-10">Histórico de Jornadas</h2>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center p-4 my-8 w-full poppins"
+        >
+            <motion.h2
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="mb-8 text-3xl mt-10 font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center"
+            >
+                Histórico de Jornadas
+            </motion.h2>
+            <FiltrosHistoricoFunc
+                statusTurno={statusTurno}
+                setStatusTurno={setStatusTurno}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                limparFiltros={limparFiltros}
+            />
 
             {erro ? (
-                <p className="text-red-600">{erro}</p>
+                <motion.div
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    className="p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-lg shadow-md"
+                >
+                    <p className="font-medium">{erro}</p>
+                </motion.div>
             ) : carregando ? (
-                <p>Carregando...</p>
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="flex justify-center p-12"
+                >
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+                </motion.div>
             ) : historicoJornadas.length === 0 ? (
-                <p>Nenhum registro encontrado.</p>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex flex-col items-center justify-center py-20"
+                >
+                    <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                            Nenhuma jornada registrada
+                        </h3>
+                        <p className="text-gray-600">
+                            Seu histórico de jornadas aparecerá aqui quando disponível
+                        </p>
+                    </div>
+                </motion.div>
             ) : (
                 <>
-                    <div className="w-[95vw] sm:w-[65vw] rounded-md !overflow-x-hidden bg-[#F1F1F1]">
-                        <table className="w-full border border-gray-300 text-center">
-                            <thead>
-                                <tr className="bg-blue-700 text-white">
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Data</th>
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Início do Turno</th>
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Fim do Turno</th>
-                                    <th className="p-2 sm:p-3 poppins text-sm sm:text-lg">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className='text-center justify-center'>
-                                {obterItensPaginaAtual().map((jornada, index) => (
-                                    <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
-                                            {jornada.data}
-                                        </td>
-                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
-                                            {jornada.inicioTurno}
-                                        </td>
-                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
-                                            {jornada.fimTurno}
-                                        </td>
-                                        <td className="p-2 px-2 md:p-3 poppins text-sm md:text-base text-black">
-                                            {jornada.statusTurno}
-                                        </td>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="sm:w-full w-[95vw] max-w-4xl rounded-xl overflow-hidden shadow-lg border border-gray-100"
+                    >
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                                        <th className="p-4 text-center font-medium">Data</th>
+                                        <th className="p-4 text-center font-medium">Início</th>
+                                        <th className="p-4 text-center font-medium">Fim</th>
+                                        <th className="p-4 text-center font-medium">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    <AnimatePresence>
+                                        {obterItensPaginaAtual().map((jornada, index) => (
+                                            <motion.tr
+                                                key={`${jornada.data}-${index}`}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                                className={`border-b border-gray-200 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                                            >
+                                                <td className="p-2sm:p-4 text-sm font-medium text-gray-800">
+                                                    {jornada.data}
+                                                </td>
+                                                <td className="p-2 sm:p-4 text-sm text-center text-gray-600">
+                                                    {jornada.inicioTurno}
+                                                </td>
+                                                <td className="p-2 sm:p-4 text-sm text-center text-gray-600">
+                                                    {jornada.fimTurno}
+                                                </td>
+                                                <td className="p-2 sm:p-4 text-center">
+                                                    {jornada.statusTurno}
+                                                </td>
+                                            </motion.tr>
+                                        ))}
+                                    </AnimatePresence>
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
 
-                    {/* Paginação */}
-                    <div className="mt-3 -mb-4 flex items-center gap-4">
-                        <button
-                            onClick={retrocederPagina}
-                            disabled={paginaAtual === 0}
-                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${
-                                paginaAtual === 0
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
-                            }`}
-                        >
-                            Anterior
-                        </button>
+                    {totalPaginas >= 1 && <PaginationControls />}
 
-                        <span className="text-sm md:text-lg poppins text-gray-700">
-                            Página {paginaAtual + 1} de {totalPaginas}
-                        </span>
-
-                        <button
-                            onClick={avancarPagina}
-                            disabled={paginaAtual === totalPaginas - 1}
-                            className={`px-4 py-3 rounded-lg transition poppins text-sm md:text-base ${
-                                paginaAtual === totalPaginas - 1
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-800"
-                            }`}
-                        >
-                            Próxima
-                        </button>
-                    </div>
                 </>
             )}
-        </div>
+        </motion.div>
     );
 }

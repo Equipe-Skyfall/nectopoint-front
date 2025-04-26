@@ -13,7 +13,7 @@ export default function InputPadrao(props: propsInput) {
             pattern={pattern}
             value={value} 
             onChange={onChange} 
-            className="text-gray-800 bg-zinc-200 rounded-xl w-72 p-2 mx-auto my-2 br text-center"
+            className="text-gray-800 bg-zinc-200 rounded-xl sm:w-80 p-3 mx-auto my-3 br text-center"
             placeholder={placeholder}
         />
     );

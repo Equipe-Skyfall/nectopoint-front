@@ -2,90 +2,174 @@ import { useEffect, useState } from "react";
 import api from "../hooks/api";
 
 import GraficoDashboard from "../graficoDashboard/graficoDashboard";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 // (int page), (int size), (Date startDate), (Date endDate), (str statusTurno), (int id_colaborador) 
 type params = {
-page: number;
-size: number;
-startDate: Date;
-endDate: Date;
-status_turno: string;
-id_colaborador: string;
+    page: number;
+    size: number;
+    startDate: string;
+    endDate: string;
+    status_turno: string;
+  
 }
 
-export default function DashboardGestor()    {
+export default function DashboardGestor() {
     const [data, setData] = useState([]);
+    const navigate = useNavigate();
 
-    
     useEffect(() => {
         const fetchData = async () => {
-            
-           if (data.length  == undefined || null || []) {
-            let hoje = new Date();
-            let umDiaAtras = new Date(hoje);
-            const params :params    = {
-                page: 1,
-                size: 1000,
-                startDate: umDiaAtras,// 1 dia atrás
-                endDate: hoje,
-                status_turno: "",
-                id_colaborador: "",
-            };
-            try {
-                const response = await api.get("sessao/usuario/todos", {
-                    params: {
-                        page: params.page,
-                        size: params.size,
-                        startDate: params.startDate.toISOString(),
-                        endDate: params.endDate.toISOString(),
-                        status_turno: params.status_turno,
-                        id_colaborador: params.id_colaborador,
-                    },
-                });
-                console.log("Data fetched:", response.data);
-                setData(response.data.content); ;
-                
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }}
-            else {
+
+            if (data.length == undefined || null || []) {
+                let hoje = new Date();
+                let umDiaAtras = new Date(hoje);
+                const params: params = {
+                    page: 0,
+                    size: 1000,
+                    startDate: umDiaAtras.toISOString(),// 1 dia atrás
+                    endDate: hoje.toISOString(),
+                    status_turno: ""
+                    
+                };
                
+                
+                try {
+                    const response = await api.get("sessao/usuario/todos", {
+                        params: {
+                            page: params.page,
+                            size: params.size,
+                            startDate: params.startDate,
+                            endDate: params.endDate,
+                            status_turno: params.status_turno,
+                            
+                        },
+                    });
+                    
+                    setData(response.data.content);;
+
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+            }
+            else {
+
             }
         };
-        
-        fetchData();
-    },[])
-    let Trabalhando = 0;
-    let Atrasados = 0;
-    let HoraExtra = 0;
-    let SaidaAntecipada = 0;
 
+        fetchData();
+    }, [])
+    
+   
     const trabalhando = data.filter((item: any) => item.status === "TRABALHANDO");
     const trabalhandoCount = trabalhando.length;
     const ausentes = data.filter((item: any) => item.status === "NAO_COMPARECEU");
     const ausentesCount = ausentes.length;
-    console.log(data);
-return (
-    <div className="flex justify-center">
-                    <div className=" rounded-md w-[80%] flex flex-col justify-center items-center bg-white shadow-md p-4">
-                       <div className="flex flex-wrap justify-center">
-                       <div className="flex mx-2 items-center bg-primarygreen rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
-                        <p className=" flex text-white text-center text-lg  align-text-top font-bold p-2 align-top p-auto ">
-                        Trabalhando : 
-                        </p>
-                        <p className="font-bold text-white">{trabalhandoCount} </p>
-                        
-                       </div>
-                       <div className="flex mx-2 items-center bg-primaryred rounded-xl text-center w-72 justify-center align-top place-self-center place-items-center text-center mx-auto px-2 my-2">
+    const redirecionarComFiltro = (status: string) => {
+        navigate('/historico-gestor', { 
+            state: { 
+                statusTurno: status, // Nome exato que seu FiltrosHistorico espera
+                startDate: new Date(new Date().setDate(new Date().getDate() - 1)),
+                endDate: new Date()
+            } 
+        });
+    };
+    
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center  justify-center   bg-gradient-to-b"
+        >
+            <motion.h1  
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="mb-4 mt-4 text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent poppins"
+            >
+                Dashboard Gerencial
+            </motion.h1>
 
-                            <p className=" flex text-white text-center text-lg  align-text-top font-bold p-2 align-top p-auto ">
-                            Ausentes : 
+            <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="w-full max-w-4xl bg-white rounded-xl shadow-xl mb-7 overflow-hidden border border-gray-200 p-6"
+            >
+                <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => redirecionarComFiltro("TRABALHANDO") }
+                        className="flex items-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                    >
+                        <div className="flex items-center px-4">
+                            <p className="text-white text-lg font-bold poppins mr-3">
+                                Trabalhando:
                             </p>
-                            <p className="font-bold text-white">{ausentesCount} </p>
+                            <p className="text-white text-2xl font-bold poppins">
+                                {trabalhandoCount}
+                            </p>
                         </div>
-                       </div>
-                       <GraficoDashboard/>
-                    </div>
-                    
-    </div>
-                )
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => redirecionarComFiltro("NAO_COMPARECEU")}
+                        className="flex items-center bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                    >
+                        <div className="flex items-center px-4">
+                            <p className="text-white text-lg font-bold poppins mr-3">
+                                Ausentes:
+                            </p>
+                            <p className="text-white text-2xl font-bold poppins">
+                                {ausentesCount}
+                            </p>
+                        </div>
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => redirecionarComFiltro("INTERVALO") }
+                        className="flex items-center bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                    >
+                        <div className="flex items-center px-4">
+                            <p className="text-white text-lg font-bold poppins mr-3">
+                                Intervalo:
+                            </p>
+                            <p className="text-white text-2xl font-bold poppins">
+                                {trabalhandoCount}
+                            </p>
+                        </div>
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => redirecionarComFiltro("TRABALHANDO") }
+                        className="flex items-center bg-gradient-to-r from-blue-500 to-cyan-700 hover:from-blue-700 hover:to-cyan-800 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                    >
+                        <div className="flex items-center px-4">
+                            <p className="text-white text-lg font-bold poppins mr-3">
+                                Trabalhando:
+                            </p>
+                            <p className="text-white text-2xl font-bold poppins">
+                                {trabalhandoCount}
+                            </p>
+                        </div>
+                    </motion.button>
+                </div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="w-full"
+                >
+                    <GraficoDashboard />
+                </motion.div>
+            </motion.div>
+        </motion.div>
+    )
 }

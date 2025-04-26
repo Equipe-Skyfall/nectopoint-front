@@ -1,99 +1,55 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import api from '../hooks/api';
-
-interface HistoricoParams {
-    page?: number;
-    size?: number;
-    startDate?: string; 
-    endDate?: string;
-    status_turno?: string; 
-    id_colaborador?: number;
-}
-
-interface PointRegistryEntity {
-    id_ponto: string;
-    id_colaborador: number;
-    nome_colaborador: string;
-    tipo_ponto: string; 
-    data_hora: string; 
-    status_turno: string; 
-}
-
-interface ApiResponse {
-    content: PointRegistryEntity[];
-    pageable: {
-        pageNumber: number;
-        pageSize: number;
-        sort: {
-            sorted: boolean;
-            unsorted: boolean;
-            empty: boolean;
-        };
-        offset: number;
-        paged: boolean;
-        unpaged: boolean;
-    };
-    totalPages: number;
-    totalElements: number;
-    last: boolean;
-    first: boolean;
-    size: number;
-    number: number;
-    sort: {
-        sorted: boolean;
-        unsorted: boolean;
-        empty: boolean;
-    };
-    numberOfElements: number;
-    empty: boolean;
-}
+import { HistoricoParams, ApiResponse } from '../../interfaces/interfaceHistorico';
 
 const useHistorico = (params: HistoricoParams) => {
-    const [historico, setHistorico] = useState<PointRegistryEntity[]>([]);
-    const [erro, setErro] = useState<string | null>(null);
-    const [totalPaginas, setTotalPaginas] = useState(0);
+    const queryKey = ['historico', params]; // Chave única para a query
 
-    useEffect(() => {
-        const buscarHistorico = async () => {
-            try {
-                setErro(null);
+    const { data, error, isLoading } = useQuery<ApiResponse, Error>({
+        queryKey,
+        queryFn: async () => {
+            console.log('Enviando para API:', params); 
+            const startDateISO = params.startDate ? new Date(params.startDate).toISOString() : undefined;
+            const endDateISO = params.endDate ? new Date(params.endDate).toISOString() : undefined;
 
+            const response = await api.get<ApiResponse>('/turno/historico', {
+                params: {
+                    //Utilizo todos os parâmetros que vem do back
+                    page: params.page,
+                    size: params.size,
+                    startDate: startDateISO,
+                    endDate: endDateISO,
+                    lista_status: params.lista_status,
+                    nome_colaborador: params.nome_colaborador, 
+                },
+            });
+            console.log('Resposta da API:', response)
 
-                const startDateISO = params.startDate ? new Date(params.startDate).toISOString() : undefined;
-                const endDateISO = params.endDate ? new Date(params.endDate).toISOString() : undefined;
-
-                const response = await api.get<ApiResponse>('/turno/historico', {
-                    params: {
-                        page: params.page,
-                        size: params.size,
-                        startDate: startDateISO,
-                        endDate: endDateISO,
-                        status_turno: params.status_turno,
-                        id_colaborador: params.id_colaborador,
-                    },
+            if (response.data && Array.isArray(response.data.content)) {
+                // Ordena os registros por data decrescente
+                const pontosOrdenados = response.data.content.sort((a, b) => {
+                    const dataA = new Date(a.data_hora).getTime();
+                    const dataB = new Date(b.data_hora).getTime();
+                    return dataB - dataA;
                 });
 
-                if (response.data && Array.isArray(response.data.content)) {
-                    const pontosOrdenados = response.data.content.sort((a, b) => {
-                        const dataA = new Date(a.data_hora).getTime();
-                        const dataB = new Date(b.data_hora).getTime();
-                        return dataB - dataA
-                    })
-                    setHistorico(pontosOrdenados);
-                    setTotalPaginas(response.data.totalPages);
-                } else {
-                    setErro('Dados inválidos recebidos da API.');
-                }
-            } catch (error) {
-                setErro('Erro ao carregar o histórico. Tente novamente mais tarde.');
-            } finally {
+                return {
+                    ...response.data,
+                    content: pontosOrdenados,
+                };
             }
-        };
+            throw new Error('Dados inválidos recebidos da API.');
+        },
+        staleTime: 1000, 
+        refetchOnWindowFocus: true, 
+    });
 
-        buscarHistorico();
-    }, [params]);
-
-    return { historico, erro, totalPaginas };
+    return {
+        historico: data?.content || [],
+        erro: error?.message || null,
+        totalPaginas: data?.totalPages || 0,
+        isLoading,
+    };
 };
 
 export default useHistorico;

@@ -1,6 +1,6 @@
 import React from 'react';
-import ConteudoSolicitacoes from "../componentes/conteudoPaginas/solicitacoes/conteudoSolicitacoes";
-import Navbar from '../componentes/navbar/navbar';
+import ConteudoSolicitacoes from "../../componentes/conteudoPaginas/solicitacoes/conteudoSolicitacoes";
+import Navbar from '../../componentes/navbar/navbar';
 
 export default function Solicitacoes() {
   return (

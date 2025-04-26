@@ -3,70 +3,19 @@ import { useState, useEffect } from 'react';
 import api from './api';
 import SessaoUsuario from '../../interfaces/interfaceSessaoUsuario';
 
-
-interface UserData {
-  nome: string | null; 
-  cpf: string;
-  cargo: string;
-  departamento: string;
-  status: string | null;
-}
-
-interface JornadaTrabalho {
-  tipo_jornada: string;
-  banco_de_horas: number;
-  horas_diarias: number;
-}
-
-interface Ponto {
-  tipo_ponto: string; 
-  data_hora: string;
-  tempo_entre_pontos: number | null;
-}
-
-interface JornadaAtual {
-  id_colaborador: number;
-  nome_colaborador: string;
-  id_registro: string;
-  inicio_turno: string;
-  status_turno: string;
-  tempo_trabalhado_min: number;
-  tempo_intervalo_min: number;
-  pontos_marcados: Ponto[];
-}
-
-interface LoginResponse {
-  id_sessao: string;
-  id_colaborador: number;
-  dados_usuario: UserData;
-  jornada_trabalho: JornadaTrabalho;
-  jornada_atual: JornadaAtual;
-  jornadas_historico: any[];
-  jornadas_irregulares: any[];
-  alertas_usuario: any[];
-}
-
-interface User {
-  id: number;
-  nome: string | null; 
-  cpf: string;
-  cargo: string;
-  departamento: string;
-  status: string | null;
-  jornada_trabalho: JornadaTrabalho;
-  jornada_atual: JornadaAtual;
-  alertas_usuario: any[];
-}
-
 interface LoginCredentials {
   cpf: string;
   password: string;
 }
 
+interface VerificationCredentials {
+  userId: string;
+  verificationCode: string;
+}
+
 const useAuth = () => {
   const [user, setUser] = useState<SessaoUsuario | null>(null);
   const queryClient = useQueryClient();
-
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -80,18 +29,56 @@ const useAuth = () => {
     }
   }, []);
 
-
+  // Mutation para o primeiro passo de login
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      const response = await api.post<SessaoUsuario>('/usuario/auth', credentials);
-      return response;
+      try {
+        // Ensure credentials are properly formatted
+        const formattedCredentials = {
+          cpf: credentials.cpf.replace(/\D/g, ""),
+          password: credentials.password.trim()
+        };
+        
+        console.log("Enviando credenciais:", formattedCredentials);
+        const response = await api.post('/usuario/auth', formattedCredentials);
+        return response;
+      } catch (error) {
+        console.error('Erro na autenticação:', error);
+        // Log detailed error information
+        if (error.response) {
+          console.error('Response data:', error.response.data);
+          console.error('Response status:', error.response.status);
+          console.error('Response headers:', error.response.headers);
+        }
+        throw error;
+      }
+    }
+  });
+
+  // Mutation para o segundo passo de verificação
+  const verifyMutation = useMutation({
+    mutationFn: async (verification: VerificationCredentials) => {
+      try {
+        console.log("Enviando verificação:", verification);
+        const response = await api.post<SessaoUsuario>('/usuario/verify', verification);
+        return response;
+      } catch (error) {
+        console.error('Erro na verificação:', error);
+        throw error;
+      }
     },
     onSuccess: (response) => {
+      console.log("Verificação bem sucedida:", response);
       const responseData = response.data;
 
+      // Verificando se os dados esperados estão presentes
+      if (!responseData || !responseData.dados_usuario) {
+        console.error('Resposta de verificação incompleta:', responseData);
+        throw new Error('Dados de usuário incompletos na resposta');
+      }
 
       const userData: SessaoUsuario = {
-        id_sessao: responseData.id_sessao, // Corrected to match 'id_sessao'
+        id_sessao: responseData.id_sessao,
         id_colaborador: responseData.id_colaborador,
         dados_usuario: {
             nome: responseData.dados_usuario.nome,
@@ -103,20 +90,18 @@ const useAuth = () => {
         jornada_trabalho: responseData.jornada_trabalho,
         jornada_atual: responseData.jornada_atual,
         alertas_usuario: responseData.alertas_usuario,
-        jornadas_historico: responseData.jornadas_historico, 
-        jornadas_irregulares: responseData.jornadas_irregulares, 
-        tickets_usuario: responseData.tickets_usuario, 
-    };
-
-
+        jornadas_historico: responseData.jornadas_historico,
+        jornadas_irregulares: responseData.jornadas_irregulares,
+        tickets_usuario: responseData.tickets_usuario,
+      };
+      
       setUser(userData);
-
-
       localStorage.setItem('user', JSON.stringify(userData));
-
-
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
+    onError: (error) => {
+      console.error('Erro após verificação:', error);
+    }
   });
 
   const logout = async () => {
@@ -124,8 +109,6 @@ const useAuth = () => {
       setUser(null);
       localStorage.removeItem('user');
       sessionStorage.removeItem('sessionAuth');
-
-
       queryClient.clear();
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
@@ -136,12 +119,12 @@ const useAuth = () => {
     user,
     isAuthenticated: !!user,
     login: loginMutation.mutate,
+    verifyCode: verifyMutation.mutate,
     logout,
-    isLoading: loginMutation.isPending,
-    error: loginMutation.error,
-    isSuccess: loginMutation.isSuccess,
+    isLoading: loginMutation.isPending || verifyMutation.isPending,
+    error: loginMutation.error || verifyMutation.error,
+    isSuccess: loginMutation.isSuccess || verifyMutation.isSuccess,
   };
 };
 
 export default useAuth;
-export type { User };

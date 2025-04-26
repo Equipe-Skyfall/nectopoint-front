@@ -12,7 +12,7 @@ export default async function encerrarTurno() {
        
         recarregar();
         
-        console.log('Turno encerrado com sucesso:', response.data);
+        
         
         
     } catch (error: any) {

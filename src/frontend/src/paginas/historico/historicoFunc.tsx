@@ -1,6 +1,6 @@
-import NavBar from "../componentes/navbar/navbar";
+import NavBar from "../../componentes/navbar/navbar";
 
-import ConteudoHistoricoFunc from "../componentes/tabelaHistorico/tabelaHistoricoFunc";
+import ConteudoHistoricoFunc from "../../componentes/tabelaHistorico/tabelaHistoricoFunc";
 
 
 
