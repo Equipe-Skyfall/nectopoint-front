@@ -9,7 +9,7 @@ export default function ConteudoHistoricoFunc() {
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
     const [paginaAtual, setPaginaAtual] = useState(0);
-    const [itensPorPagina, setItensPorPagina] = useState(12);
+    const [itensPorPagina, setItensPorPagina] = useState(8);
     const [statusTurno, setStatusTurno] = useState<string>('');
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
@@ -18,29 +18,29 @@ export default function ConteudoHistoricoFunc() {
     const historicoJornadas = useMemo(() => {
         return dadosOriginais.filter(jornada => {
             // Filtro por status
-            const statusMatch = !statusTurno || 
+            const statusMatch = !statusTurno ||
                 (statusTurno === 'ENCERRADO' && jornada.statusTurno.props.children === 'Encerrado') ||
                 (statusTurno === 'NAO_COMPARECEU' && jornada.statusTurno.props.children === 'Não Compareceu') ||
                 (statusTurno === 'IRREGULAR' && jornada.statusTurno.props.children === 'Irregular');
-            
+
             // Filtro por data
             const [dia, mes, ano] = jornada.data.split('/');
-        const dataJornada = new Date(`${ano}-${mes}-${dia}`);
-        dataJornada.setHours(0, 0, 0, 0); // Normaliza para início do dia
-        
-        const start = startDate ? new Date(startDate) : null;
-        if (start) start.setHours(0, 0, 0, 0);
-        
-        const end = endDate ? new Date(endDate) : null;
-        if (end) end.setHours(23, 59, 59, 999);
-        
-        const dataMatch = (!start || dataJornada >= start) && 
-                         (!end || dataJornada <= end);
-        
-        return statusMatch && dataMatch;
-    });
-}, [dadosOriginais, statusTurno, startDate, endDate]);
-    
+            const dataJornada = new Date(`${ano}-${mes}-${dia}`);
+            dataJornada.setHours(0, 0, 0, 0); // Normaliza para início do dia
+
+            const start = startDate ? new Date(startDate) : null;
+            if (start) start.setHours(0, 0, 0, 0);
+
+            const end = endDate ? new Date(endDate) : null;
+            if (end) end.setHours(23, 59, 59, 999);
+
+            const dataMatch = (!start || dataJornada >= start) &&
+                (!end || dataJornada <= end);
+
+            return statusMatch && dataMatch;
+        });
+    }, [dadosOriginais, statusTurno, startDate, endDate]);
+
 
     const buscarHistoricoJornadas = () => {
         try {
@@ -86,14 +86,17 @@ export default function ConteudoHistoricoFunc() {
             const formatarStatus = (status: string) => {
                 const statusStyles = {
                     'ENCERRADO': { text: 'Encerrado', color: 'bg-green-100 text-green-800' },
-                    'NAO_COMPARECEU': { text: 'Não Compareceu', color: 'bg-red-100 text-red-800' },
+                    'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
                     'IRREGULAR': { text: 'Irregular', color: 'bg-yellow-100 text-yellow-800' },
-                    default: { text: status, color: 'bg-gray-100 text-gray-800' }
+                    default: { text: status, shortText: status, color: 'bg-gray-100 text-gray-800' }
                 };
 
                 return (
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[status]?.color || statusStyles.default.color}`}>
-                        {statusStyles[status]?.text || statusStyles.default.text}
+                        {/* Texto completo em telas médias para cima */}
+                        <span className="hidden sm:inline">{statusStyles[status]?.text || statusStyles.default.text}</span>
+                        {/* Texto abreviado em telas pequenas */}
+                        <span className="sm:hidden">{statusStyles[status]?.shortText || statusStyles.default.shortText}</span>
                     </span>
                 );
             };
@@ -130,18 +133,93 @@ export default function ConteudoHistoricoFunc() {
         return historicoJornadas.slice(inicio, fim);
     };
 
-    const avancarPagina = () => {
-        if (paginaAtual < totalPaginas - 1) {
-            setPaginaAtual(paginaAtual + 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
+    const PaginationControls = () => {
+        const maxVisibleButtons = 5; // Máximo de botões numéricos visíveis
 
-    const retrocederPagina = () => {
-        if (paginaAtual > 0) {
-            setPaginaAtual(paginaAtual - 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        // Calcula quais botões mostrar
+        const getVisiblePages = () => {
+            let startPage = Math.max(0, paginaAtual - Math.floor(maxVisibleButtons / 2));
+            let endPage = startPage + maxVisibleButtons - 1;
+
+            if (endPage >= totalPaginas - 1) {
+                endPage = totalPaginas - 1;
+                startPage = Math.max(0, endPage - maxVisibleButtons + 1);
+            }
+
+            return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+        };
+
+        const visiblePages = getVisiblePages();
+
+        return (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-8 flex sm:flex-row items-center justify-center sm:gap-4 gap-2 w-full"
+            >
+                {/* Botão Anterior */}
+                <motion.button
+                    whileHover={{ scale: paginaAtual === 0 ? 1 : 1.05 }}
+                    whileTap={{ scale: paginaAtual === 0 ? 1 : 0.95 }}
+                    onClick={() => {
+                        if (paginaAtual > 0) {
+                            setPaginaAtual(paginaAtual - 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}
+                    disabled={paginaAtual === 0}
+                    className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === 0
+                        ? "bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed"
+                        : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                        }`}
+                >
+                    <FiChevronLeft className="mr-1" />
+                    Anterior
+                </motion.button>
+
+                {/* Botões numéricos (limitados a 5) */}
+                <div className="flex items-center gap-2">
+                    {visiblePages.map((page) => (
+                        <motion.button
+                            key={page}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                setPaginaAtual(page);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`sm:w-10 h-9 w-5 sm:h-10 rounded-full flex items-center justify-center text-sm ${paginaAtual === page
+                                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
+                                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                                }`}
+                        >
+                            {page + 1}
+                        </motion.button>
+                    ))}
+                </div>
+
+                {/* Botão Próximo */}
+                <motion.button
+                    whileHover={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 1.05 }}
+                    whileTap={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 0.95 }}
+                    onClick={() => {
+                        if (paginaAtual < totalPaginas - 1) {
+                            setPaginaAtual(paginaAtual + 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}
+                    disabled={paginaAtual === totalPaginas - 1}
+                    className={`flex items-center  text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === totalPaginas - 1
+                        ? "bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed"
+                        : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                        }`}
+                >
+                    Próxima
+                    <FiChevronRight className="ml-1" />
+                </motion.button>
+            </motion.div>
+        );
     };
 
     return (
@@ -248,63 +326,8 @@ export default function ConteudoHistoricoFunc() {
                         </div>
                     </motion.div>
 
-                    {/* Paginação */}
-                    {totalPaginas >= 1 && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.4 }}
-                            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full"
-                        >
-                            <motion.button
-                                whileHover={{ scale: paginaAtual === 0 ? 1 : 1.05 }}
-                                whileTap={{ scale: paginaAtual === 0 ? 1 : 0.95 }}
-                                onClick={retrocederPagina}
-                                disabled={paginaAtual === 0}
-                                className={`flex items-center px-4 py-2 rounded-lg ${paginaAtual === 0
-                                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                    : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-                                    }`}
-                            >
-                                <FiChevronLeft className="mr-1" />
-                                Anterior
-                            </motion.button>
+                    {totalPaginas >= 1 && <PaginationControls />}
 
-                            <div className="flex items-center gap-2">
-                                {Array.from({ length: totalPaginas }).map((_, index) => (
-                                    <motion.button
-                                        key={index}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => {
-                                            setPaginaAtual(index);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm ${paginaAtual === index
-                                            ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
-                                            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-                                            }`}
-                                    >
-                                        {index + 1}
-                                    </motion.button>
-                                ))}
-                            </div>
-
-                            <motion.button
-                                whileHover={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 1.05 }}
-                                whileTap={{ scale: paginaAtual === totalPaginas - 1 ? 1 : 0.95 }}
-                                onClick={avancarPagina}
-                                disabled={paginaAtual === totalPaginas - 1}
-                                className={`flex items-center px-4 py-2 rounded-lg ${paginaAtual === totalPaginas - 1
-                                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                    : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-                                    }`}
-                            >
-                                Próxima
-                                <FiChevronRight className="ml-1" />
-                            </motion.button>
-                        </motion.div>
-                    )}
                 </>
             )}
         </motion.div>
