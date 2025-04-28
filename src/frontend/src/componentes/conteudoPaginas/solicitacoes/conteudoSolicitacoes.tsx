@@ -103,8 +103,10 @@ const ConteudoSolicitacoes: React.FC = () => {
     setIsSubmitting
   } = useTicketForm();
 
+  // Hook personalizado para interagir com a API de tickets
   const { submitTicket } = useTicketApi();
 
+  // Função para lidar com o envio do formulário
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -121,6 +123,7 @@ const ConteudoSolicitacoes: React.FC = () => {
     setIsSubmitting(false);
   };
 
+  // Renderiza campos adicionais com base na opção selecionada
   const renderAdditionalFields = () => {
     switch (formState.selectedOption) {
       case 'ferias':
@@ -230,6 +233,7 @@ const ConteudoSolicitacoes: React.FC = () => {
   };
 
   return (
+    // Container principal com animação de entrada
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -237,6 +241,7 @@ const ConteudoSolicitacoes: React.FC = () => {
       className="pt-2 min-h-screen"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Cabeçalho com título e descrição */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -253,7 +258,9 @@ const ConteudoSolicitacoes: React.FC = () => {
           
         </motion.div>
 
+        {/* Layout com seção explicativa e formulário */}
         <div className="flex flex-col lg:flex-row gap-12">
+          {/* Seção explicativa sobre o processo */}
           <motion.div
             initial={{ x: -40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -286,6 +293,7 @@ const ConteudoSolicitacoes: React.FC = () => {
             </div>
           </motion.div>
 
+          {/* Formulário de solicitação */}
           <motion.div
             initial={{ x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

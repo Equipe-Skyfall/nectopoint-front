@@ -69,6 +69,7 @@ const useSolicitacoes = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Formata uma data ISO para o padrão brasileiro (dd/mm/aaaa hh:mm)
     const formatarDataBrasil = useCallback((dataISO: string) => {
         if (!dataISO) return 'Não informado';
         const data = new Date(dataISO);
@@ -81,15 +82,18 @@ const useSolicitacoes = ({
         });
     }, []);
 
+    // Formata uma lista de dias de abono para exibição
     const formatarDiasAbono = useCallback((dias: string[] | null | undefined) => {
         if (!dias || dias.length === 0) return null;
         return dias.map(dia => formatarDataBrasil(dia)).join(', ');
     }, [formatarDataBrasil]);
 
+    // Converte o status do ticket para um formato legível
     const formatarStatus = useCallback((status: string): string => {
         return status.replace(/_/g, ' ');
     }, []);
 
+    // Traduz o tipo de ticket para uma descrição amigável
     const formatarTipoTicket = useCallback((tipo: TicketType): string => {
         switch (tipo) {
             case 'PEDIR_FERIAS': return 'Férias';
@@ -101,6 +105,7 @@ const useSolicitacoes = ({
         }
     }, []);
 
+    // Formata o motivo do abono para exibição
     const formatarMotivoAbono = useCallback((motivo: AbsenceReason): string => {
         if (!motivo) return '';
         switch (motivo) {
@@ -109,14 +114,17 @@ const useSolicitacoes = ({
         }
     }, []);
 
+    // Verifica se um ticket pode ser aprovado ou reprovado
     const podeAprovarOuReprovar = useCallback((status: TicketStatus) => {
         return status === 'EM_AGUARDO';
     }, []);
 
+    // Gera a URL para download de um arquivo associado ao ticket
     const getFileDownloadUrl = useCallback((ticketId: string): string => {
         return `http://localhost:3000/tickets/files/${ticketId}`;
     }, []);
 
+    // Verifica se o arquivo do ticket está acessível no servidor
     const checkFileAccessibility = useCallback(async (ticketId: string): Promise<void> => {
         try {
             const response = await axios.head(`http://localhost:3000/tickets/files/${ticketId}`, {
@@ -137,6 +145,7 @@ const useSolicitacoes = ({
         }
     }, []);
 
+    // Busca as solicitações da API com base nos filtros e paginação
     const fetchSolicitacoes = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -179,6 +188,7 @@ const useSolicitacoes = ({
         }
     }, [page, size, statusTicket, startDate, endDate, tipoTicket, nomeColaborador]);
 
+    // Busca os detalhes de um ticket específico pelo ID
     const fetchTicketDetails = useCallback(async (id: string) => {
         try {
             const response = await axios.get<Solicitacao>(`http://localhost:3000/tickets/${id}`, {
@@ -197,6 +207,7 @@ const useSolicitacoes = ({
         }
     }, []);
 
+    // Atualiza a lista de solicitações removendo um ticket e refazendo a busca
     const atualizarSolicitacoes = useCallback(async (id_ticket: string) => {
         setSolicitacoes(prev => {
             if (!prev) return prev;
@@ -218,6 +229,7 @@ const useSolicitacoes = ({
         }
     }, [fetchSolicitacoes]);
 
+    // Carrega os detalhes de um ticket e abre o modal correspondente
     const abrirModalDetalhes = useCallback(async (
         ticket: Solicitacao,
         setTicketDetalhado: (ticket: Solicitacao | null) => void,
@@ -237,6 +249,7 @@ const useSolicitacoes = ({
         }
     }, [fetchTicketDetails]);
 
+    // Envia uma resposta (aprovação ou reprovação) para um ticket
     const enviarResposta = useCallback(async (
         status_novo: TicketStatus,
         ticketDetalhado: Solicitacao | null,
@@ -280,6 +293,7 @@ const useSolicitacoes = ({
         }
     }, [atualizarSolicitacoes]);
 
+    // Alterna a inclusão/exclusão de um status nos filtros
     const toggleFiltroStatus = useCallback((status: TicketStatus, setFiltroStatus: (f: TicketStatus[] | ((prev: TicketStatus[]) => TicketStatus[])) => void, setPagina: (p: number) => void) => {
         setFiltroStatus(prev =>
             prev.includes(status)
@@ -289,12 +303,14 @@ const useSolicitacoes = ({
         setPagina(0);
     }, []);
 
+    // Limpa os filtros de data e reseta a página
     const limparFiltros = useCallback((setStartDate: (date: Date | null) => void, setEndDate: (date: Date | null) => void, setPagina: (p: number) => void) => {
         setStartDate(null);
         setEndDate(null);
         setPagina(0);
     }, []);
 
+    // Busca automaticamente as solicitações quando os parâmetros mudam
     useEffect(() => {
         fetchSolicitacoes();
     }, [fetchSolicitacoes]);

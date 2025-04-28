@@ -78,12 +78,14 @@ const SolicitacoesGestor = () => {
     endDate
   });
 
+  // Ajusta a página se não houveer mais solicitações
   useEffect(() => {
     if (solicitacoes === null || (solicitacoes.content.length === 0 && pagina > 0)) {
       setPagina(p => Math.max(p - 1, 0));
     }
   }, [solicitacoes, pagina]);
 
+  // useEffect para fechar o modal ao clicar fora do mesmo
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -105,6 +107,7 @@ const SolicitacoesGestor = () => {
     };
   }, [modalAberto]);
 
+  // Verifica se tem algum anexo no abono
   useEffect(() => {
     if (ticketDetalhado?.tipo_ticket === 'PEDIR_ABONO' && ticketDetalhado.filePath) {
       checkFileAccessibility(ticketDetalhado.id_ticket)
@@ -128,6 +131,7 @@ const SolicitacoesGestor = () => {
     );
   };
 
+  // Rota para baixar o arquivo localmente (Empurrar para um hook depois)
   const handleDownload = async (ticketId: string, fileName: string) => {
     try {
       await checkFileAccessibility(ticketId);
@@ -145,6 +149,7 @@ const SolicitacoesGestor = () => {
     }
   };
 
+  // Paginação
   const totalPaginas = solicitacoes?.totalPages || 1;
   const paginaAtual = solicitacoes?.number || 0;
   const temProximaPagina = paginaAtual < totalPaginas - 1;
@@ -158,6 +163,7 @@ const SolicitacoesGestor = () => {
       className="mt-16 min-h-screen p-4 md:p-6 poppins"
     >
       <div className="max-w-7xl mx-auto">
+        {/* Título da página */}
         <motion.h1
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -167,6 +173,7 @@ const SolicitacoesGestor = () => {
           Solicitações
         </motion.h1>
 
+        {/* Botões de filtro por status */}
         <div className="flex flex-wrap gap-3 mb-4 justify-center">
           {Object.keys(TicketStatus).map((status) => (
             <motion.button
@@ -184,6 +191,7 @@ const SolicitacoesGestor = () => {
           ))}
         </div>
 
+        {/* Componente de filtros adicionais */}
         <FiltrosSoli
           startDate={startDate}
           setStartDate={setStartDate}
@@ -192,6 +200,7 @@ const SolicitacoesGestor = () => {
           limparFiltros={() => limparFiltros(setStartDate, setEndDate, setPagina)}
         />
 
+        {/* Lista de solicitações ou mensagens de estado */}
         <div className="space-y-4">
           {loading ? (
             <motion.div
@@ -241,11 +250,11 @@ const SolicitacoesGestor = () => {
                     whileHover={{ backgroundColor: 'rgba(249, 250, 251, 1)' }}
                     className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-colors"
                   >
+                    {/* Informações do colaborador */}
                     <div className="flex items-center w-full sm:w-auto flex-1 min-w-0">
                       <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-full flex-shrink-0 mr-4">
                         <FaUser className="text-blue-600 text-xl" />
                       </div>
-
                       <div className="min-w-0">
                         <h3 className="text-lg font-semibold text-gray-800 text-start truncate">
                           {solicitacao.nome_colaborador}
@@ -266,7 +275,7 @@ const SolicitacoesGestor = () => {
                         </p>
                       </div>
                     </div>
-
+                    {/* Botão para abrir detalhes */}
                     <motion.button
                       whileHover={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 1.1 : 1 }}
                       whileTap={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 0.9 : 1 }}
@@ -290,6 +299,7 @@ const SolicitacoesGestor = () => {
           )}
         </div>
 
+        {/* Navegação de páginas */}
         {totalPaginas > 1 && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -311,20 +321,13 @@ const SolicitacoesGestor = () => {
                 <FiChevronLeft className="mr-2" />
                 Anterior
               </motion.button>
-
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
                   let pageNum;
-                  if (totalPaginas <= 5) {
-                    pageNum = i;
-                  } else if (paginaAtual <= 2) {
-                    pageNum = i;
-                  } else if (paginaAtual >= totalPaginas - 3) {
-                    pageNum = totalPaginas - 5 + i;
-                  } else {
-                    pageNum = paginaAtual - 2 + i;
-                  }
-
+                  if (totalPaginas <= 5) pageNum = i;
+                  else if (paginaAtual <= 2) pageNum = i;
+                  else if (paginaAtual >= totalPaginas - 3) pageNum = totalPaginas - 5 + i;
+                  else pageNum = paginaAtual - 2 + i;
                   return (
                     <motion.button
                       key={pageNum}
@@ -341,7 +344,6 @@ const SolicitacoesGestor = () => {
                   );
                 })}
               </div>
-
               <motion.button
                 whileHover={{ scale: !temProximaPagina ? 1 : 1.05 }}
                 whileTap={{ scale: !temProximaPagina ? 1 : 0.95 }}
@@ -359,6 +361,7 @@ const SolicitacoesGestor = () => {
           </motion.div>
         )}
 
+        {/* Modal de detalhes da solicitação */}
         <AnimatePresence>
           {modalAberto && (
             <motion.div
@@ -381,17 +384,17 @@ const SolicitacoesGestor = () => {
                 ) : (
                   ticketDetalhado && (
                     <>
+                      {/* Título do modal */}
                       <h2 className="sm:text-2xl text-xl font-bold mb-2 sm:mb-6 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center">
                         Detalhes da Solicitação
                       </h2>
-
+                      {/* Informações do colaborador e solicitação */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 sm:mb-6">
                         <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
                           <h3 className="font-semibold text-blue-600 mb-2">Informações do Colaborador</h3>
                           <p className="text-sm"><span className="font-medium">Nome:</span> {ticketDetalhado.nome_colaborador}</p>
                           <p className="text-sm"><span className="font-medium">CPF:</span> {ticketDetalhado.cpf_colaborador}</p>
                         </div>
-
                         <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
                           <h3 className="font-semibold text-blue-600 mb-2">Detalhes da Solicitação</h3>
                           <p className="text-sm"><span className="font-medium">Tipo:</span> {formatarTipoTicket(ticketDetalhado.tipo_ticket)}</p>
@@ -399,7 +402,7 @@ const SolicitacoesGestor = () => {
                           <p className="text-sm"><span className="font-medium">Data:</span> {formatarDataBrasil(ticketDetalhado.data_ticket)}</p>
                         </div>
                       </div>
-
+                      {/* Detalhes específicos por tipo de ticket */}
                       {ticketDetalhado.tipo_ticket === 'PEDIR_FERIAS' && (
                         <div className="bg-blue-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
                           <h3 className="font-semibold text-blue-600 mb-2">Detalhes das Férias</h3>
@@ -407,7 +410,6 @@ const SolicitacoesGestor = () => {
                           <p className="text-sm"><span className="font-medium">Duração:</span> {ticketDetalhado.dias_ferias ? `${ticketDetalhado.dias_ferias} dias` : 'Não informado'}</p>
                         </div>
                       )}
-
                       {ticketDetalhado.tipo_ticket === 'PEDIR_ABONO' && (
                         <div className="bg-purple-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
                           <h3 className="font-semibold text-purple-600 mb-2">Detalhes do Abono</h3>
@@ -419,7 +421,6 @@ const SolicitacoesGestor = () => {
                           ) : null}
                         </div>
                       )}
-
                       {ticketDetalhado.tipo_ticket === 'SOLICITAR_FOLGA' && ticketDetalhado.id_registro && (
                         <div className="bg-green-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
                           <h3 className="font-semibold text-green-600 mb-2">Detalhes da Folga</h3>
@@ -428,7 +429,6 @@ const SolicitacoesGestor = () => {
                           </p>
                         </div>
                       )}
-
                       {ticketDetalhado.tipo_ticket === 'ALTERAR_PONTOS' && ticketDetalhado.id_registro && (
                         <div className="bg-yellow-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
                           <h3 className="font-semibold text-yellow-600 mb-2">Detalhes do Ajuste</h3>
@@ -442,12 +442,12 @@ const SolicitacoesGestor = () => {
                           )}
                         </div>
                       )}
-
+                      {/* Mensagem da solicitação */}
                       <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
                         <h3 className="font-semibold text-gray-700 mb-2">Mensagem</h3>
                         <p className="text-gray-700 whitespace-pre-line">{ticketDetalhado.mensagem}</p>
                       </div>
-
+                      {/* Anexo para abonos */}
                       {ticketDetalhado.tipo_ticket === 'PEDIR_ABONO' && (
                         <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
                           <h3 className="font-semibold text-gray-700 mb-2">Anexo</h3>
@@ -484,7 +484,7 @@ const SolicitacoesGestor = () => {
                           )}
                         </div>
                       )}
-
+                      {/* Justificativa para reprovação */}
                       {ticketDetalhado.status_ticket === 'EM_AGUARDO' && mostrarJustificativa && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
@@ -505,6 +505,7 @@ const SolicitacoesGestor = () => {
                           </div>
                         </motion.div>
                       )}
+                      {/* Botões de ação ou info do gerente */}
                       {ticketDetalhado.status_ticket === 'EM_AGUARDO' ? (
                         <div className="flex flex-col sm:flex-row justify-between gap-4 mt-2 sm:mt-6">
                           <div className="flex gap-3 justify-center">
@@ -517,7 +518,6 @@ const SolicitacoesGestor = () => {
                               <FaCheck className="mr-2" />
                               Aprovar
                             </motion.button>
-
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -537,7 +537,6 @@ const SolicitacoesGestor = () => {
                               {mostrarJustificativa ? 'Confirmar Reprovação' : 'Reprovar'}
                             </motion.button>
                           </div>
-
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -554,7 +553,7 @@ const SolicitacoesGestor = () => {
                         </div>
                       ) : (
                         <>
-                        {ticketDetalhado.nome_gerente && (
+                          {ticketDetalhado.nome_gerente && (
                             <div className="mb-4 bg-gray-50 p-4 rounded-lg">
                               <h3 className="font-semibold text-gray-700 mb-2">
                                 {ticketDetalhado.status_ticket === 'APROVADO' ? 'Aprovado por' : 'Reprovado por'}
@@ -568,7 +567,6 @@ const SolicitacoesGestor = () => {
                               )}
                             </div>
                           )}
-                          
                           <div className="flex justify-center mt-2 sm:mt-6">
                             <motion.button
                               whileHover={{ scale: 1.05 }}
