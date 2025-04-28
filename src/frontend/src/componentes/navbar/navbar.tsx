@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
-import { motion } from 'framer-motion';
 import { useNotifications } from "../conteudoPaginas/solicitacoes/notifications";
 
 function useOutsideClick(ref: React.RefObject<HTMLElement>, callback: () => void) {
