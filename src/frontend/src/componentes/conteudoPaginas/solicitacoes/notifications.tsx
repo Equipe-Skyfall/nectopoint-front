@@ -274,9 +274,9 @@ export function useNotifications({ userId}: NotificationProps) {
                                 onClick={() => {
                                     markAllAsRead();
                                     setShowAllNotificationsModal(false);
-                                    setAllNotifications([]); // Reset notifications when closing modal
-                                    setPage(0); // Reset page counter
-                                    setHasMore(true); // Reset hasMore flag
+                                    setAllNotifications([]);
+                                    setPage(0); 
+                                    setHasMore(true); 
                                 }}
                                 className="px-4 py-2 text-gray-50 hover:text-gray-300 transition-colors"
                             >
