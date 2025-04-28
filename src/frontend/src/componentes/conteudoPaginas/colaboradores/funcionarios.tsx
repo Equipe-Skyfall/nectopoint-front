@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../hooks/api';
 import { toast } from 'react-toastify';
 import FiltrosColaborador from '../../filtros/filtoColaborador';
+import formatarMinutosEmHorasEMinutos from '../../hooks/formatarHoras';
 
 // Componente para traduzir o tipo de jornada com estilo visual
 const JornadaBadge = ({ jornada }: { jornada: string }) => {
@@ -359,7 +360,7 @@ const EmployeeList = () => {
                                   <div>
                                     <p className="text-xs text-gray-500 font-medium">Banco de Horas</p>
                                     <p className="text-sm text-gray-800">
-                                      {employeeDetails[emp.id_colaborador]?.bankOfHours ?? emp.banco_de_horas ?? 'N/A'}
+                                      {formatarMinutosEmHorasEMinutos(employeeDetails[emp.id_colaborador]?.bankOfHours) ?? emp.banco_de_horas ?? 'N/A'}
                                     </p>
                                   </div>
                                   <div>

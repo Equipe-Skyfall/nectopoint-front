@@ -1,16 +1,16 @@
 import api from "./api";
 import recarregar from "./hooksChamarBackend/recarregar";
+import refetch from "./hooksChamarBackend/refetch";
 
-export default async function baterPonto() { 
+export default async function baterPonto(setDados) { 
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const id_colaborador = userData.id_colaborador; 
-
     try {
         
         const response = await api.post('/turno/bater-ponto');
         //fetch nos dados apos bater turno
-       
-        recarregar();
+        let dados = await refetch();
+        setDados(dados);
         
         console.log('Ponto batido com sucesso:', response.data);
         
@@ -26,3 +26,5 @@ export default async function baterPonto() {
         throw error;
     }
 }
+
+
