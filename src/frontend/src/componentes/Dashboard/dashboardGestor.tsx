@@ -69,7 +69,7 @@ export default function DashboardGestor() {
         navigate('/historico-gestor', { 
             state: { 
                 statusTurno: status, // Nome exato que seu FiltrosHistorico espera
-                startDate: new Date(new Date().setDate(new Date().getDate() - 1)),
+                startDate: new Date(new Date().setDate(new Date().getDate() - 2)),
                 endDate: new Date()
             } 
         });

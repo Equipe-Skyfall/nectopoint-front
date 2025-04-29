@@ -9,6 +9,7 @@ const useColaborador = () => {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [jornadaSelecionada, setJornadaSelecionada] = useState('');
+    const [statusSelecionado, setStatusSelecionado] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const pageSize = 5;
@@ -25,7 +26,8 @@ const useColaborador = () => {
                     page: currentPage,
                     size: pageSize,
                     nome_colaborador: searchQuery || undefined,
-                    tipo_escala: jornadaSelecionada || undefined 
+                    tipo_escala: jornadaSelecionada || undefined,
+                    lista_status: statusSelecionado || undefined
                 }
             });
             const employeesData = Array.isArray(response.data.content) ? response.data.content : [];
@@ -37,7 +39,7 @@ const useColaborador = () => {
         } finally {
             setLoading(false);
         }
-    }, [isAuthenticated, currentPage, pageSize, searchQuery, jornadaSelecionada]);
+    }, [isAuthenticated, currentPage, pageSize, searchQuery, jornadaSelecionada, statusSelecionado]);
 
     useEffect(() => {
         fetchEmployees();
@@ -51,6 +53,8 @@ const useColaborador = () => {
         setSearchQuery,
         jornadaSelecionada, 
         setJornadaSelecionada,
+        statusSelecionado,
+        setStatusSelecionado,
         currentPage,
         totalPages,
         setCurrentPage,

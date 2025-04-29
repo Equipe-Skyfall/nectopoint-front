@@ -12,7 +12,7 @@ export default function TipoJornada({ jornadaSelecionada, onChange }: TipoJornad
             <select
                 value={jornadaSelecionada}
                 onChange={(e) => onChange(e.target.value)}
-                className="px-4 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-2 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
                 <option value="">Todas as Jornadas</option>
                 <option value="CINCO_X_DOIS">5 x 2</option>
