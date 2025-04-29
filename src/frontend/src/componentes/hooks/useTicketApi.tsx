@@ -2,21 +2,27 @@ import { useCallback } from 'react';
 import axios, { AxiosError } from 'axios';
 import { TicketData } from './useTicketTypes';
 
+// Hook personalizado para interagir com a API de tickets
 export const useTicketApi = () => {
   const submitTicket = useCallback(async (ticketData: TicketData, file: File | null) => {
     try {
+      // Cria um objeto FormData para enviar dados no formato multipart
       const formData = new FormData();
       
+      // Converte os dados do ticket em um blob JSON
       const ticketBlob = new Blob([JSON.stringify(ticketData)], {
         type: 'application/json'
       });
       
+      // Adiciona o blob JSON ao FormData com o nome 'ticket'
       formData.append('ticket', ticketBlob, 'ticket.json');
       
+      // Se um arquivo for fornecido, adiciona-o ao FormData
       if (file) {
         formData.append('file', file, file.name);
       }
 
+      // Faz a requisição POST para a API com o FormData
       const response = await axios.post('http://localhost:3000/tickets/postar', formData, {
         withCredentials: true,
         headers: {
