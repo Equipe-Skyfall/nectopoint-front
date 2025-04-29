@@ -80,13 +80,13 @@ export default function DashboardGestor() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center  justify-center   bg-gradient-to-b"
+            className="flex flex-col items-center  justify-center flex-wrap min-h-screen bg-gradient-to-b"
         >
             <motion.h1  
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="mb-4 mt-4 text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent poppins"
+                className="mb-4 mt-4  text-3xl font-bold flex-wrap bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent poppins"
             >
                 Dashboard Gerencial
             </motion.h1>
@@ -95,7 +95,7 @@ export default function DashboardGestor() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="w-full max-w-4xl h-[300px] bg-white rounded-xl shadow-xl mb-7 overflow-hidden border border-gray-200 p-6"
+                className="flex w-full max-w-4xl h-full flex-wrap bg-white rounded-xl shadow-xl mb-7 overflow-hidden border border-gray-200 p-6"
             >
                 <div className="flex flex-wrap justify-center gap-16 mb-8">
                     <motion.button
@@ -141,12 +141,12 @@ export default function DashboardGestor() {
                     <motion.button
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => redirecionarComFiltro("TRABALHANDO") }
-                        className="flex items-center bg-gradient-to-r from-blue-500 to-cyan-700 hover:from-blue-700 hover:to-cyan-800 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
+                        onClick={() => redirecionarComFiltro("IRREGULAR") }
+                        className="flex items-center bg-gradient-to-r from-purple-500 to-violet-700 hover:from-purple-700 hover:to-violet-800 rounded-xl w-full sm:w-72 h-20 justify-center text-center shadow-lg"
                     >
                         <div className="flex items-center px-4">
                             <p className="text-white text-lg font-bold poppins mr-3">
-                                Trabalhando
+                                Irregular
                             </p>
                             
                         </div>
