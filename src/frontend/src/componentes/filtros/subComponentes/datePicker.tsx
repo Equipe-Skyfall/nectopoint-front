@@ -28,7 +28,7 @@ export default function DateRangePicker({
                     endDate={endDate}
                     maxDate={endDate instanceof Date ? endDate : new Date()}
                     placeholderText="Data inicial"
-                    className="pl-16 sm:pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                    className="pl-16 sm:pl-10 pr-10 py-2.5 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     dateFormat="dd/MM/yyyy"
                     onKeyDown={(e) => e.preventDefault()}
                     showMonthDropdown
