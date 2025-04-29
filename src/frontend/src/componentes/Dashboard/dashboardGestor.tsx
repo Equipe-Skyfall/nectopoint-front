@@ -69,7 +69,7 @@ export default function DashboardGestor() {
         navigate('/historico-gestor', { 
             state: { 
                 statusTurno: status, // Nome exato que seu FiltrosHistorico espera
-                startDate: new Date(new Date().setDate(new Date().getDate() - 1)),
+                startDate: new Date(new Date().setDate(new Date().getDate() - 2)),
                 endDate: new Date()
             } 
         });
@@ -80,7 +80,7 @@ export default function DashboardGestor() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center  justify-center flex-wrap min-h-screen bg-gradient-to-b"
+            className="flex flex-col items-center  justify-center flex-wrap mt-10 bg-gradient-to-b"
         >
             <motion.h1  
                 initial={{ y: -20, opacity: 0 }}

@@ -16,8 +16,6 @@ export default function ConteudoHome() {
     const [userData, setUserData] = useState(dadosInicias);
    // "09:48" (para verificar se o erro vem de um valor errado)
 
-
-    
     
     const entrada = (userData.jornada_atual.inicio_turno)
     const pontos = userData.jornada_atual.pontos_marcados
