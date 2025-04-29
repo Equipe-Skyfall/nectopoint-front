@@ -85,9 +85,9 @@ export default function ConteudoHistoricoFunc() {
 
             const formatarStatus = (status: string) => {
                 const statusStyles = {
-                    'ENCERRADO': { text: 'Encerrado', color: 'bg-green-100 text-green-800' },
+                    'ENCERRADO': { text: 'Encerrado', shortText: 'Encerrado', color: 'bg-green-100 text-green-800' },
                     'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
-                    'IRREGULAR': { text: 'Irregular', color: 'bg-yellow-100 text-yellow-800' },
+                    'IRREGULAR': { text: 'Irregular',  shortText: 'Encerrado', color: 'bg-yellow-100 text-yellow-800' },
                     default: { text: status, shortText: status, color: 'bg-gray-100 text-gray-800' }
                 };
 

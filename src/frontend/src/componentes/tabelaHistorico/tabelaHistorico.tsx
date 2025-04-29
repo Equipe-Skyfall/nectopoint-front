@@ -164,12 +164,12 @@ export default function ConteudoHistorico() {
 
     const traduzirStatusTurno = useCallback((status: string) => {
         const statusStyles = {
-            'TRABALHANDO': { text: 'Trabalhando', color: 'bg-green-100 text-green-800' },
-            'INTERVALO': { text: 'Intervalo', color: 'bg-yellow-100 text-yellow-800' },
-            'ENCERRADO': { text: 'Encerrado', color: 'bg-blue-100 text-blue-800' },
+            'TRABALHANDO': { text: 'Trabalhando', shortText: 'Trabalhando', color: 'bg-green-100 text-green-800' },
+            'INTERVALO': { text: 'Intervalo', shortText: 'Intervalo', color: 'bg-yellow-100 text-yellow-800' },
+            'ENCERRADO': { text: 'Encerrado', shortText: 'Encerrado', color: 'bg-blue-100 text-blue-800' },
             'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
-            'IRREGULAR': { text: 'Irregular', color: 'bg-purple-100 text-purple-800' },
-            'NAO_INICIADO': { text: 'Não Iniciado', color: 'bg-gray-100 text-gray-800' }
+            'IRREGULAR': { text: 'Irregular', shortText: 'Irregular', color: 'bg-purple-100 text-purple-800' },
+            'NAO_INICIADO': { text: 'Não Iniciado', shortText: 'N/Iniciado', color: 'bg-gray-100 text-gray-800' }
         };
         return (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status]?.color || 'bg-gray-100 text-gray-800'}`}>
