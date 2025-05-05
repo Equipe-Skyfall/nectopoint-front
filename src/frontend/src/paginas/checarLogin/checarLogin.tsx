@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ChecarLogin({ children,cargo }: { children: JSX.Element ,cargo : string }): JSX.Element {
     const navigate = useNavigate()
-    console.log("entrou no sem login");
+    
     
     
     const userData = useUserData()

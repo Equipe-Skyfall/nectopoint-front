@@ -294,7 +294,7 @@ export default function ConteudoHistorico() {
                                                 exit={{ opacity: 0 }}
                                                 className={`border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
                                             >
-                                                <td className="p-2 sm:p-4 poppins text-xs sm:text-base text-gray-800 font-medium">
+                                                <td className="p-2 sm:p-4 poppins text-[0.5rem] sm:text-base text-gray-800 font-medium">
                                                     {item.nome_colaborador}
                                                 </td>
                                                 <td className="p-2 sm:p-4 poppins text-xs sm:text-base text-center">
