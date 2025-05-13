@@ -4,6 +4,8 @@ import api from "../hooks/api";
 import GraficoDashboard from "../graficoDashboard/graficoDashboard";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import useDasboard from "../hooks/useDashboard";
+import useDashboard from "../hooks/useDashboard";
 // (int page), (int size), (Date startDate), (Date endDate), (str statusTurno), (int id_colaborador) 
 type params = {
     page: number;
@@ -14,6 +16,7 @@ type params = {
   
 }
 
+useDashboard()
 export default function DashboardGestor() {
     const [data, setData] = useState([]);
     const navigate = useNavigate();

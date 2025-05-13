@@ -68,13 +68,12 @@ export default function ConteudoLogin() {
         // }
         
 
-        console.log("Enviando requisição de login:", { cpf: cpfFormatado, password: senhaFormatada });
         
         login(
             { cpf: cpfFormatado, password: senhaFormatada },
             {
                 onSuccess: (response) => {
-                    console.log("Login bem sucedido:", response);
+                  
                     // Exibe o modal de verificação e armazena o userId
                     setShowVerificationModal(true);
                     setUserId(response.data.userId);
@@ -96,13 +95,13 @@ export default function ConteudoLogin() {
             return;
         }
         
-        console.log("Enviando verificação:", { userId, verificationCode: code });
+
         
         verifyCode(
             { userId, verificationCode: code },
             {
                 onSuccess: (response) => {
-                    console.log("Verificação bem sucedida:", response);
+                    
                     setShowVerificationModal(false);
                     
                     if (!lembrarMe) {

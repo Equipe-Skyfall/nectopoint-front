@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useColaborador from '../../hooks/useColaborador';
 import { useEdit } from '../../hooks/useEdit';
 import { FaUser, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { FiPlus, FiFilter, FiX, FiChevronRight, FiChevronLeft } from 'react-icons/fi';
+import { FiPlus, FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../hooks/api';
 import { toast } from 'react-toastify';
