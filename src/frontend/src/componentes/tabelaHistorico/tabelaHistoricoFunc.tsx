@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiChevronLeft, FiChevronRight, FiRefreshCw, FiFilter, FiX } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiRefreshCw, FiFilter, FiX, FiUpload } from 'react-icons/fi';
 import FiltrosHistoricoFunc from '../filtros/filtroHistoricoFunc';
 import { HistoricoJornada } from '../../interfaces/interfaceHistoricoFunc';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+
 
 export default function ConteudoHistoricoFunc() {
     const [dadosOriginais, setDadosOriginais] = useState<HistoricoJornada[]>([]);
@@ -13,15 +17,17 @@ export default function ConteudoHistoricoFunc() {
     const [statusTurno, setStatusTurno] = useState<string>('');
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState<string | null>(null);
 
     // Filtra os dados com base nos filtros selecionados
     const historicoJornadas = useMemo(() => {
         return dadosOriginais.filter(jornada => {
             // Filtro por status
             const statusMatch = !statusTurno ||
-                (statusTurno === 'ENCERRADO' && jornada.statusTurno.props.children === 'Encerrado') ||
-                (statusTurno === 'NAO_COMPARECEU' && jornada.statusTurno.props.children === 'Não Compareceu') ||
-                (statusTurno === 'IRREGULAR' && jornada.statusTurno.props.children === 'Irregular');
+                (statusTurno === 'ENCERRADO' && (jornada as any).statusText === 'Encerrado') ||
+                (statusTurno === 'NAO_COMPARECEU' && (jornada as any).statusText === 'Não Compareceu') ||
+                (statusTurno === 'IRREGULAR' && (jornada as any).statusText === 'Irregular');
 
             // Filtro por data
             const [dia, mes, ano] = jornada.data.split('/');
@@ -77,7 +83,8 @@ export default function ConteudoHistoricoFunc() {
                         hour: '2-digit',
                         minute: '2-digit'
                     }) : 'N/A',
-                    statusTurno: formatarStatus(jornada.status_turno),
+                    statusTurno: formatarStatus(jornada.status_turno).component,
+                    statusText: formatarStatus(jornada.status_turno).text,
                     pontos: pontosFormatados,
                     dataOriginal: dataInicio
                 };
@@ -87,18 +94,22 @@ export default function ConteudoHistoricoFunc() {
                 const statusStyles = {
                     'ENCERRADO': { text: 'Encerrado', shortText: 'Encerrado', color: 'bg-green-100 text-green-800' },
                     'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
-                    'IRREGULAR': { text: 'Irregular',  shortText: 'Encerrado', color: 'bg-yellow-100 text-yellow-800' },
+                    'IRREGULAR': { text: 'Irregular', shortText: 'Encerrado', color: 'bg-yellow-100 text-yellow-800' },
                     default: { text: status, shortText: status, color: 'bg-gray-100 text-gray-800' }
                 };
+                const style = statusStyles[status] || statusStyles.default;
 
-                return (
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[status]?.color || statusStyles.default.color}`}>
-                        {/* Texto completo em telas médias para cima */}
-                        <span className="hidden sm:inline">{statusStyles[status]?.text || statusStyles.default.text}</span>
-                        {/* Texto abreviado em telas pequenas */}
-                        <span className="sm:hidden">{statusStyles[status]?.shortText || statusStyles.default.shortText}</span>
-                    </span>
-                );
+                return {
+                    component: (
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${style.color}`}>
+                            {/* Texto completo em telas médias para cima */}
+                            <span className="hidden sm:inline">{style.text}</span>
+                            {/* Texto abreviado em telas pequenas */}
+                            <span className="sm:hidden">{style.shortText}</span>
+                        </span>
+                    ),
+                    text: style.text
+                }
             };
 
             const historicoFormatado = userData.jornadas_historico?.map(formatarJornada) || [];
@@ -151,8 +162,9 @@ export default function ConteudoHistoricoFunc() {
 
         const visiblePages = getVisiblePages();
 
+
         return (
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -222,6 +234,70 @@ export default function ConteudoHistoricoFunc() {
         );
     };
 
+    const exportarParaPDF = () => {
+        setIsExporting(true);
+        setExportError(null);
+
+        try {
+            // Cria o documento PDF
+            const doc = new jsPDF();
+
+            // Configura o cabeçalho
+            doc.setFontSize(18);
+            doc.text('Histórico de Jornadas', 14, 22);
+            doc.setFontSize(12);
+            doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 30);
+
+            // Adiciona informações de filtros
+            let filtersText = 'Filtros aplicados: ';
+            if (statusTurno) filtersText += `Status: ${statusTurno}, `;
+            if (startDate) filtersText += `Data inicial: ${startDate.toLocaleDateString('pt-BR')}, `;
+            if (endDate) filtersText += `Data final: ${endDate.toLocaleDateString('pt-BR')}, `;
+
+            if (filtersText !== 'Filtros aplicados: ') {
+                doc.setFontSize(10);
+                doc.text(filtersText.slice(0, -2), 14, 38);
+            }
+
+            // Função para extrair o texto do status
+            // Prepara os dados da tabela
+            const dadosTabela = historicoJornadas.map(jornada => [
+                jornada.data,
+                jornada.inicioTurno,
+                jornada.fimTurno,
+                (jornada as any).statusText
+            ]);
+
+            // Adiciona a tabela ao PDF
+            autoTable(doc, {
+                head: [['Data', 'Início', 'Fim', 'Status']],
+                body: dadosTabela,
+                startY: 45,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                    halign: 'center'
+                },
+                headStyles: {
+                    fillColor: [41, 128, 185],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [240, 240, 240]
+                }
+            });
+
+            // Salva o PDF
+            doc.save(`historico_jornadas_${new Date().toISOString().slice(0, 10)}.pdf`);
+
+        } catch (error) {
+            console.error('Erro ao exportar PDF:', error);
+            setExportError('Erro ao gerar o PDF. Tente novamente.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -246,7 +322,26 @@ export default function ConteudoHistoricoFunc() {
                 setEndDate={setEndDate}
                 limparFiltros={limparFiltros}
             />
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={exportarParaPDF}
+                disabled={isExporting || historicoJornadas.length === 0}
+                className="flex items-center bg-gradient-to-r mb-3 -mt-3 from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+            >
+                {isExporting ? (
+                    <FiRefreshCw className="animate-spin mr-2" />
+                ) : (
+                    <FiUpload />
+                )}
+                {isExporting ? 'Exportando...' : ''}
+            </motion.button>
 
+            {exportError && (
+                <div className="mt-2 text-red-600 text-sm">
+                    {exportError}
+                </div>
+            )}
             {erro ? (
                 <motion.div
                     initial={{ scale: 0.9 }}
