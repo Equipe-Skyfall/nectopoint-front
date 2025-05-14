@@ -16,6 +16,8 @@ export default function StatusDeactivateSelect({ value, onChange }: StatusColabo
         <option value="ESCALADO">Escalado</option>
         <option value="FOLGA">Folga</option>
         <option value="INATIVO">Inativo</option>
+        <option value="FERIAS">Férias</option>
+        <option value="FORA_DO_EXPEDIENTE">Fora do Expediente</option>
       </select>
     </motion.div>
   );
