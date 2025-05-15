@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaUser, FaSave, FaArrowLeft, FaSpinner } from 'react-icons/fa';
+import { FaSave, FaArrowLeft, FaSpinner } from 'react-icons/fa';
 import { useEdit } from '../../hooks/useEdit';
 import recarregar from '../../hooks/hooksChamarBackend/recarregar';
 
@@ -66,8 +66,8 @@ const EditarFuncionario = () => {
                     dailyHours: Number(employee.dailyHours) || 8,
                     birthDate: employee.birthDate || ''
                 });
-                
-                
+
+
                 setInitialDataLoaded(true);
             } catch (err) {
                 console.error('Erro ao carregar funcionário:', err);
@@ -128,8 +128,8 @@ const EditarFuncionario = () => {
             await updateEmployee(id, payload);
             setSubmitStatus('success');
             recarregar();
-            setTimeout(() => navigate('/colaboradores'),0);
-           
+            setTimeout(() => navigate('/colaboradores'), 0);
+
         } catch (err) {
             setSubmitStatus('error');
             console.error("Erro ao atualizar:", err);
@@ -263,7 +263,7 @@ const EditarFuncionario = () => {
                                 value={formData.bankOfHours}
                                 onChange={handleChange}
                                 className="w-full p-2 border rounded"
-                                
+
                                 step="0.5"
                             />
                         </div>
