@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiChevronLeft, FiChevronRight, FiRefreshCw, FiFilter, FiX, FiUpload } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiRefreshCw, FiFilter, FiX, FiUpload, FiEdit } from 'react-icons/fi';
 import FiltrosHistoricoFunc from '../filtros/filtroHistoricoFunc';
 import { HistoricoJornada } from '../../interfaces/interfaceHistoricoFunc';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
-
+import ModalCorrecaoPonto from '../conteudoPaginas/solicitacoes/modalCorrecaoPonto';
+import useSolicitacoes, { Solicitacao } from '../hooks/useSolicitacoes';
+import axios from 'axios';
 
 export default function ConteudoHistoricoFunc() {
     const [dadosOriginais, setDadosOriginais] = useState<HistoricoJornada[]>([]);
@@ -19,6 +20,9 @@ export default function ConteudoHistoricoFunc() {
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportError, setExportError] = useState<string | null>(null);
+    const [modalAberto, setModalAberto] = useState(false);
+    const [jornadaSelecionada, setJornadaSelecionada] = useState<HistoricoJornada | null>(null);
+    const [userData, setUserData] = useState<any>(null);
 
     // Filtra os dados com base nos filtros selecionados
     const historicoJornadas = useMemo(() => {
@@ -60,7 +64,7 @@ export default function ConteudoHistoricoFunc() {
             }
 
             const userData = JSON.parse(userDataString);
-
+            setUserData(userData)
             const formatarJornada = (jornada: any) => {
                 const dataInicio = new Date(jornada.inicio_turno);
                 const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
@@ -70,7 +74,8 @@ export default function ConteudoHistoricoFunc() {
                     horario: new Date(ponto.data_hora).toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
                         minute: '2-digit'
-                    })
+                    }),
+                    dataOriginal: new Date(ponto.data_hora)
                 })) || [];
 
                 return {
@@ -86,6 +91,7 @@ export default function ConteudoHistoricoFunc() {
                     statusTurno: formatarStatus(jornada.status_turno).component,
                     statusText: formatarStatus(jornada.status_turno).text,
                     pontos: pontosFormatados,
+                    idRegistro: jornada.id_registro,
                     dataOriginal: dataInicio
                 };
             };
@@ -234,6 +240,7 @@ export default function ConteudoHistoricoFunc() {
         );
     };
 
+    //Aqui exporta para pdf
     const exportarParaPDF = () => {
         setIsExporting(true);
         setExportError(null);
@@ -298,6 +305,80 @@ export default function ConteudoHistoricoFunc() {
             setIsExporting(false);
         }
     };
+    const handleEnviarCorrecao = async (pontosAjustados: Array<{ tipo: string; horario: string }>) => {
+        try {
+           
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!jornadaSelecionada || !userData.id_colaborador) {
+                throw new Error('Dados incompletos para enviar a solicitação');
+            }
+
+            
+            const formatarPontos = (ponto: { tipo: string; horario: string }) => {
+                const [hours, minutes] = ponto.horario.split(':');
+                const data = new Date(jornadaSelecionada.data.split('/').reverse().join('-'));
+                data.setHours(parseInt(hours));
+                data.setMinutes(parseInt(minutes));
+
+                return {
+                    tipo_ponto: ponto.tipo === 'Entrada' ? 'ENTRADA' : 'SAIDA',
+                    data_hora: data.toISOString()
+                };
+            };
+
+            
+            const ticketData = {
+                tipo_ticket: 'ALTERAR_PONTOS',
+                pontos_anterior: jornadaSelecionada.pontos.map(formatarPontos),
+                pontos_ajustado: pontosAjustados.map(formatarPontos),
+                id_registro: jornadaSelecionada.idRegistro,
+                mensagem: `Solicitação de correção para ${jornadaSelecionada.data}`,
+                status_usuario: userData.dados_usuario?.status || 'ATIVO',
+                
+                id_colaborador: userData.id_colaborador,
+                nome_colaborador: userData.nome,
+                cpf_colaborador: userData.cpf
+            };
+
+            
+            const formData = new FormData();
+            formData.append('ticket', JSON.stringify(ticketData));
+
+            
+            console.log('Enviando solicitação:', {
+                ticket: ticketData,
+                formData: Array.from(formData.entries())
+            });
+
+            
+            const response = await axios.post('http://localhost:3000/tickets/postar', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true 
+            });
+
+            if (response.status === 200) {
+                alert('Solicitação enviada com sucesso!');
+                setModalAberto(false);
+                buscarHistoricoJornadas();
+            }
+        } catch (error: any) {
+            console.error('Erro detalhado:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+
+            const errorMsg = error.response?.data?.message ||
+                (error.response?.status === 403 ?
+                    'Acesso negado. Verifique se está logado.' :
+                    'Erro ao enviar solicitação');
+
+            alert(errorMsg);
+        }
+    };
+    console.log('Conteúdo do localStorage:', localStorage.getItem('user'));
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -322,6 +403,14 @@ export default function ConteudoHistoricoFunc() {
                 setEndDate={setEndDate}
                 limparFiltros={limparFiltros}
             />
+            {modalAberto && jornadaSelecionada && (
+                <ModalCorrecaoPonto
+                    pontos={jornadaSelecionada?.pontos || []}
+                    dataJornada={jornadaSelecionada?.data || ''}
+                    onClose={() => setModalAberto(false)}
+                    onSubmit={handleEnviarCorrecao}
+                />
+            )}
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -389,6 +478,7 @@ export default function ConteudoHistoricoFunc() {
                                         <th className="p-4 text-center font-medium">Início</th>
                                         <th className="p-4 text-center font-medium">Fim</th>
                                         <th className="p-4 text-center font-medium">Status</th>
+                                        <th className="p-4 text-center font-medium">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -412,6 +502,20 @@ export default function ConteudoHistoricoFunc() {
                                                 </td>
                                                 <td className="p-2 sm:p-4 text-center">
                                                     {jornada.statusTurno}
+                                                </td>
+                                                <td className="p-2 sm:p-4 text-center">
+                                                    {jornada.statusText === 'Irregular' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setJornadaSelecionada(jornada);
+                                                                setModalAberto(true);
+                                                            }}
+                                                            className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-1 mx-auto"
+                                                        >
+                                                            <FiEdit size={14} />
+                                                            <span>Corrigir</span>
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </motion.tr>
                                         ))}
