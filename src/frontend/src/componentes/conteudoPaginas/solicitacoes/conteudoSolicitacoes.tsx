@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaPaperclip, FaBell, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTicketForm } from '../../hooks/useTicketForm';
 import { useTicketApi } from '../../hooks/useTicketApi';
+import SSEReceiver from '../../sseReceiver/sseReceiver';
+import refetch from '../../hooks/hooksChamarBackend/refetch';
 
+const sse_rota = 'http://localhost:8080/api/refetch'
+useEffect(() => {
+ // A classe SSEReceiver monta uma instancia pra receber o ping , dado o url passado 
+  const sse = SSEReceiver.getInstance();
+  sse.start(sse_rota,refetch);
+ },[])
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
   value: string;
