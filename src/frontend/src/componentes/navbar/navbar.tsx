@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaClipboardList, FaUser, FaHistory, FaSignOutAlt, FaCalendar } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../Provider/AuthProvider";
 import { useNotifications } from "../conteudoPaginas/solicitacoes/notifications";
@@ -139,6 +139,13 @@ export default function NavBar() {
                             <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
                                 <FaUser className="w-5 h-5" />
                                 <span>Colaboradores</span>
+                            </button>
+                        </Link>
+
+                        <Link to="/folga" onClick={toggleSidebar}>
+                            <button className="w-full py-2 px-4 text-gray-700 hover:bg-gray-100 gap-3 flex rounded-md">
+                                <FaCalendar className="w-5 h-5" />
+                                <span>Folga</span>
                             </button>
                         </Link>
 
