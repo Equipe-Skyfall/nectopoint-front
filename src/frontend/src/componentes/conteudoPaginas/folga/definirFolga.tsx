@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiPlus, FiChevronRight, FiChevronLeft } from 'react-icons/fi';
+import { FiPlus, FiChevronRight, FiChevronLeft, FiTrash2 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
+
 
 export default function HolidayForm() {
   const [form, setForm] = useState({
@@ -73,6 +74,17 @@ export default function HolidayForm() {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/feriados/${id}`);
+      fetchHolidays(page); // Recarrega a lista após deletar
+      return true;
+    } catch (error) {
+      console.error("Erro ao deletar feriado:", error);
+      throw error;
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) {
       fetchHolidays(newPage);
@@ -87,11 +99,23 @@ export default function HolidayForm() {
   };
 
   // Componente de card de feriado
-  const HolidayCard = ({ holiday }) => {
+  const HolidayCard = ({ holiday, onDelete }) => {
     const isSingleDay = holiday.startDate === holiday.endDate;
-    const dateText = isSingleDay 
+    const dateText = isSingleDay
       ? formatShortDate(holiday.startDate)
       : `${formatShortDate(holiday.startDate)} - ${formatShortDate(holiday.endDate)}`;
+
+    const handleDeleteClick = async (e) => {
+      e.stopPropagation();
+      if (window.confirm(`Tem certeza que deseja deletar o feriado "${holiday.name}"?`)) {
+        try {
+          await onDelete(holiday.id);
+          toast.success("Feriado deletado com sucesso!");
+        } catch (error) {
+          toast.error("Erro ao deletar feriado");
+        }
+      }
+    };
 
     return (
       <motion.div
@@ -99,9 +123,19 @@ export default function HolidayForm() {
         className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col"
       >
         {/* Cabeçalho do card com nome e data */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white text-center">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white text-center relative">
+          <button
+            onClick={handleDeleteClick}
+            className="absolute top-2 right-2 bg-red-100 text-red-500 rounded p-1 hover:bg-red-500 hover:text-red-800 transition-colors"
+            title="Deletar feriado"
+          >
+            <FiTrash2 size={16} />
+          </button>
           <h3 className="font-bold text-lg truncate">{holiday.name}</h3>
-          <p className="text-sm opacity-90">{dateText}</p>
+          <p className="mt-2 text-sm text-blue-600 bg-white rounded-md border border-blue-100 px-3 py-1 shadow-sm opacity-90 w-fit mx-auto">
+            {dateText}
+          </p>
+
         </div>
 
         {/* Corpo do card com informações */}
@@ -110,19 +144,18 @@ export default function HolidayForm() {
             <p className="text-gray-600 text-sm mb-2 line-clamp-2">
               {holiday.description || "Sem descrição"}
             </p>
-            
+
             <div className="flex justify-center items-center space-x-2 mb-3">
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                holiday.repeatsYearly 
-                  ? "bg-green-100 text-green-800" 
-                  : "bg-gray-100 text-gray-800"
-              }`}>
+              <span className={`px-2 py-1 rounded-full text-xs ${holiday.repeatsYearly
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+                }`}>
                 {holiday.repeatsYearly ? "Anual" : "Não repete"}
               </span>
-              
+
               <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                {holiday.userIds.length > 0 
-                  ? `${holiday.userIds.length} usuário(s)` 
+                {holiday.userIds.length > 0
+                  ? `${holiday.userIds.length} usuário(s)`
                   : "Todos"}
               </span>
             </div>
@@ -150,7 +183,7 @@ export default function HolidayForm() {
     const visiblePages = getVisiblePages();
 
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
@@ -161,11 +194,10 @@ export default function HolidayForm() {
           whileTap={{ scale: page === 0 ? 1 : 0.95 }}
           onClick={() => handlePageChange(page - 1)}
           disabled={page === 0}
-          className={`flex items-center text-sm sm:text-base px-2 sm:px-6 py-3 rounded-xl transition-all ${
-            page === 0
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
-          }`}
+          className={`flex items-center text-sm sm:text-base px-2 sm:px-6 py-3 rounded-xl transition-all ${page === 0
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
+            }`}
         >
           <FiChevronLeft className="mr-2" />
           Anterior
@@ -178,11 +210,10 @@ export default function HolidayForm() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handlePageChange(pageNum)}
-              className={`sm:w-10 w-5 h-10 sm:h-10 rounded-full flex items-center justify-center ${
-                page === pageNum
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-              }`}
+              className={`sm:w-10 w-5 h-10 sm:h-10 rounded-full flex items-center justify-center ${page === pageNum
+                ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                }`}
             >
               {pageNum + 1}
             </motion.button>
@@ -194,11 +225,10 @@ export default function HolidayForm() {
           whileTap={{ scale: page === totalPages - 1 ? 1 : 0.95 }}
           onClick={() => handlePageChange(page + 1)}
           disabled={page === totalPages - 1}
-          className={`flex items-center px-2 text-sm sm:text-base sm:px-6 py-3 rounded-xl transition-all ${
-            page === totalPages - 1
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
-          }`}
+          className={`flex items-center px-2 text-sm sm:text-base sm:px-6 py-3 rounded-xl transition-all ${page === totalPages - 1
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl"
+            }`}
         >
           Próxima
           <FiChevronRight className="ml-2" />
@@ -275,7 +305,10 @@ export default function HolidayForm() {
                     transition={{ delay: index * 0.05 }}
                     exit={{ opacity: 0 }}
                   >
-                    <HolidayCard holiday={holiday} />
+                    <HolidayCard
+                      holiday={holiday}
+                      onDelete={handleDelete}
+                    />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -303,7 +336,7 @@ export default function HolidayForm() {
               className="bg-white rounded-xl shadow-2xl w-full max-w-md"
             >
               <div className="p-6 relative">
-                <button 
+                <button
                   onClick={() => setShowModal(false)}
                   className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
                 >
