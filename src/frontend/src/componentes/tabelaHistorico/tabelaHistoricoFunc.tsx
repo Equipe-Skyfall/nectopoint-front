@@ -64,11 +64,10 @@ export default function ConteudoHistoricoFunc() {
             }
           }}
           disabled={paginaAtual === 0}
-          className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${
-            paginaAtual === 0
+          className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === 0
               ? 'bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed'
               : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
-          }`}
+            }`}
         >
           <FiChevronLeft className="mr-1" />
           Anterior
@@ -84,11 +83,10 @@ export default function ConteudoHistoricoFunc() {
                 setPaginaAtual(page);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`sm:w-10 h-9 w-5 sm:h-10 rounded-full flex items-center justify-center text-sm ${
-                paginaAtual === page
+              className={`sm:w-10 h-9 w-5 sm:h-10 rounded-full flex items-center justify-center text-sm ${paginaAtual === page
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
-              }`}
+                }`}
             >
               {page + 1}
             </motion.button>
@@ -105,11 +103,10 @@ export default function ConteudoHistoricoFunc() {
             }
           }}
           disabled={paginaAtual === totalPaginas - 1}
-          className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${
-            paginaAtual === totalPaginas - 1
+          className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === totalPaginas - 1
               ? 'bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed'
               : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
-          }`}
+            }`}
         >
           Próxima
           <FiChevronRight className="ml-1" />
@@ -222,9 +219,8 @@ export default function ConteudoHistoricoFunc() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`border-b border-gray-200 hover:bg-gray-50 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
+                        className={`border-b border-gray-200 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          }`}
                       >
                         <td className="p-2 sm:p-4 text-sm font-medium text-gray-800">
                           {jornada.data}
@@ -237,7 +233,7 @@ export default function ConteudoHistoricoFunc() {
                         </td>
                         <td className="p-2 sm:p-4 text-center">{jornada.statusTurno}</td>
                         <td className="p-2 sm:p-4 text-center">
-                          {jornada.statusText === 'Irregular' && (
+                          {(jornada.statusText === 'Irregular' || jornada.statusText === 'Encerrado') && (
                             <button
                               onClick={() => {
                                 setJornadaSelecionada(jornada);
