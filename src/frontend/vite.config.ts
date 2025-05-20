@@ -37,6 +37,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false
+      },
+      '/sessao/usuario/dashboard': { // Adicionado para cobrir /turno/bater-ponto
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
       }
     }
   }

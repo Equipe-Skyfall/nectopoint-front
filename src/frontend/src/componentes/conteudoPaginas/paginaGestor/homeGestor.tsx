@@ -1,4 +1,4 @@
-import DashboardGestor from "../../Dashboard/dashboardGestor";
+import DashboardGestor from "../Dashboard/dashboardGestor";
 
 export default function homeGestor() {
 
