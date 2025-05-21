@@ -1,102 +1,24 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+// HolidayForm.js
+import React from "react";
 import { FiPlus, FiChevronRight, FiChevronLeft, FiTrash2 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-
+import useHolidayHook from "../../hooks/useHoliday";
 
 export default function HolidayForm() {
-  const [form, setForm] = useState({
-    name: "",
-    startDate: "",
-    endDate: "",
-    description: "",
-    repeatsYearly: false,
-    userIds: "",
-  });
-
-  const [showModal, setShowModal] = useState(false);
-  const [holidays, setHolidays] = useState([]);
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(9); // Múltiplo de 3 para 3 colunas
-  const [loading, setLoading] = useState(false);
-
-  const fetchHolidays = async (pageNumber = 0, pageSize = 9) => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`http://localhost:8080/feriados/listar?page=${pageNumber}&size=${pageSize}`);
-      setHolidays(response.data.content);
-      setPage(response.data.number);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error("Erro ao buscar feriados:", error);
-      toast.error('Erro ao carregar feriados');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchHolidays();
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      name: form.name,
-      startDate: form.startDate,
-      endDate: form.endDate,
-      description: form.description,
-      repeatsYearly: form.repeatsYearly,
-      userIds: form.userIds
-        .split(',')
-        .map((id) => id.trim())
-        .filter((id) => id !== ""),
-    };
-
-    try {
-      await axios.post("http://localhost:8080/feriados/", payload);
-      toast.success("Feriado cadastrado com sucesso!");
-      setShowModal(false);
-      fetchHolidays(page);
-    } catch (error) {
-      console.error("Erro ao enviar feriado:", error);
-      toast.error("Erro ao cadastrar feriado");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8080/feriados/${id}`);
-      fetchHolidays(page); // Recarrega a lista após deletar
-      return true;
-    } catch (error) {
-      console.error("Erro ao deletar feriado:", error);
-      throw error;
-    }
-  };
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 0 && newPage < totalPages) {
-      fetchHolidays(newPage);
-    }
-  };
-
-  // Função para formatar a data no estilo DD/MM
-  const formatShortDate = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}`;
-  };
+  const {
+    form,
+    showModal,
+    holidays,
+    page,
+    totalPages,
+    loading,
+    handleChange,
+    handleSubmit,
+    handleDelete,
+    handlePageChange,
+    formatShortDate,
+    toggleModal
+  } = useHolidayHook();
 
   // Componente de card de feriado
   const HolidayCard = ({ holiday, onDelete }) => {
@@ -135,7 +57,6 @@ export default function HolidayForm() {
           <p className="mt-2 text-sm text-blue-600 bg-white rounded-md border border-blue-100 px-3 py-1 shadow-sm opacity-90 w-fit mx-auto">
             {dateText}
           </p>
-
         </div>
 
         {/* Corpo do card com informações */}
@@ -244,7 +165,7 @@ export default function HolidayForm() {
       transition={{ duration: 0.5 }}
       className="min-h-screen p-4 md:p-6 poppins"
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="mt-[5%] max-w-7xl mx-auto">
         {/* Título com gradiente */}
         <motion.h2
           initial={{ y: -20, opacity: 0 }}
@@ -260,7 +181,7 @@ export default function HolidayForm() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setShowModal(true)}
+            onClick={toggleModal}
             className="flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
           >
             <FiPlus className="mr-2" />
@@ -337,7 +258,7 @@ export default function HolidayForm() {
             >
               <div className="p-6 relative">
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={toggleModal}
                   className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
                 >
                   ×
