@@ -309,7 +309,7 @@ export default function ConteudoHistoricoFunc() {
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="mb-8 text-3xl mt-10 font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center"
+                className="mb-8 text-3xl mt-10 poppins-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center"
             >
                 Histórico de Jornadas
             </motion.h2>

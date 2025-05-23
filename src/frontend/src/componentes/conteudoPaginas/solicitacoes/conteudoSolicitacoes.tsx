@@ -6,18 +6,15 @@ import { useTicketApi } from '../../hooks/useTicketApi';
 import SSEReceiver from '../../sseReceiver/sseReceiver';
 import refetch from '../../hooks/hooksChamarBackend/refetch';
 
-const sse_rota = 'http://localhost:8080/api/refetch'
-useEffect(() => {
- // A classe SSEReceiver monta uma instancia pra receber o ping , dado o url passado 
-  const sse = SSEReceiver.getInstance();
-  sse.start(sse_rota,refetch);
- },[])
+ 
+
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   label: string;
 }) => {
+  
   return (
     <div className="relative mb-8">
       <label className="block mb-3 text-sm font-medium text-gray-600 uppercase tracking-wider">
@@ -124,6 +121,7 @@ const ConteudoSolicitacoes: React.FC = () => {
     const { success, error } = await submitTicket(ticketData, formState.file);
 
     if (success) {
+      refetch();
       resetFormWithSuccess();
     } else if (error) {
       setFormState(prev => ({ ...prev, error }));

@@ -34,10 +34,11 @@ const  refetch =  async () => {
             }
             localStorage.removeItem('user'); // Remove the old user data
             localStorage.setItem('user', JSON.stringify(userData));
-           
+            console.log('teve refetch');
             
             return userData;
         }
+        
         
         
         return '';
