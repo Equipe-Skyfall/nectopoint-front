@@ -15,10 +15,14 @@ import SolicitacoesGestor from "./paginas/solicitacoes/solicitacoesGestor";
 import Funcionarios from "./paginas/gestorAdministraFuncionario/gestorFuncionarios";
 import EditarFunc from "./componentes/conteudoPaginas/colaboradores/editarFunc";
 import SemLogin from "./paginas/checarLogin/checarLogin";
+
 import HistoricoSolicitacoes from "./componentes/conteudoPaginas/solicitacoes/historicoSolicitacoes";
 import { useEffect } from "react";
 import SSEReceiver from "./componentes/sseReceiver/sseReceiver";
 import refetch from "./componentes/hooks/hooksChamarBackend/refetch";
+
+import AplicarFolga from "./paginas/folga/gestorAplicarFolga";
+
 
 
 function App() {
@@ -60,7 +64,11 @@ function App() {
                   <Route path="cadastrar" element={<SemLogin cargo="GERENTE"><CadastrarFuncionario /></SemLogin>} />
                   <Route path="bater-ponto" element={<SemLogin cargo={''} ><PaginaUsuario /></SemLogin>} />
                   <Route path="solicitacoes-empresa" element={<SemLogin cargo="GERENTE"><SolicitacoesGestor /></SemLogin>} />
+
                   <Route path="solicitacoes-historico" element={<SemLogin cargo="COLABORADOR"><HistoricoSolicitacoes /></SemLogin>} />
+
+                  <Route path="folga" element={<SemLogin cargo="GERENTE"><AplicarFolga /></SemLogin>} />
+
 
                   <Route path="teste" element={<SemLogin cargo=""><Teste /></SemLogin>} />
                 </Routes>
