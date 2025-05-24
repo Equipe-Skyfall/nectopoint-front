@@ -78,6 +78,9 @@ const SolicitacoesGestor = () => {
     endDate
   });
 
+
+  // Ajusta a página se não houveer mais solicitações
+
   useEffect(() => {
     if (solicitacoes === null || (solicitacoes.content.length === 0 && pagina > 0)) {
       setPagina(p => Math.max(p - 1, 0));

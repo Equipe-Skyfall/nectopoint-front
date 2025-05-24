@@ -1,10 +1,18 @@
 import { motion } from "framer-motion";
 import useDashboard from "../hooks/useDashboard";
 import { use, useEffect, useState } from "react";
+import useHistorico from "../hooks/useHistorico";
 
 
 useDashboard()
 export default function DashboardCards(props) {
+     const irregulares = useHistorico({
+        page: 0,
+        size: 1000,
+        
+        lista_status: "IRREGULAR",
+        nome_colaborador: "",
+    }).historico.length;
      const dadospadrao = {
         "de_ferias":0,
         "de_folga" :0,
@@ -16,20 +24,31 @@ export default function DashboardCards(props) {
         const fetchData = async () => {
             try {
                 const response = await useDashboard();
-                setCounter(response);
+                let resposta = {
+                    "de_ferias": response.de_ferias,
+                    "de_folga": response.de_folga,
+                    "nao_iniciado": irregulares,
+                    "no_intervalo": response.no_intervalo,
+                    "trabalhando": response.trabalhando
+                }
+                setCounter(resposta);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         };
         fetchData();
     }, []);
+   
+    
+    
+    
     const { redirecionarComFiltro } = props;
     
     console.log(counter);
     
     const statuses = [
   {
-    label: "Trabalhando",
+    label: "Funcionarios Trabalhando",
     filtro: "TRABALHANDO",
     icon: "✅",
     count: counter.trabalhando ,
@@ -49,10 +68,10 @@ export default function DashboardCards(props) {
     },
   },
   {
-    label: "Funcionarios Ausentes",
+    label: "Não compareceram",
     filtro: "NAO_COMPARECEU",
     icon: "❌",
-    count: counter.nao_iniciado,
+    count: (counter.nao_iniciado-counter.trabalhando),
     color: {
       header: "bg-red-600",
       button: "bg-red-500 hover:bg-red-700",

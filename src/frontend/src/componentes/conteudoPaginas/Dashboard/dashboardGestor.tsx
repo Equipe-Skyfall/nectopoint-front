@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import useDasboard from "../../hooks/useDashboard";
 import useDashboard from "../../hooks/useDashboard";
 import DashboardCards from "../../dashboardCards/dashboardCards";
+import useUserData from "../../hooks/userData";
 // (int page), (int size), (Date startDate), (Date endDate), (str statusTurno), (int id_colaborador) 
 type params = {
     page: number;
@@ -21,7 +22,7 @@ type params = {
 export default function DashboardGestor() {
     const [data, setData] = useState([]);
     const navigate = useNavigate();
-
+    const user = useUserData().dados_usuario.nome;
     useEffect(() => {
         const fetchData = async () => {
 
@@ -94,6 +95,9 @@ export default function DashboardGestor() {
     
     
     return (
+        <>
+        <p className="mb-8 text-3xl mt-10 poppins bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center">Olá {user} , seja bem vindo a dashboard do gerente</p>
         <DashboardCards redirecionarComFiltro={redirecionarComFiltro}  />
+        </>
     )
 }

@@ -167,7 +167,9 @@ export default function ConteudoHistoricoFunc() {
           animate={{ scale: 1 }}
           className="p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-lg shadow-md"
         >
+
           <p className="font-medium">{erro}</p>
+
         </motion.div>
       ) : carregando ? (
         <motion.div

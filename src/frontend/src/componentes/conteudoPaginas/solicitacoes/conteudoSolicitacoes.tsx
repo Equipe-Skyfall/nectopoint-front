@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaPaperclip, FaBell, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTicketForm } from '../../hooks/useTicketForm';
 import { useTicketApi } from '../../hooks/useTicketApi';
+import SSEReceiver from '../../sseReceiver/sseReceiver';
+import refetch from '../../hooks/hooksChamarBackend/refetch';
+
+ 
 
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
@@ -10,6 +14,7 @@ const Select = ({ options, value, onChange, label }: {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   label: string;
 }) => {
+  
   return (
     <div className="relative mb-8">
       <label className="block mb-3 text-sm font-medium text-gray-600 uppercase tracking-wider">
@@ -116,6 +121,7 @@ const ConteudoSolicitacoes: React.FC = () => {
     const { success, error } = await submitTicket(ticketData, formState.file);
 
     if (success) {
+      refetch();
       resetFormWithSuccess();
     } else if (error) {
       setFormState(prev => ({ ...prev, error }));
