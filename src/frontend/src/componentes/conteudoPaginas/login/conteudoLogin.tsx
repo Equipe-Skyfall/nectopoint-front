@@ -27,6 +27,13 @@ export default function ConteudoLogin() {
         }
     };
 
+    const formatCPF = (value: string): string => {
+        const cleaned = value.replace(/\D/g, '').slice(0, 11);
+        if (cleaned.length <= 3) return cleaned;
+        if (cleaned.length <= 6) return `${cleaned.slice(0, 3)}.${cleaned.slice(3)}`;
+        if (cleaned.length <= 9) return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6)}`;
+        return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`;
+    };
     // Checa a autenticação ao montar o componente e redireciona baseado no cargo
     useEffect(() => {
         document.body.classList.add("overflow-hidden");
@@ -39,7 +46,11 @@ export default function ConteudoLogin() {
             document.body.classList.remove("overflow-hidden");
         };
     }, [isAuthenticated, user, navigate]);
-
+    const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value.replace(/\D/g, ''); // Remove todos os não dígitos
+        const formattedValue = formatCPF(rawValue); // Aplica a formatação
+        setCpf(formattedValue); // Atualiza o estado com o valor formatado
+    };
     // Função para submit do login
     const handleLogin = async () => {
         const cpfFormatado = cpf.replace(/\D/g, "");
@@ -56,13 +67,13 @@ export default function ConteudoLogin() {
         //     return;
         // }
         
-        console.log("Enviando requisição de login:", { cpf: cpfFormatado, password: senhaFormatada });
+
         
         login(
             { cpf: cpfFormatado, password: senhaFormatada },
             {
                 onSuccess: (response) => {
-                    console.log("Login bem sucedido:", response);
+                  
                     // Exibe o modal de verificação e armazena o userId
                     setShowVerificationModal(true);
                     setUserId(response.data.userId);
@@ -84,13 +95,13 @@ export default function ConteudoLogin() {
             return;
         }
         
-        console.log("Enviando verificação:", { userId, verificationCode: code });
+
         
         verifyCode(
             { userId, verificationCode: code },
             {
                 onSuccess: (response) => {
-                    console.log("Verificação bem sucedida:", response);
+                    
                     setShowVerificationModal(false);
                     
                     if (!lembrarMe) {
@@ -175,12 +186,12 @@ export default function ConteudoLogin() {
                                         <FaUser className="text-gray-400" />
                                     </div>
                                     <InputPadrao
-                                        placeholder="Digite seu CPF"
-                                        length={11}
+                                        length={14}
                                         pattern="[0-9]"
                                         id="cpf"
                                         value={cpf}
-                                        onChange={(e) => setCpf(e.target.value)}
+                                        placeholder="000.000.000-00"
+                                        onChange={handleCpfChange}
                                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                                     />
                                 </motion.div>

@@ -39,7 +39,6 @@ const useAuth = () => {
           password: credentials.password.trim()
         };
         
-        console.log("Enviando credenciais:", formattedCredentials);
         const response = await api.post('/usuario/auth', formattedCredentials);
         return response;
       } catch (error) {
@@ -59,7 +58,6 @@ const useAuth = () => {
   const verifyMutation = useMutation({
     mutationFn: async (verification: VerificationCredentials) => {
       try {
-        console.log("Enviando verificação:", verification);
         const response = await api.post<SessaoUsuario>('/usuario/verify', verification);
         return response;
       } catch (error) {
@@ -68,7 +66,6 @@ const useAuth = () => {
       }
     },
     onSuccess: (response) => {
-      console.log("Verificação bem sucedida:", response);
       const responseData = response.data;
 
       // Verificando se os dados esperados estão presentes

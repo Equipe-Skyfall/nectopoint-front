@@ -25,9 +25,16 @@ export interface FiltrosColaboradorProps {
     setSearchQuery: (value: string) => void;
     jornadaSelecionada: string;
     setJornadaSelecionada: (value: string) => void;
+    statusSelecionado: string;
+    setStatusSelecionado: (value: string) => void;
     limparFiltros: () => void;
 }
 
+export interface StatusColaboradorSelectProps {
+    value: string;
+    onChange: (status: string) => void;
+  }
+  
 
 export interface FiltrosHistoricoProps {
     searchQuery: string;

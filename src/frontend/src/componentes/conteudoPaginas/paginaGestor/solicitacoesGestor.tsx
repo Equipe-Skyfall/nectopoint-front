@@ -131,7 +131,6 @@ const SolicitacoesGestor = () => {
   const handleDownload = async (ticketId: string, fileName: string) => {
     try {
       await checkFileAccessibility(ticketId);
-
       const downloadUrl = `http://localhost:3000/tickets/files/${ticketId}`;
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -245,7 +244,6 @@ const SolicitacoesGestor = () => {
                       <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-full flex-shrink-0 mr-4">
                         <FaUser className="text-blue-600 text-xl" />
                       </div>
-
                       <div className="min-w-0">
                         <h3 className="text-lg font-semibold text-gray-800 text-start truncate">
                           {solicitacao.nome_colaborador}
@@ -266,7 +264,6 @@ const SolicitacoesGestor = () => {
                         </p>
                       </div>
                     </div>
-
                     <motion.button
                       whileHover={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 1.1 : 1 }}
                       whileTap={{ scale: podeAprovarOuReprovar(solicitacao.status_ticket) ? 0.9 : 1 }}
@@ -311,27 +308,20 @@ const SolicitacoesGestor = () => {
                 <FiChevronLeft className="mr-2" />
                 Anterior
               </motion.button>
-
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
                   let pageNum;
-                  if (totalPaginas <= 5) {
-                    pageNum = i;
-                  } else if (paginaAtual <= 2) {
-                    pageNum = i;
-                  } else if (paginaAtual >= totalPaginas - 3) {
-                    pageNum = totalPaginas - 5 + i;
-                  } else {
-                    pageNum = paginaAtual - 2 + i;
-                  }
-
+                  if (totalPaginas <= 5) pageNum = i;
+                  else if (paginaAtual <= 2) pageNum = i;
+                  else if (paginaAtual >= totalPaginas - 3) pageNum = totalPaginas - 5 + i;
+                  else pageNum = paginaAtual - 2 + i;
                   return (
                     <motion.button
                       key={pageNum}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => setPagina(pageNum)}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${paginaAtual === pageNum
+                      className={`sm:w-10 sm:h-10 w-5 h-10 rounded-full flex items-center justify-center ${paginaAtual === pageNum
                         ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md"
                         : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
                         }`}
@@ -341,7 +331,6 @@ const SolicitacoesGestor = () => {
                   );
                 })}
               </div>
-
               <motion.button
                 whileHover={{ scale: !temProximaPagina ? 1 : 1.05 }}
                 whileTap={{ scale: !temProximaPagina ? 1 : 0.95 }}
@@ -365,159 +354,194 @@ const SolicitacoesGestor = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20 p-4"
+              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20 p-4 sm:p-6"
             >
               <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
                 ref={modalRef}
-                className="bg-white p-6 poppins rounded-xl shadow-xl md:w-2/3 lg:w-1/2 max-w-2xl relative"
+                className="bg-white p-3 sm:p-4 rounded-xl shadow-xl max-w-lg w-full h-auto min-h-fit sm:max-h-[80vh] overflow-y-auto sm:overflow-y-auto"
               >
                 {loadingModal ? (
-                  <div className="flex justify-center p-12">
-                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="flex justify-center p-8">
+                    <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : (
                   ticketDetalhado && (
                     <>
-                      <h2 className="sm:text-2xl text-xl font-bold mb-2 sm:mb-6 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center">
+                      <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent text-center">
                         Detalhes da Solicitação
                       </h2>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 sm:mb-6">
-                        <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
-                          <h3 className="font-semibold text-blue-600 mb-2">Informações do Colaborador</h3>
-                          <p className="text-sm"><span className="font-medium">Nome:</span> {ticketDetalhado.nome_colaborador}</p>
-                          <p className="text-sm"><span className="font-medium">CPF:</span> {ticketDetalhado.cpf_colaborador}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2 sm:mb-4">
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Colaborador</h3>
+                          <p className="text-xs"><span className="font-medium">Nome:</span> {ticketDetalhado.nome_colaborador}</p>
+                          <p className="text-xs"><span className="font-medium">CPF:</span> {ticketDetalhado.cpf_colaborador}</p>
                         </div>
-
-                        <div className="bg-gray-50 p-2 sm:p-4 rounded-lg">
-                          <h3 className="font-semibold text-blue-600 mb-2">Detalhes da Solicitação</h3>
-                          <p className="text-sm"><span className="font-medium">Tipo:</span> {formatarTipoTicket(ticketDetalhado.tipo_ticket)}</p>
-                          <p className="text-sm p-1"><span className="font-medium">Status:</span> <StatusBadge status={ticketDetalhado.status_ticket} /></p>
-                          <p className="text-sm"><span className="font-medium">Data:</span> {formatarDataBrasil(ticketDetalhado.data_ticket)}</p>
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Solicitação</h3>
+                          <p className="text-xs"><span className="font-medium">Tipo:</span> {formatarTipoTicket(ticketDetalhado.tipo_ticket)}</p>
+                          <p className="text-xs py-1"><span className="font-medium">Status:</span> <StatusBadge status={ticketDetalhado.status_ticket} /></p>
+                          <p className="text-xs"><span className="font-medium">Data:</span> {formatarDataBrasil(ticketDetalhado.data_ticket)}</p>
                         </div>
                       </div>
-
                       {ticketDetalhado.tipo_ticket === 'PEDIR_FERIAS' && (
-                        <div className="bg-blue-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
-                          <h3 className="font-semibold text-blue-600 mb-2">Detalhes das Férias</h3>
-                          <p className="text-sm"><span className="font-medium">Data de Início:</span> {ticketDetalhado.data_inicio_ferias ? formatarDataBrasil(ticketDetalhado.data_inicio_ferias) : 'Não informado'}</p>
-                          <p className="text-sm"><span className="font-medium">Duração:</span> {ticketDetalhado.dias_ferias ? `${ticketDetalhado.dias_ferias} dias` : 'Não informado'}</p>
+                        <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Férias</h3>
+                          <p className="text-xs"><span className="font-medium">Início:</span> {ticketDetalhado.data_inicio_ferias ? formatarDataBrasil(ticketDetalhado.data_inicio_ferias) : 'Não informado'}</p>
+                          <p className="text-xs"><span className="font-medium">Duração:</span> {ticketDetalhado.dias_ferias ? `${ticketDetalhado.dias_ferias} dias` : 'Não informado'}</p>
                         </div>
                       )}
-
                       {ticketDetalhado.tipo_ticket === 'PEDIR_ABONO' && (
-                        <div className="bg-purple-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
-                          <h3 className="font-semibold text-purple-600 mb-2">Detalhes do Abono</h3>
-                          <p className="text-sm"><span className="font-medium">Motivo:</span> {formatarMotivoAbono(ticketDetalhado.motivo_abono) || 'Não informado'}</p>
+                        <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Abono</h3>
+                          <p className="text-xs"><span className="font-medium">Motivo:</span> {formatarMotivoAbono(ticketDetalhado.motivo_abono) || 'Não informado'}</p>
                           {ticketDetalhado.dias_abono?.length ? (
-                            <p className="text-sm">
-                              <span className="font-medium">Dias selecionados:</span> {formatarDiasAbono(ticketDetalhado.dias_abono)}
+                            <p className="text-xs">
+                              <span className="font-medium">Dias:</span> {formatarDiasAbono(ticketDetalhado.dias_abono)}
                             </p>
                           ) : null}
                         </div>
                       )}
-
                       {ticketDetalhado.tipo_ticket === 'SOLICITAR_FOLGA' && ticketDetalhado.id_registro && (
-                        <div className="bg-green-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
-                          <h3 className="font-semibold text-green-600 mb-2">Detalhes da Folga</h3>
-                          <p className="text-sm">
-                            <span className="font-medium">ID do Registro:</span> {ticketDetalhado.id_registro}
+                        <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Folga</h3>
+                          <p className="text-xs">
+                            <span className="font-medium">Registro:</span> {ticketDetalhado.id_registro}
                           </p>
                         </div>
                       )}
-
-                      {ticketDetalhado.tipo_ticket === 'ALTERAR_PONTOS' && ticketDetalhado.id_registro && (
-                        <div className="bg-yellow-50 p-2 sm:p-4 rounded-lg mb-2 sm:mb-6">
-                          <h3 className="font-semibold text-yellow-600 mb-2">Detalhes do Ajuste</h3>
-                          <p className="text-sm">
-                            <span className="font-medium">ID do Registro:</span> {ticketDetalhado.id_registro}
-                          </p>
-                          {ticketDetalhado.id_aviso && (
-                            <p className="text-sm">
-                              <span className="font-medium">ID do Aviso:</span> {ticketDetalhado.id_aviso}
-                            </p>
+                      {ticketDetalhado.tipo_ticket === 'ALTERAR_PONTOS' && (
+                        <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Ajuste de Pontos</h3>
+                          {(ticketDetalhado.pontos_anterior?.length || ticketDetalhado.pontos_ajustado?.length) ? (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs">
+                                <tbody>
+                                  {Array.from({
+                                    length: Math.max(
+                                      ticketDetalhado.pontos_anterior?.length || 0,
+                                      ticketDetalhado.pontos_ajustado?.length || 0
+                                    )
+                                  }).map((_, index) => {
+                                    const pontoAnterior = ticketDetalhado.pontos_anterior?.[index];
+                                    const pontoAjustado = ticketDetalhado.pontos_ajustado?.[index];
+                                    return (
+                                      <tr key={index} className="bg-blue-50 odd:bg-gray-50">
+                                        <td className="p-1 text-left">
+                                          {pontoAnterior ? (
+                                            <span>
+                                              {pontoAnterior.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída'}: {' '}
+                                              {new Date(pontoAnterior.data_hora).toLocaleTimeString('pt-BR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: false
+                                              })}
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-500">Não registrado</span>
+                                          )}
+                                        </td>
+                                        <td className="p-1 text-center w-8">
+                                          <FaArrowRight className="text-blue-500 inline" />
+                                        </td>
+                                        <td className="p-1 text-left">
+                                          {pontoAjustado ? (
+                                            <span>
+                                              {pontoAjustado.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída'}: {' '}
+                                              {new Date(pontoAjustado.data_hora).toLocaleTimeString('pt-BR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: false
+                                              })}
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-500">Não registrado</span>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-gray-600">Nenhum ponto registrado.</p>
                           )}
                         </div>
                       )}
-
-                      <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
-                        <h3 className="font-semibold text-gray-700 mb-2">Mensagem</h3>
-                        <p className="text-gray-700 whitespace-pre-line">{ticketDetalhado.mensagem}</p>
+                      <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                        <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Mensagem</h3>
+                        <p className="text-xs text-gray-700 whitespace-pre-line">{ticketDetalhado.mensagem}</p>
                       </div>
-
                       {ticketDetalhado.tipo_ticket === 'PEDIR_ABONO' && (
-                        <div className="mb-2 sm:mb-6 bg-gray-50 p-2 sm:p-4 rounded-lg">
-                          <h3 className="font-semibold text-gray-700 mb-2">Anexo</h3>
+                        <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                          <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Anexo</h3>
                           {fileError ? (
-                            <p className="text-red-600 text-sm flex items-center">
-                              <FaExclamationTriangle className="mr-2" />
+                            <p className="text-red-600 text-xs flex items-center">
+                              <FaExclamationTriangle className="mr-1" />
                               {fileError}
                             </p>
                           ) : ticketDetalhado.filePath ? (
-                            <div className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-lg">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between bg-gray-100 px-2 py-1 rounded-lg">
+                              <div className="flex items-center gap-1">
                                 {ticketDetalhado.filePath.match(/\.(pdf)$/i) ? (
-                                  <FaFilePdf className="text-red-500 text-xl" />
+                                  <FaFilePdf className="text-red-500" />
                                 ) : (
-                                  <FaFileImage className="text-green-500 text-xl" />
+                                  <FaFileImage className="text-green-500" />
                                 )}
-                                <span className="text-sm text-gray-600 truncate max-w-[200px]">
+                                <span className="text-xs text-gray-600 truncate max-w-[150px]">
                                   {ticketDetalhado.filePath.split('/').pop() || 'Anexo sem nome'}
                                 </span>
                               </div>
                               <button
                                 onClick={() => handleDownload(ticketDetalhado.id_ticket, ticketDetalhado.filePath.split('/').pop() || 'anexo')}
-                                className="flex items-center text-blue-600 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors"
+                                className="flex items-center text-blue-600 hover:bg-blue-100 px-1 py-1 rounded-md text-xs"
                               >
-                                <FaDownload className="mr-2" />
+                                <FaDownload className="mr-1" />
                                 Baixar
                               </button>
                             </div>
                           ) : (
-                            <p className="text-gray-600 text-sm flex items-center">
-                              <FaExclamationTriangle className="mr-2 text-yellow-500" />
-                              Nenhum anexo foi enviado com esta solicitação.
+                            <p className="text-gray-600 text-xs flex items-center">
+                              <FaExclamationTriangle className="mr-1 text-yellow-500" />
+                              Nenhum anexo enviado.
                             </p>
                           )}
                         </div>
                       )}
-
                       {ticketDetalhado.status_ticket === 'EM_AGUARDO' && mostrarJustificativa && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
-                          className="mb-2 sm:mb-6 overflow-hidden"
+                          className="mb-2 sm:mb-4 overflow-hidden"
                         >
-                          <div className="bg-yellow-50 p-2 sm:p-4 rounded-lg">
-                            <h3 className="font-semibold text-yellow-700 mb-1 sm:mb-2">Justificativa para Reprovação</h3>
+                          <div className="bg-gray-50 p-2 rounded-lg">
+                            <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">Justificativa para Reprovação</h3>
                             <textarea
-                              placeholder="Insira a justificativa aqui (Máximo 500 caracteres)"
+                              placeholder="Insira a justificativa (máx. 500 caracteres)"
                               value={justificativa}
                               maxLength={500}
                               onChange={(e) => setJustificativa(e.target.value)}
-                              className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              rows={3}
-                              required
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs resize-none"
+                              rows={2}
                             />
                           </div>
                         </motion.div>
                       )}
                       {ticketDetalhado.status_ticket === 'EM_AGUARDO' ? (
-                        <div className="flex flex-col sm:flex-row justify-between gap-4 mt-2 sm:mt-6">
-                          <div className="flex gap-3 justify-center">
+                        <div className="flex flex-col sm:flex-row justify-between gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2 justify-center">
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => enviarResposta('APROVADO', ticketDetalhado, justificativa, setModalAberto, setJustificativa, setMostrarJustificativa)}
-                              className="flex items-center text-sm sm:text-base justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-600 transition-all"
+                              className="flex items-center text-xs justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-green-600"
                             >
-                              <FaCheck className="mr-2" />
+                              <FaCheck className="mr-1" />
                               Aprovar
                             </motion.button>
-
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -528,16 +552,12 @@ const SolicitacoesGestor = () => {
                                   setMostrarJustificativa(true);
                                 }
                               }}
-                              className={`flex items-center text-sm sm:text-base justify-center px-6 py-3 rounded-xl shadow-md transition-all ${mostrarJustificativa && justificativa.trim()
-                                ? ' bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-700 text-white'
-                                : 'bg-gradient-to-r from-red-500 to-red-600 hover:bg-red-600 text-white'
-                                }`}
+                              className="flex items-center text-xs justify-center bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-red-600"
                             >
-                              <FaX className="mr-2" />
+                              <FaX className="mr-1" />
                               {mostrarJustificativa ? 'Confirmar Reprovação' : 'Reprovar'}
                             </motion.button>
                           </div>
-
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -547,29 +567,28 @@ const SolicitacoesGestor = () => {
                               setMostrarJustificativa(false);
                               setFileError(null);
                             }}
-                            className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
+                            className="bg-gray-500 text-xs text-white px-4 py-2 rounded-xl shadow-md hover:bg-gray-600"
                           >
                             Fechar
                           </motion.button>
                         </div>
                       ) : (
                         <>
-                        {ticketDetalhado.nome_gerente && (
-                            <div className="mb-4 bg-gray-50 p-4 rounded-lg">
-                              <h3 className="font-semibold text-gray-700 mb-2">
+                          {ticketDetalhado.nome_gerente && (
+                            <div className="bg-gray-50 p-2 rounded-lg mb-2 sm:mb-4">
+                              <h3 className="font-semibold text-blue-600 mb-1 text-sm sm:text-base">
                                 {ticketDetalhado.status_ticket === 'APROVADO' ? 'Aprovado por' : 'Reprovado por'}
                               </h3>
-                              <p className="text-sm">{ticketDetalhado.nome_gerente}</p>
+                              <p className="text-xs">{ticketDetalhado.nome_gerente}</p>
                               {ticketDetalhado.justificativa && (
                                 <>
-                                  <h3 className="font-semibold text-gray-700 mt-2 mb-1">Justificativa</h3>
-                                  <p className="text-sm text-gray-600 whitespace-pre-line">{ticketDetalhado.justificativa}</p>
+                                  <h3 className="font-semibold text-blue-600 mt-2 mb-1 text-sm sm:text-base">Justificativa</h3>
+                                  <p className="text-xs text-gray-600 whitespace-pre-line">{ticketDetalhado.justificativa}</p>
                                 </>
                               )}
                             </div>
                           )}
-                          
-                          <div className="flex justify-center mt-2 sm:mt-6">
+                          <div className="flex justify-center">
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -579,7 +598,7 @@ const SolicitacoesGestor = () => {
                                 setMostrarJustificativa(false);
                                 setFileError(null);
                               }}
-                              className="bg-gray-500 text-sm sm:text-base text-white px-6 py-3 rounded-xl shadow-md hover:bg-gray-600 transition-all"
+                              className="bg-gray-500 text-xs text-white px-4 py-2 rounded-xl shadow-md hover:bg-gray-600"
                             >
                               Fechar
                             </motion.button>

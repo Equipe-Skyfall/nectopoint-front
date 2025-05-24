@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import useUserData from "../../hooks/userData";
 
 import DisplayTempo from "../../displayTempo/displayTempo";
@@ -7,13 +7,16 @@ import baterPonto from "../../hooks/baterPonto";
 import encerrarTurno from "../../hooks/encerrarPonto";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiLogIn, FiLogOut, FiPower } from "react-icons/fi";
-
+import formatarMinutosEmHorasEMinutos from "../../hooks/formatarHoras";
 
 export default function ConteudoHome() {
 
     const [modalConfirmacao, setModalConfirmacao] = useState(false);
+    const dadosInicias= useUserData();
+    const [userData, setUserData] = useState(dadosInicias);
+   // "09:48" (para verificar se o erro vem de um valor errado)
 
-    const userData: any = (useUserData());
+    
     const entrada = (userData.jornada_atual.inicio_turno)
     const pontos = userData.jornada_atual.pontos_marcados
     //Se tiver pontos os bastante define up_hora e up_tipo
@@ -24,8 +27,10 @@ export default function ConteudoHome() {
     const ultimoPonto = pontos.length >= 2 ? { "tipo_ponto": up_tipo, up_hora } : { 'tipo_ponto': null, up_hora: null }
     const banco_de_horas = (userData.jornada_trabalho.banco_de_horas)
 
-
-
+    useEffect(() => {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        setUserData(userData);
+    }, [localStorage.getItem('user')]);
     useEffect(() => {
         document.body.classList.add("overflow-hidden");
 
@@ -37,6 +42,7 @@ export default function ConteudoHome() {
     const setModal = () => {
         setModalConfirmacao(!modalConfirmacao);
     }
+
     return (
     <motion.div
         initial={{ opacity: 0 }}
@@ -72,41 +78,64 @@ export default function ConteudoHome() {
                     />
                 </div>
 
-                {/* Botões de ação */}
+                 
+                
+                     {/* Botões de ação */}
                 <div className="p-6 pt-0 space-y-4">
+                {userData.dados_usuario.status == "ESCALADO" ? (
+                    <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex items-center justify-center w-full py-3 px-4 rounded-lg text-white font-medium shadow-md transition-all ${userData.jornada_atual.pontos_marcados.length % 2 === 0
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                        : "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                        }`}
+                    onClick={() => {
+                        baterPonto(setUserData);
+                    }
+                    }
+                >
+                   {userData.dados_usuario.status == "ESCALADO" ?
+                     userData.jornada_atual.pontos_marcados.length % 2 === 0 ? (
+                        <>
+                            <FiLogIn className="mr-2" />
+                            Registrar Entrada
+                        </>
+                    ) : (
+                        <>
+                            <FiLogOut className="mr-2" />
+                            Registrar Saída
+                        </>
+                    ):<></>}
+                </motion.button>):
+                (
+                <motion.button
+                    
+                    whileTap={{ scale: 0.98 }}
+                    className={"flex items-center justify-center w-full py-3 px-4 rounded-lg text-white font-medium shadow-md transition-all bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"}
+                    disabled
+                >
+                   
+                        <>
+                            Usuario não escalado 
+                        </>
+                   
+                    
+                </motion.button>
+                )
+                }
+
+                {userData.jornada_atual.pontos_marcados.length > 0 && (
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className={`flex items-center justify-center w-full py-3 px-4 rounded-lg text-white font-medium shadow-md transition-all ${userData.jornada_atual.pontos_marcados.length % 2 === 0
-                            ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                            : "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                            }`}
-                        onClick={baterPonto}
+                        className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium shadow-md transition-all"
+                        onClick={setModal}
                     >
-                        {userData.jornada_atual.pontos_marcados.length % 2 === 0 ? (
-                            <>
-                                <FiLogIn className="mr-2" />
-                                Registrar Entrada
-                            </>
-                        ) : (
-                            <>
-                                <FiLogOut className="mr-2" />
-                                Registrar Saída
-                            </>
-                        )}
+                        <FiPower className="mr-2" />
+                        Encerrar Turno
                     </motion.button>
-
-                    {userData.jornada_atual.pontos_marcados.length > 0 && (
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium shadow-md transition-all"
-                            onClick={setModal}
-                        >
-                            <FiPower className="mr-2" />
-                            Encerrar Turno
-                        </motion.button>
-                    )}
+                )}
                 </div>
             </motion.div>
 
@@ -161,3 +190,4 @@ export default function ConteudoHome() {
     </motion.div>
     );
 }   
+
