@@ -43,6 +43,7 @@ export default function ConteudoHome() {
     const setModal = () => {
         setModalConfirmacao(!modalConfirmacao);
     }
+
     return (
     <motion.div
         initial={{ opacity: 0 }}
@@ -82,7 +83,8 @@ export default function ConteudoHome() {
                 
                      {/* Botões de ação */}
                 <div className="p-6 pt-0 space-y-4">
-                <motion.button
+                {userData.dados_usuario.status == "ESCALADO" ? (
+                    <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={`flex items-center justify-center w-full py-3 px-4 rounded-lg text-white font-medium shadow-md transition-all ${userData.jornada_atual.pontos_marcados.length % 2 === 0
@@ -106,7 +108,23 @@ export default function ConteudoHome() {
                             Registrar Saída
                         </>
                     ):<></>}
+                </motion.button>):
+                (
+                <motion.button
+                    
+                    whileTap={{ scale: 0.98 }}
+                    className={"flex items-center justify-center w-full py-3 px-4 rounded-lg text-white font-medium shadow-md transition-all bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"}
+                    disabled
+                >
+                   
+                        <>
+                            Usuario não escalado 
+                        </>
+                   
+                    
                 </motion.button>
+                )
+                }
 
                 {userData.jornada_atual.pontos_marcados.length > 0 && (
                     <motion.button
