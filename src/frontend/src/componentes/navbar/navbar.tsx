@@ -84,8 +84,16 @@ export default function NavBar() {
                             <span className="text-gray-700 font-medium">{userData.nome}</span>
                         </div>
                     </div>
+                    
                     <div>
                         <img src="/nectopoint.png" width={80} alt="Logo" />
+                    </div>
+                    <div className="flex items-center mr-24 gap-6">
+                        <div className="relative">
+                            <NotificationIcon />
+                            <NotificationDropdown />
+                        </div>
+                        
                     </div>
                 </nav>
 
@@ -192,12 +200,12 @@ export default function NavBar() {
                             <span className="text-gray-700 font-medium">{userData.nome}</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                        <div className="relative">
+                    <div className="flex items-center mr-16 gap-6">
+                        <div className="relative ">
                             <NotificationIcon />
                             <NotificationDropdown />
                         </div>
-                        <img src="/nectopoint.png" width={80} alt="Logo" />
+                      
                     </div>
                 </nav>
 

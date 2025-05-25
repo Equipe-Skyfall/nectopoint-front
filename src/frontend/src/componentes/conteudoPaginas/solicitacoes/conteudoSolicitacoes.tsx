@@ -5,6 +5,8 @@ import { useTicketForm } from '../../hooks/useTicketForm';
 import { useTicketApi } from '../../hooks/useTicketApi';
 import SSEReceiver from '../../sseReceiver/sseReceiver';
 import refetch from '../../hooks/hooksChamarBackend/refetch';
+import { useNavigate } from 'react-router-dom';
+import { FiPower } from 'react-icons/fi';
 
  
 
@@ -110,7 +112,7 @@ const ConteudoSolicitacoes: React.FC = () => {
 
   // Hook personalizado para interagir com a API de tickets
   const { submitTicket } = useTicketApi();
-
+  const navigate = useNavigate();
   // Função para lidar com o envio do formulário
   const handleSubmit = async () => {
     if (!validateForm()) return;
@@ -254,18 +256,30 @@ const ConteudoSolicitacoes: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="text-center mb-2"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mt-5 pb-4">
+          <h1 className="text-4xl mt-4 md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mt-5 pb-4">
             Solicitações
           </h1>
           
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <div className='flex text-end justify-end flex flex-row flex-nowrap'>
+            <p className="text-lg mt-3 content-center   text-gray-600 col-span-8   mx-auto">
             Preencha o formulário abaixo para enviar sua solicitação
           </p>
-          
-        </motion.div>
+          <motion.button  
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className="flex text-end justify-end absolute  items-center col-span-1 ml-auto mr-8 max-w-28 text-[15px] poppins-medium justify-center w-full py-2 px-1 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-md transition-all"
+                                  onClick={() => navigate('/solicitacoes-historico')}
+                              >
+                                 <img src='./time-left.png' className="w-4 h-4 m-2 "></img>
+                                  
+                                  Historico
+                              </motion.button>
+       
+          </div>
+           </motion.div>
 
         {/* Layout com seção explicativa e formulário */}
-        <div className="flex flex-col lg:flex-row gap-12">
+        <div className="flex flex-col  lg:flex-row gap-12">
           {/* Seção explicativa sobre o processo */}
           <motion.div
             initial={{ x: -40, opacity: 0 }}
