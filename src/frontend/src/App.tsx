@@ -15,7 +15,6 @@ import Funcionarios from "./paginas/gestorAdministraFuncionario/gestorFuncionari
 import EditarFunc from "./componentes/conteudoPaginas/colaboradores/editarFunc";
 import SemLogin from "./paginas/checarLogin/checarLogin";
 
-
 function App() {
   const queryClient = new QueryClient()
 
