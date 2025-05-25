@@ -7,7 +7,6 @@ import PaginaGestor from "./paginas/homeGestor/paginaGestor";
 import Login from "./paginas/login/login";
 import { AuthProvider } from "./Provider/AuthProvider";
 import Teste from "./paginas/teste";
-
 import CadastrarFuncionario from "./paginas/gestorAdministraFuncionario/gestorCadastrarFunc";
 import Historico from "./paginas/historico/historico";
 import HistoricoFunc from "./paginas/historico/historicoFunc";
