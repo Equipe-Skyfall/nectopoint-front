@@ -354,7 +354,6 @@ export default function useHistoricoJornadas({
                 });
 
                 if (response.status === 200) {
-                    alert('Solicitação enviada com sucesso!');
                     setModalAberto(false);
                     buscarHistoricoJornadas();
                 }

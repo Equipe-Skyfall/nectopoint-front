@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiX, FiClock, FiCheck, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
+import ModalConfirmacao from './modalConfirmacao';
 
 interface Ponto {
   tipo: string;
@@ -13,12 +14,14 @@ interface ModalCorrecaoPontoProps {
   dataJornada: string;
   onClose: () => void;
   onSubmit: (pontosAjustados: Ponto[]) => Promise<void>;
+  onSuccess: () => void; 
 }
 export default function ModalCorrecaoPonto({
   pontos,
   dataJornada,
   onClose,
-  onSubmit
+  onSubmit,
+  onSuccess,
 }: ModalCorrecaoPontoProps) {
   const [pontosEditados, setPontosEditados] = useState<Ponto[]>(pontos);
   const [erro, setErro] = useState<string | null>(null);
@@ -93,6 +96,7 @@ export default function ModalCorrecaoPonto({
         horario: p.horario
       }));
       await onSubmit(pontosParaEnviar);
+      onSuccess() 
       setMostrarConfirmacao(true);
       setTimeout(() => {
         setMostrarConfirmacao(false);
@@ -226,25 +230,13 @@ export default function ModalCorrecaoPonto({
         </motion.div>
       </motion.div>
 
-      {/* Modal de confirmação */}
       {mostrarConfirmacao && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        >
-          <motion.div
-            initial={{ y: -20 }}
-            animate={{ y: 0 }}
-            className="bg-white p-6 rounded-lg shadow-xl max-w-sm"
-          >
-            <div className="flex items-center">
-              <FiCheck className="text-green-500 mr-2" size={24} />
-              <h3 className="text-lg font-medium">Solicitação enviada!</h3>
-            </div>
-            <p className="mt-2 text-gray-600">Sua correção foi enviada para análise.</p>
-          </motion.div>
-        </motion.div>
+        <ModalConfirmacao
+          isOpen={mostrarConfirmacao}
+          onClose={() => setMostrarConfirmacao(false)}
+          mensagem="Solicitação enviada com sucesso!"
+          tipo="sucesso"
+        />
       )}
     </>
   );

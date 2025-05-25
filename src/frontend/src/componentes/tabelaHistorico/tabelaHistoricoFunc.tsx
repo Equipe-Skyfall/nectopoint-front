@@ -3,6 +3,8 @@ import { FiChevronLeft, FiChevronRight, FiRefreshCw, FiUpload, FiEdit } from 're
 import FiltrosHistoricoFunc from '../filtros/filtroHistoricoFunc';
 import ModalCorrecaoPonto from '../conteudoPaginas/solicitacoes/modalCorrecaoPonto';
 import useHistoricoJornadas from '../hooks/useHistoricoJornadas';
+import { useState } from 'react';
+import ModalConfirmacao from '../conteudoPaginas/solicitacoes/modalConfirmacao';
 
 export default function ConteudoHistoricoFunc() {
   const {
@@ -30,6 +32,7 @@ export default function ConteudoHistoricoFunc() {
     setJornadaSelecionada,
   } = useHistoricoJornadas();
 
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
   const PaginationControls = () => {
     const maxVisibleButtons = 5;
 
@@ -145,6 +148,20 @@ export default function ConteudoHistoricoFunc() {
           dataJornada={jornadaSelecionada?.data || ''}
           onClose={() => setModalAberto(false)}
           onSubmit={enviarCorrecao}
+          onSuccess={() => {
+            setModalAberto(false);
+            setMostrarConfirmacao(true);
+            setTimeout(() => setMostrarConfirmacao(false), 3000);
+          }}
+        />
+      )}
+
+      {mostrarConfirmacao && (
+        <ModalConfirmacao
+          isOpen={mostrarConfirmacao}
+          onClose={() => setMostrarConfirmacao(false)}
+          mensagem="Solicitação de correção enviada com sucesso!"
+          tipo="sucesso"
         />
       )}
       <motion.button
@@ -155,7 +172,7 @@ export default function ConteudoHistoricoFunc() {
         className="flex items-center bg-gradient-to-r mb-3 -mt-3 from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
       >
         {isExporting ? <FiRefreshCw className="animate-spin mr-2" /> : <FiUpload />}
-        {isExporting ? 'Exportando...' : 'Exportar PDF'}
+        {isExporting ? 'Exportando...' : ''}
       </motion.button>
 
       {exportError && (
