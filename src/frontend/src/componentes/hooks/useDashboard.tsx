@@ -3,8 +3,10 @@ import api from "./api";
 
 
 export default async function  useDashboard  (){
-
-    return  (await api.get('/sessao/usuario/dashboard')).data;
+    const response = (await api.get('/sessao/usuario/dashboard')).data
+    console.log(response);
+    
+    return  (response);
    
     
 }   

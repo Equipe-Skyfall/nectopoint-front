@@ -20,6 +20,8 @@ import HistoricoSolicitacoes from "./componentes/conteudoPaginas/solicitacoes/hi
 import { useEffect } from "react";
 import SSEReceiver from "./componentes/sseReceiver/sseReceiver";
 import refetch from "./componentes/hooks/hooksChamarBackend/refetch";
+import recarregar from "./componentes/hooks/hooksChamarBackend/recarregar";
+import SolicitacoesHistorico from "./paginas/solicitacoes/solicitacoesHistorico";
 
 import AplicarFolga from "./paginas/folga/gestorAplicarFolga";
 
@@ -27,12 +29,19 @@ import AplicarFolga from "./paginas/folga/gestorAplicarFolga";
 
 function App() {
   const queryClient = new QueryClient()
-  
+    const sseCondicao = () => {
+      if (window.location.pathname !== '/solicitacao-historico') {
+        refetch();
+      }
+      else {
+        recarregar();
+      }
+    }
     const sse_rota = '/api/refetch'
     useEffect(() => {
      // A classe SSEReceiver monta uma instancia pra receber o ping , dado o url passado 
       const sse = SSEReceiver.getInstance();
-      sse.start(sse_rota,() => reload());
+      sse.start(sse_rota,() => sseCondicao());
      },[])
      
 
@@ -64,9 +73,7 @@ function App() {
                   <Route path="cadastrar" element={<SemLogin cargo="GERENTE"><CadastrarFuncionario /></SemLogin>} />
                   <Route path="bater-ponto" element={<SemLogin cargo={''} ><PaginaUsuario /></SemLogin>} />
                   <Route path="solicitacoes-empresa" element={<SemLogin cargo="GERENTE"><SolicitacoesGestor /></SemLogin>} />
-
                   <Route path="solicitacoes-historico" element={<SemLogin cargo="COLABORADOR"><HistoricoSolicitacoes /></SemLogin>} />
-
                   <Route path="folga" element={<SemLogin cargo="GERENTE"><AplicarFolga /></SemLogin>} />
 
 
