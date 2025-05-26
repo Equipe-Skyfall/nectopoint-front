@@ -329,23 +329,7 @@ export function useNotifications({ userId }: NotificationProps) {
                                                     <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0"></span>
                                                 )}
                                                 
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        resolverAlerta(alerta.id_alerta);
-                                                    }}
-                                                    disabled={resolvingAlerts.has(alerta.id_alerta) || updateLoading}
-                                                    className="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    title="Marcar como resolvido"
-                                                >
-                                                    {resolvingAlerts.has(alerta.id_alerta) ? (
-                                                        <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
-                                                    ) : (
-                                                        <FaCheck className="w-3 h-3" />
-                                                    )}
-                                                </motion.button>
+                                               
                                             </div>
                                         </div>
                                     </motion.div>
