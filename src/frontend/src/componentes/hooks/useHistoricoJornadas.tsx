@@ -12,6 +12,7 @@ export interface HistoricoJornada {
     statusText: string;
     pontos: Array<{ tipo: string; horario: string; dataOriginal: Date }>;
     idRegistro: string;
+    temAbono: boolean;
 }
 
 interface UserData {
@@ -112,6 +113,11 @@ export default function useHistoricoJornadas({
                 shortText: 'Irregular',
                 color: 'bg-yellow-100 text-yellow-800',
             },
+            'ABONADO': {
+                text: 'Abonado',
+                shortText: 'Abonado',
+                color: 'bg-blue-100 text-blue-800',
+            },
             default: { text: status, shortText: status, color: 'bg-gray-100 text-gray-800' },
         };
         const style = statusStyles[status as StatusTurno] || statusStyles.default;
@@ -136,6 +142,7 @@ export default function useHistoricoJornadas({
         (jornada: any): HistoricoJornada => {
             const dataInicio = new Date(jornada.inicio_turno);
             const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
+            const temAbono = !!jornada.abono; 
 
             const pontosFormatados = jornada.pontos_marcados?.map((ponto: any) => ({
                 tipo: ponto.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída',
@@ -146,6 +153,11 @@ export default function useHistoricoJornadas({
                 dataOriginal: new Date(ponto.data_hora),
             })) || [];
 
+            const fimTurnoDisplay = jornada.status_turno === StatusTurno.NAO_COMPARECEU && temAbono
+                ? formatarStatus('ABONADO').component
+                : dataFim
+                    ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    : 'N/A';
             return {
                 data: dataInicio.toLocaleDateString('pt-BR'),
                 inicioTurno: dataInicio.toLocaleTimeString('pt-BR', {
@@ -159,6 +171,7 @@ export default function useHistoricoJornadas({
                 statusText: formatarStatus(jornada.status_turno).text,
                 pontos: pontosFormatados,
                 idRegistro: jornada.id_registro,
+                temAbono,
             };
         },
         [formatarStatus],

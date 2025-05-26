@@ -24,11 +24,14 @@ export default class SSEReceiver {
         this.eventSource = new EventSource(url);
 
         this.eventSource.onmessage = (event) => {
+            
             try {
                 const data = JSON.parse(event.data);
                 if (this.callback) {
                     this.callback(data);
                 }
+                console.log(data)
+                console.log(this.eventSource)
             } catch (e) {
                 console.error("Erro ao processar mensagem SSE:", e);
             }
