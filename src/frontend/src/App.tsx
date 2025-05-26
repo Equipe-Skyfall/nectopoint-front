@@ -73,7 +73,7 @@ function App() {
                   <Route path="cadastrar" element={<SemLogin cargo="GERENTE"><CadastrarFuncionario /></SemLogin>} />
                   <Route path="bater-ponto" element={<SemLogin cargo={''} ><PaginaUsuario /></SemLogin>} />
                   <Route path="solicitacoes-empresa" element={<SemLogin cargo="GERENTE"><SolicitacoesGestor /></SemLogin>} />
-                  <Route path="solicitacoes-historico" element={<SemLogin cargo="COLABORADOR"><HistoricoSolicitacoes /></SemLogin>} />
+                  <Route path="solicitacoes-historico" element={<SemLogin cargo="COLABORADOR"><SolicitacoesHistorico /></SemLogin>} />
                   <Route path="folga" element={<SemLogin cargo="GERENTE"><AplicarFolga /></SemLogin>} />
 
 
