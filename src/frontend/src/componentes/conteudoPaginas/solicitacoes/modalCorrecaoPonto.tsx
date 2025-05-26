@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiX, FiClock, FiCheck, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 import ModalConfirmacao from './modalConfirmacao';
+import refetch from '../../hooks/hooksChamarBackend/refetch';
 
 interface Ponto {
   tipo: string;
@@ -97,7 +98,8 @@ export default function ModalCorrecaoPonto({
       }));
       await onSubmit(pontosParaEnviar);
       onSuccess() 
-      setMostrarConfirmacao(true);
+      setMostrarConfirmacao(true);~
+      refetch()
       setTimeout(() => {
         setMostrarConfirmacao(false);
         onClose();
