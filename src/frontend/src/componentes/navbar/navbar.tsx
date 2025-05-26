@@ -34,7 +34,7 @@ export default function NavBar() {
         AllNotificationsModal,
         showNotifications,
         setShowNotifications
-    } = useNotifications({userId: Number(userId)});
+    } = useNotifications({ userId: Number(userId) });
 
     useOutsideClick(sidebarRef, () => setIsOpen(false));
 
@@ -84,16 +84,16 @@ export default function NavBar() {
                             <span className="text-gray-700 font-medium">{userData.nome}</span>
                         </div>
                     </div>
-                    
-                    <div>
-                        <img src="/nectopoint.png" width={80} alt="Logo" />
-                    </div>
-                    <div className="flex items-center mr-24 gap-6">
+
+
+                    <div className="flex items-center mr-5 gap-6">
                         <div className="relative">
                             <NotificationIcon />
                             <NotificationDropdown />
                         </div>
-                        
+                        <div>
+                            <img src="/nectopoint.png" width={80} alt="Logo" />
+                        </div>
                     </div>
                 </nav>
 
@@ -207,12 +207,14 @@ export default function NavBar() {
                             <span className="text-gray-700 font-medium">{userData.nome}</span>
                         </div>
                     </div>
-                    <div className="flex items-center mr-16 gap-6">
+                    <div className="flex items-center mr-5 gap-6">
                         <div className="relative ">
                             <NotificationIcon />
                             <NotificationDropdown />
                         </div>
-                      
+                        <div>
+                            <img src="/nectopoint.png" width={80} alt="Logo" />
+                        </div>
                     </div>
                 </nav>
 
