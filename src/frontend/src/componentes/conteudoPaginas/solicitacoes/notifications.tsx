@@ -338,18 +338,7 @@ export function useNotifications({ userId }: NotificationProps) {
                         )}
 
                         <div className="px-4 py-3 bg-gray-50 text-center">
-                            <button
-                                onClick={() => {
-                                    setShowAllNotificationsModal(true);
-                                    setShowNotifications(false);
-                                }}
-                                className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                                Ver todos os alertas
-                                <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
+                            
                         </div>
                     </div>
                 </motion.div>
