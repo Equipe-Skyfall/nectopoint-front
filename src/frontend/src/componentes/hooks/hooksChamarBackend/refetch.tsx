@@ -32,7 +32,7 @@ const  refetch =  async () => {
                 jornadas_irregulares: responseData.jornadas_irregulares, // Optional
                 tickets_usuario: responseData.tickets_usuario, // Optional
             }
-            localStorage.removeItem('user'); // Remove the old user data
+            localStorage.removeItem('user'); 
             localStorage.setItem('user', JSON.stringify(userData));
             console.log('teve refetch');
             

@@ -29,19 +29,12 @@ import AplicarFolga from "./paginas/folga/gestorAplicarFolga";
 
 function App() {
   const queryClient = new QueryClient()
-    const sseCondicao = () => {
-      if (window.location.pathname !== '/solicitacao-historico') {
-        refetch();
-      }
-      else {
-        recarregar();
-      }
-    }
+    
     const sse_rota = '/api/refetch'
     useEffect(() => {
      // A classe SSEReceiver monta uma instancia pra receber o ping , dado o url passado 
       const sse = SSEReceiver.getInstance();
-      sse.start(sse_rota,() => sseCondicao());
+      sse.start(sse_rota,() => recarregar());
      },[])
      
 
