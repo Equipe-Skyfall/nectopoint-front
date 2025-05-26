@@ -30,7 +30,6 @@ export function useNotifications({ userId }: NotificationProps) {
     // ✅ Listener para mudanças no localStorage
     useEffect(() => {
         const handleStorageChange = () => {
-            console.log('🔄 Storage mudou, forçando update das notificações');
             setForceUpdate(prev => prev + 1);
         };
 
@@ -125,9 +124,7 @@ export function useNotifications({ userId }: NotificationProps) {
                 new Date(b.data_criacao).getTime() - new Date(a.data_criacao).getTime()
             );
         
-        console.log('✅ Alertas finais:', alertasMapeados);
-        console.log('📊 Total de alertas válidos:', alertasMapeados.length);
-        
+     
         return alertasMapeados;
     };
 
@@ -137,10 +134,7 @@ export function useNotifications({ userId }: NotificationProps) {
     const naoLidosCount = allAlertas.filter(alerta => alerta.status_alerta === 'NAO_LIDO').length;
 
     // ✅ Log dos estados finais
-    console.log('📈 Estados finais:');
-    console.log('allAlertas:', allAlertas);
-    console.log('recentAlertas:', recentAlertas);
-    console.log('naoLidosCount:', naoLidosCount);
+ 
 
     // ✅ Função para formatar data
     const formatarDataBrasil = (dataISO: string) => {
