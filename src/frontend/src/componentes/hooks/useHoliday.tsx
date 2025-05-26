@@ -1,4 +1,3 @@
-// HolidayHook.js
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from 'react-toastify';
@@ -10,7 +9,6 @@ export default function useHolidayHook() {
     endDate: "",
     description: "",
     repeatsYearly: false,
-    userIds: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -47,7 +45,8 @@ export default function useHolidayHook() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  // Updated submit function to accept userIds array
+  const handleSubmit = async (e, selectedUserIds = []) => {
     e.preventDefault();
     const payload = {
       name: form.name,
@@ -55,10 +54,7 @@ export default function useHolidayHook() {
       endDate: form.endDate,
       description: form.description,
       repeatsYearly: form.repeatsYearly,
-      userIds: form.userIds
-        .split(',')
-        .map((id) => id.trim())
-        .filter((id) => id !== ""),
+      userIds: selectedUserIds, // Use the passed userIds instead of parsing string
     };
 
     try {
@@ -103,7 +99,6 @@ export default function useHolidayHook() {
       endDate: "",
       description: "",
       repeatsYearly: false,
-      userIds: "",
     });
   };
 
@@ -127,6 +122,7 @@ export default function useHolidayHook() {
     handlePageChange,
     formatShortDate,
     toggleModal,
-    setShowModal
+    setShowModal,
+    resetForm
   };
 }

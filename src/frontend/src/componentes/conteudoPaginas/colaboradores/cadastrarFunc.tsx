@@ -4,7 +4,6 @@ import {FaArrowLeft, FaSpinner, FaUserPlus } from 'react-icons/fa';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 
-
 const CadastrarFunc = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -22,9 +21,10 @@ const CadastrarFunc = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState('idle');
+  const [errorMessages, setErrorMessages] = useState([]);
 
-  const formatCPF = (value: string): string => {
+  const formatCPF = (value) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 11);
     if (cleaned.length <= 3) return cleaned;
     if (cleaned.length <= 6) return `${cleaned.slice(0, 3)}.${cleaned.slice(3)}`;
@@ -32,8 +32,14 @@ const CadastrarFunc = () => {
     return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Clear error messages when user starts typing
+    if (errorMessages.length > 0) {
+      setErrorMessages([]);
+      setSubmitStatus('idle');
+    }
 
     if (name === 'cpf') {
       const formattedValue = formatCPF(value);
@@ -47,10 +53,11 @@ const CadastrarFunc = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSubmitStatus('idle');
+    setErrorMessages([]);
 
     try {
       await axios.post('/usuario/', {
@@ -63,7 +70,30 @@ const CadastrarFunc = () => {
     } catch (error) {
       console.error('Erro ao cadastrar:', error);
       setSubmitStatus('error');
-      alert('Erro ao cadastrar funcionário.');
+      
+      // Extract error messages from the response
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Check if it's an array of error messages (validation errors)
+        if (Array.isArray(errorData)) {
+          setErrorMessages(errorData.map(err => err.message || err));
+        } 
+        // Check if it's a single error message (like DuplicateException)
+        else if (typeof errorData === 'string') {
+          setErrorMessages([errorData]);
+        }
+        // Check if error has a message property
+        else if (errorData.message) {
+          setErrorMessages([errorData.message]);
+        }
+        // Fallback for other error structures
+        else {
+          setErrorMessages(['Erro ao cadastrar funcionário. Verifique os dados informados.']);
+        }
+      } else {
+        setErrorMessages(['Erro de conexão. Tente novamente.']);
+      }
     } finally {
       setLoading(false);
     }
@@ -77,7 +107,6 @@ const CadastrarFunc = () => {
       className="mt-16 min-h-screen p-4 md:p-6 poppins"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Título com gradiente */}
         <motion.h2
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -101,7 +130,31 @@ const CadastrarFunc = () => {
             </motion.button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Error Messages Display */}
+          {submitStatus === 'error' && errorMessages.length > 0 && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg"
+            >
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Erro ao cadastrar funcionário
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <ul className="list-disc list-inside space-y-1">
+                      {errorMessages.map((message, index) => (
+                        <li key={index}>{message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          <div onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Campo Nome */}
               <motion.div whileHover={{ y: -2 }} className="space-y-2">
@@ -270,7 +323,8 @@ const CadastrarFunc = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 disabled={loading}
                 className={`flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
@@ -288,7 +342,7 @@ const CadastrarFunc = () => {
                 )}
               </motion.button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </motion.div>
