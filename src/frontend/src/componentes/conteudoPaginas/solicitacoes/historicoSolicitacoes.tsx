@@ -74,7 +74,24 @@ export default function HistoricoSolicitacoes() {
     startDate,
     endDate
   });
+  useEffect(() => {
+    const handleSSEUpdate = (event) => {
+      console.log('🎯 SSE update received - calling fetchSolicitacoes');
+      
+      // Call the fetch function directly with a delay
+      setTimeout(() => {
+        console.log('🔄 Calling fetchSolicitacoes after delay');
+        fetchSolicitacoes();
+      }, 0);
+    };
 
+    // Listen for SSE events
+    window.addEventListener('sseDataUpdate', handleSSEUpdate);
+
+    return () => {
+      window.removeEventListener('sseDataUpdate', handleSSEUpdate);
+    };
+  }, [fetchSolicitacoes]);
   // Ajusta a página se não houver mais solicitações
   useEffect(() => {
     if (solicitacoes === null || (solicitacoes.content.length === 0 && pagina > 0)) {

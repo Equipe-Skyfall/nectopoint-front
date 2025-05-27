@@ -7,9 +7,29 @@ import SSEReceiver from '../../sseReceiver/sseReceiver';
 import refetch from '../../hooks/hooksChamarBackend/refetch';
 import { useNavigate } from 'react-router-dom';
 import { FiPower } from 'react-icons/fi';
+import recarregar from '../../hooks/hooksChamarBackend/recarregar';
 
  
 
+useEffect(() => {
+    const handleSSEUpdate = (event) => {
+      console.log('🎯 SSE update received - calling fetchSolicitacoes');
+      
+      // Call the fetch function directly with a delay
+      setTimeout(() => {
+        console.log('🔄 Calling fetchSolicitacoes after delay');
+        recarregar();
+      }, 0);
+    };
+
+    // Listen for SSE events
+    window.addEventListener('sseDataUpdate', handleSSEUpdate);
+
+    return () => {
+      window.removeEventListener('sseDataUpdate', handleSSEUpdate);
+    };
+  }, [recarregar()]);
+  
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
   value: string;

@@ -26,7 +26,7 @@ export default function useHolidayHook() {
       setPage(response.data.number);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error("Erro ao buscar feriados:", error);
+      console.error("Erro ao buscar feriados:", );
       toast.error('Erro ao carregar feriados');
     } finally {
       setLoading(false);
@@ -64,8 +64,8 @@ export default function useHolidayHook() {
       fetchHolidays(page);
       resetForm();
     } catch (error) {
-      console.error("Erro ao enviar feriado:", error);
-      toast.error("Erro ao cadastrar feriado");
+      
+      toast.error("Erro ao cadastrar feriado , : " + error.response?);
     }
   };
 

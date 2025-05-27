@@ -146,8 +146,9 @@ const DefinirFolga = () => {
       resetForm();
       setSelectedUsers([]);
     } catch (error) {
-      console.error("Erro ao enviar feriado:", error);
-      alert("Erro ao cadastrar feriado");
+      console.log("Erro ao cadastrar feriado:"+ error);
+      
+      alert("Erro ao cadastrar feriado  " + error );
     }
   };
 
