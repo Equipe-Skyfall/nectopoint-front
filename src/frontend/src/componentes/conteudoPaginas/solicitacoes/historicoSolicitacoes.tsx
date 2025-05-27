@@ -5,6 +5,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import FiltrosSoli from '../../filtros/filtroSoli';
 import useHistoricoSolicitacoes from '../../hooks/useHistoricoSolicitacoes';
 import useUserData from '../../hooks/userData';
+import recarregar from "../../hooks/hooksChamarBackend/recarregar";
 
 const TicketStatus = {
   EM_AGUARDO: 'EM_AGUARDO',
@@ -81,7 +82,7 @@ export default function HistoricoSolicitacoes() {
       // Call the fetch function directly with a delay
       setTimeout(() => {
         console.log('🔄 Calling fetchSolicitacoes after delay');
-        fetchSolicitacoes();
+        recarregar();
       }, 0);
     };
 
@@ -91,7 +92,7 @@ export default function HistoricoSolicitacoes() {
     return () => {
       window.removeEventListener('sseDataUpdate', handleSSEUpdate);
     };
-  }, [fetchSolicitacoes]);
+  }, [recarregar]);
   // Ajusta a página se não houver mais solicitações
   useEffect(() => {
     if (solicitacoes === null || (solicitacoes.content.length === 0 && pagina > 0)) {

@@ -18,7 +18,7 @@ useEffect(() => {
       // Call the fetch function directly with a delay
       setTimeout(() => {
         console.log('🔄 Calling fetchSolicitacoes after delay');
-        recarregar();
+        refetch();
       }, 0);
     };
 
@@ -28,7 +28,7 @@ useEffect(() => {
     return () => {
       window.removeEventListener('sseDataUpdate', handleSSEUpdate);
     };
-  }, [recarregar()]);
+  }, [recarregar]);
   
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
