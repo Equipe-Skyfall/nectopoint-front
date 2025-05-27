@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaPaperclip, FaBell, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTicketForm } from '../../hooks/useTicketForm';
 import { useTicketApi } from '../../hooks/useTicketApi';
-import SSEReceiver from '../../sseReceiver/sseReceiver';
 import refetch from '../../hooks/hooksChamarBackend/refetch';
 import { useNavigate } from 'react-router-dom';
 import { FiPower } from 'react-icons/fi';
-import recarregar from '../../hooks/hooksChamarBackend/recarregar';
 
  
 
@@ -28,7 +26,7 @@ useEffect(() => {
     return () => {
       window.removeEventListener('sseDataUpdate', handleSSEUpdate);
     };
-  }, [recarregar]);
+  }, [refetch]);
   
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
@@ -259,10 +257,11 @@ const ConteudoSolicitacoes: React.FC = () => {
         return null;
     }
   };
-
+  const [refreshKey, setRefreshKey] = useState(0); // Force remount key
   return (
     // Container principal com animação de entrada
     <motion.div
+    key={refreshKey} // This forces remount when refreshKey changes
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
