@@ -8,9 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { FiPower } from 'react-icons/fi';
 
  
-
-
-  
 const Select = ({ options, value, onChange, label }: {
   options: { value: string; label: string }[];
   value: string;

@@ -68,8 +68,8 @@ export default function ConteudoHistoricoFunc() {
           }}
           disabled={paginaAtual === 0}
           className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === 0
-              ? 'bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed'
-              : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
+            ? 'bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed'
+            : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
             }`}
         >
           <FiChevronLeft className="mr-1" />
@@ -87,8 +87,8 @@ export default function ConteudoHistoricoFunc() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`sm:w-10 h-9 w-5 sm:h-10 rounded-full flex items-center justify-center text-sm ${paginaAtual === page
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
                 }`}
             >
               {page + 1}
@@ -107,8 +107,8 @@ export default function ConteudoHistoricoFunc() {
           }}
           disabled={paginaAtual === totalPaginas - 1}
           className={`flex items-center text-sm sm:text-base px-4 py-2 rounded-lg ${paginaAtual === totalPaginas - 1
-              ? 'bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed'
-              : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
+            ? 'bg-gray-200 text-gray-500 border-gray-500 border cursor-not-allowed'
+            : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
             }`}
         >
           Próxima
@@ -248,7 +248,13 @@ export default function ConteudoHistoricoFunc() {
                           {jornada.inicioTurno}
                         </td>
                         <td className="p-2 sm:p-4 text-sm text-center text-gray-600">
-                          {jornada.fimTurno}
+                          {typeof jornada.fimTurno === 'string' && jornada.fimTurno === 'Abonado' ? (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Abonado
+                            </span>
+                          ) : (
+                            jornada.fimTurno
+                          )}
                         </td>
                         <td className="p-2 sm:p-4 text-center">{jornada.statusTurno}</td>
                         <td className="p-2 sm:p-4 text-center">

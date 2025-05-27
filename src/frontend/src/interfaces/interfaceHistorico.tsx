@@ -19,6 +19,10 @@ export interface PointRegistryEntity {
     tipo_ponto: string; 
     data_hora: string; 
     status_turno: string; 
+    abono?: {
+        motivo_abono: string;
+        horarios_abono: string;
+    };
 }
 
 // Estrutura completa da resposta da API
