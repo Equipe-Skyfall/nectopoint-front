@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, JSX } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axios from 'axios';
@@ -65,11 +65,6 @@ interface HistoricoJornadasResponse {
     setJornadaSelecionada: (jornada: HistoricoJornada | null) => void;
 }
 
-
-// Hook personalizado para gerenciar o histórico de jornadas do funcionário.
-// @param params Configurações iniciais para o hook.
-// @returns Objeto com estados e funções para gerenciar o histórico de jornadas.
-
 export default function useHistoricoJornadas({
     itensPorPagina = 8,
     initialStatusTurno = '',
@@ -90,12 +85,7 @@ export default function useHistoricoJornadas({
     const [jornadaSelecionada, setJornadaSelecionada] = useState<HistoricoJornada | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
 
-
-    // Formata o status do turno para exibição.
-    // @param status Status do turno.
-    // @returns Objeto com componente JSX e texto do status.
-
-    const formatarStatus = useCallback((status: string, temAbono?: boolean) => {
+    const formatarStatus = useCallback((status: string) => {
         const statusStyles = {
             [StatusTurno.ENCERRADO]: {
                 text: 'Encerrado',
@@ -103,9 +93,9 @@ export default function useHistoricoJornadas({
                 color: 'bg-green-100 text-green-800',
             },
             [StatusTurno.NAO_COMPARECEU]: {
-                text: temAbono ? 'Abonado' : 'Não Compareceu',
-                shortText: temAbono ? 'Abonado' : 'N/Compareceu',
-                color: temAbono ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
+                text: 'Não Compareceu',
+                shortText: 'N/Compareceu',
+                color: 'bg-red-100 text-red-800',
             },
             [StatusTurno.IRREGULAR]: {
                 text: 'Irregular',
@@ -127,16 +117,10 @@ export default function useHistoricoJornadas({
         };
     }, []);
 
-
-    // Formata uma jornada bruta em um objeto HistoricoJornada.
-    // @param jornada Dados brutos da jornada.
-    // @returns Jornada formatada.
-
     const formatarJornada = useCallback(
         (jornada: any): HistoricoJornada => {
             const dataInicio = new Date(jornada.inicio_turno);
             const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
-            const temAbono = !!jornada.abono;
 
             const pontosFormatados = jornada.pontos_marcados?.map((ponto: any) => ({
                 tipo: ponto.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída',
@@ -153,21 +137,17 @@ export default function useHistoricoJornadas({
                     hour: '2-digit',
                     minute: '2-digit',
                 }),
-                fimTurno: temAbono ? 'Abonado' :
-                    (dataFim
-                        ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                        : 'N/A'),
-                statusTurno: formatarStatus(jornada.status_turno, temAbono).component,
-                statusText: formatarStatus(jornada.status_turno, temAbono).text,
+                fimTurno: dataFim
+                    ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    : 'N/A',
+                statusTurno: formatarStatus(jornada.status_turno).component,
+                statusText: formatarStatus(jornada.status_turno).text,
                 pontos: pontosFormatados,
                 idRegistro: jornada.id_registro,
             };
         },
         [formatarStatus],
     );
-
-
-    // Busca o histórico de jornadas do usuário no localStorage.
 
     const buscarHistoricoJornadas = useCallback(() => {
         try {
@@ -190,6 +170,7 @@ export default function useHistoricoJornadas({
             );
 
             setDadosOriginais(todosRegistros);
+            console.log('📊 Histórico de jornadas atualizado:', todosRegistros.length, 'registros');
         } catch (error) {
             console.error('Erro ao processar dados:', error);
             setErro('Erro ao carregar o histórico. Tente novamente mais tarde.');
@@ -198,8 +179,21 @@ export default function useHistoricoJornadas({
         }
     }, [formatarJornada]);
 
+    // SSE Event Listener - Listen for data updates
+    useEffect(() => {
+        const handleSSEDataUpdate = (event: CustomEvent) => {
+            console.log('🔄 SSE event received in useHistoricoJornadas, refreshing data...');
+            buscarHistoricoJornadas();
+        };
 
-    // Filtra as jornadas com base nos filtros selecionados.
+        // Add event listener for SSE updates
+        window.addEventListener('sseDataUpdate', handleSSEDataUpdate as EventListener);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('sseDataUpdate', handleSSEDataUpdate as EventListener);
+        };
+    }, [buscarHistoricoJornadas]);
 
     const historicoJornadas = useMemo(() => {
         return dadosOriginais.filter((jornada) => {
@@ -225,25 +219,16 @@ export default function useHistoricoJornadas({
         });
     }, [dadosOriginais, statusTurno, startDate, endDate]);
 
-
-    // Obtém os itens da página atual para exibição.
-
     const obterItensPaginaAtual = useCallback(() => {
         const inicio = paginaAtual * itensPorPaginaState;
         const fim = inicio + itensPorPaginaState;
         return historicoJornadas.slice(inicio, fim);
     }, [historicoJornadas, paginaAtual, itensPorPaginaState]);
 
-
-    // Calcula o número total de páginas.
-
     const totalPaginas = useMemo(
         () => Math.ceil(historicoJornadas.length / itensPorPaginaState),
         [historicoJornadas, itensPorPaginaState],
     );
-
-
-    // Limpa todos os filtros e redefine a página.
 
     const limparFiltros = useCallback(() => {
         setStatusTurno('');
@@ -251,9 +236,6 @@ export default function useHistoricoJornadas({
         setEndDate(null);
         setPaginaAtual(0);
     }, []);
-
-
-    // Exporta o histórico de jornadas para PDF.
 
     const exportarParaPDF = useCallback(() => {
         setIsExporting(true);
@@ -300,10 +282,6 @@ export default function useHistoricoJornadas({
             setIsExporting(false);
         }
     }, [historicoJornadas, statusTurno, startDate, endDate]);
-
-
-    //Envia solicitação de correção de pontos para a API.
-    //@param pontosAjustados Lista de pontos ajustados.
 
     const enviarCorrecao = useCallback(
         async (pontosAjustados: Array<{ tipo: string; horario: string }>) => {
@@ -357,7 +335,8 @@ export default function useHistoricoJornadas({
 
                 if (response.status === 200) {
                     setModalAberto(false);
-                    buscarHistoricoJornadas();
+                    // Don't call buscarHistoricoJornadas here since SSE will handle the update
+                    console.log('✅ Solicitação enviada com sucesso, aguardando atualização via SSE...');
                 }
             } catch (error: any) {
                 console.error('Erro detalhado:', {
@@ -375,10 +354,10 @@ export default function useHistoricoJornadas({
                 alert(errorMsg);
             }
         },
-        [jornadaSelecionada, userData, buscarHistoricoJornadas],
+        [jornadaSelecionada, userData], // Removed buscarHistoricoJornadas from dependencies
     );
 
-    // Carrega os dados iniciais
+    // Load initial data
     useEffect(() => {
         buscarHistoricoJornadas();
     }, [buscarHistoricoJornadas]);
