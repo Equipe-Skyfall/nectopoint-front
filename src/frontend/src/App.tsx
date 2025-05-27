@@ -21,6 +21,7 @@ import AplicarFolga from "./paginas/folga/gestorAplicarFolga";
 
 import SSEReceiver from "./componentes/sseReceiver/sseReceiver";
 import sseRefresh from "./componentes/hooks/hooksChamarBackend/sseRefresh";
+import recarregar from "./componentes/hooks/hooksChamarBackend/recarregar";
 
 function App() {
   const queryClient = new QueryClient()
@@ -28,26 +29,31 @@ function App() {
   // Fixed: Use proxy URL since you have Vite proxy configured
   const sse_rota = '/api/refetch' // This will be proxied to localhost:8080
   
-  useEffect(() => {
-    console.log('🔄 Setting up SSE connection...');
+useEffect(() => {
+  console.log('🔄 Setting up SSE connection...');
+  
+  try {
+    const sse = SSEReceiver.getInstance();
     
-    try {
-      const sse = SSEReceiver.getInstance();
+    sse.start(sse_rota, () => {
+      console.log('🎯 SSE ping received, calling sseRefresh...');
       
-      sse.start(sse_rota, () => {
-        console.log('🎯 SSE ping received, refreshing data...');
-        sseRefresh();
+      // ✅ Usar sseRefresh em vez de recarregar
+      sseRefresh().then(() => {
+        console.log('✅ SSE refresh completed');
+      }).catch(error => {
+        console.error('❌ SSE refresh failed:', error);
       });
+    });
 
-      // Cleanup on unmount
-      return () => {
-        console.log('🧹 Cleaning up SSE connection...');
-        sse.stop();
-      };
-    } catch (error) {
-      console.error('❌ Error setting up SSE:', error);
-    }
-  }, [])
+    return () => {
+      console.log('🧹 Cleaning up SSE connection...');
+      sse.stop();
+    };
+  } catch (error) {
+    console.error('❌ Error setting up SSE:', error);
+  }
+}, [])
 
   return (
     <>

@@ -91,6 +91,11 @@ const Textarea = ({ value, onChange, label }: {
 };
 
 const ConteudoSolicitacoes: React.FC = () => {
+
+  const { submitTicket } = useTicketApi();
+  const navigate = useNavigate();
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const {
     formState,
     isSubmitting,
@@ -111,9 +116,37 @@ const ConteudoSolicitacoes: React.FC = () => {
     setIsSubmitting
   } = useTicketForm();
 
+
+  // ✅ ADICIONAR: SSE listener para atualizar dados
+  useEffect(() => {
+    const handleSSEUpdate = (event) => {
+      console.log('TEVE SSE');
+      
+      // Forçar re-render do componente
+      setRefreshKey(prev => prev + 1);
+      
+      // Se houver estado de sucesso, limpar após SSE
+      if (formState.successMessage) {
+        setTimeout(() => {
+          setFormState(prev => ({
+            ...prev,
+            successMessage: ''
+          }));
+        }, 3000);
+      }
+    };
+
+    // ✅ Ouvir eventos SSE
+    window.addEventListener('sseDataUpdate', handleSSEUpdate);
+    console.log("SSE");
+    
+    return () => {
+      window.removeEventListener('sseDataUpdate', handleSSEUpdate);
+    };
+  }, [formState.successMessage, setFormState]);
+
   // Hook personalizado para interagir com a API de tickets
-  const { submitTicket } = useTicketApi();
-  const navigate = useNavigate();
+
   // Função para lidar com o envio do formulário
   const handleSubmit = async () => {
     if (!validateForm()) return;
@@ -240,7 +273,7 @@ const ConteudoSolicitacoes: React.FC = () => {
         return null;
     }
   };
-  const [refreshKey, setRefreshKey] = useState(0); // Force remount key
+
   return (
     // Container principal com animação de entrada
     <motion.div
