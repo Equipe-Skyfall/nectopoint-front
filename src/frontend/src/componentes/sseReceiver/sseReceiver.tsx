@@ -1,15 +1,14 @@
-// Classe SSERefetch melhorada para uso flexível e seguro
+// Fixed SSEReceiver with proper backend URL and authentication
 
 type Callback = (data: any) => void;
 
-export default class SSEReceiver {
+class SSEReceiver {
     private static instance: SSEReceiver | null = null;
     private eventSource: EventSource | null = null;
     private callback: Callback | null = null;
 
     private constructor() {}
 
-    // Permite atualizar o callback a qualquer momento
     public static getInstance(): SSEReceiver {
         if (!SSEReceiver.instance) {
             SSEReceiver.instance = new SSEReceiver();
@@ -17,35 +16,60 @@ export default class SSEReceiver {
         return SSEReceiver.instance;
     }
 
-    // Inicia o SSE e define o callback a ser chamado ao receber mensagem
     public start(url: string, callback: Callback): void {
-        this.stop(); // Garante que não há conexão anterior aberta
+        this.stop(); // Ensure no previous connection
         this.callback = callback;
-        this.eventSource = new EventSource(url);
+        
+        // Since you're using Vite proxy, use the relative URL
+        console.log("Connecting to SSE at:", url);
+        
+        // EventSource with credentials (to send cookies)
+        this.eventSource = new EventSource(url, {
+            withCredentials: true
+        });
+
+        this.eventSource.onopen = () => {
+            console.log("✅ SSE connection opened successfully");
+        };
+
+        // Listen for the named "ping" events that your backend sends
+        this.eventSource.addEventListener('ping', (event: any) => {
+            console.log("📩 Received ping event:", event.data);
+            if (this.callback) {
+                this.callback(event.data);
+            }
+        });
 
         this.eventSource.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (this.callback) {
-                    this.callback(data);
-                }
-            } catch (e) {
-                console.error("Erro ao processar mensagem SSE:", e);
+            console.log("📩 Received unnamed message:", event.data);
+            if (this.callback) {
+                this.callback(event.data);
             }
         };
 
         this.eventSource.onerror = (error) => {
-            console.error("Erro na conexão SSE:", error);
-            this.stop();
+            console.error("❌ SSE connection error:", error);
+            console.error("EventSource readyState:", this.eventSource?.readyState);
+            
+            // Provide more helpful error information
+            if (this.eventSource?.readyState === EventSource.CLOSED) {
+                console.error("SSE connection was closed. Possible causes:");
+                console.error("1. Backend server is not running on port 8080");
+                console.error("2. Authentication failed (cookies not sent)");
+                console.error("3. CORS configuration issue");
+                console.error("4. SSE endpoint returned an error");
+            }
         };
     }
 
-    // Para a conexão SSE
     public stop(): void {
         if (this.eventSource) {
+            console.log("🔌 Closing SSE connection");
             this.eventSource.close();
             this.eventSource = null;
         }
         this.callback = null;
     }
 }
+
+export default SSEReceiver;

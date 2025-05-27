@@ -15,42 +15,47 @@ import SolicitacoesGestor from "./paginas/solicitacoes/solicitacoesGestor";
 import Funcionarios from "./paginas/gestorAdministraFuncionario/gestorFuncionarios";
 import EditarFunc from "./componentes/conteudoPaginas/colaboradores/editarFunc";
 import SemLogin from "./paginas/checarLogin/checarLogin";
-
-import HistoricoSolicitacoes from "./componentes/conteudoPaginas/solicitacoes/historicoSolicitacoes";
 import { useEffect } from "react";
-import SSEReceiver from "./componentes/sseReceiver/sseReceiver";
-import refetch from "./componentes/hooks/hooksChamarBackend/refetch";
-import recarregar from "./componentes/hooks/hooksChamarBackend/recarregar";
 import SolicitacoesHistorico from "./paginas/solicitacoes/solicitacoesHistorico";
-
 import AplicarFolga from "./paginas/folga/gestorAplicarFolga";
 
-
+import SSEReceiver from "./componentes/sseReceiver/sseReceiver";
+import sseRefresh from "./componentes/hooks/hooksChamarBackend/sseRefresh";
 
 function App() {
   const queryClient = new QueryClient()
     
-    const sse_rota = '/api/refetch'
-    useEffect(() => {
-     // A classe SSEReceiver monta uma instancia pra receber o ping , dado o url passado 
+  // Fixed: Use proxy URL since you have Vite proxy configured
+  const sse_rota = '/api/refetch' // This will be proxied to localhost:8080
+  
+  useEffect(() => {
+    console.log('🔄 Setting up SSE connection...');
+    
+    try {
       const sse = SSEReceiver.getInstance();
-      sse.start(sse_rota,() => recarregar());
-     },[])
-     
+      
+      sse.start(sse_rota, () => {
+        console.log('🎯 SSE ping received, refreshing data...');
+        sseRefresh();
+      });
+
+      // Cleanup on unmount
+      return () => {
+        console.log('🧹 Cleaning up SSE connection...');
+        sse.stop();
+      };
+    } catch (error) {
+      console.error('❌ Error setting up SSE:', error);
+    }
+  }, [])
 
   return (
     <>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
         <AuthProvider>
-
-        
           <Routes>
-            {/* Página inicial sem NavBar */}
-            <Route path="/" element={<Login />} /> {/* Esse caminho / sempre terá que ser login, por ser o primeiro passo, ajustei o home 
-            abaixo para que ficasse certo com as navbar, olhe o codigo inteiro depois de tudo adicionado para não cometer erros */}
-
-            {/* Rotas com NavBar */}
+            <Route path="/" element={<Login />} />
             <Route
               path="*"
               element={
@@ -68,8 +73,6 @@ function App() {
                   <Route path="solicitacoes-empresa" element={<SemLogin cargo="GERENTE"><SolicitacoesGestor /></SemLogin>} />
                   <Route path="solicitacoes-historico" element={<SemLogin cargo="COLABORADOR"><SolicitacoesHistorico /></SemLogin>} />
                   <Route path="folga" element={<SemLogin cargo="GERENTE"><AplicarFolga /></SemLogin>} />
-
-
                   <Route path="teste" element={<SemLogin cargo=""><Teste /></SemLogin>} />
                 </Routes>
               </>
@@ -78,7 +81,6 @@ function App() {
           </Routes>
           </AuthProvider>
         </BrowserRouter>
-
       </QueryClientProvider>
     </>
   )

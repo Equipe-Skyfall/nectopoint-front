@@ -51,6 +51,7 @@ const SolicitacoesGestor = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // Force remount key
   const itensPorPagina = 5;
   const modalRef = useRef<HTMLDivElement | null>(null);
 
@@ -58,6 +59,7 @@ const SolicitacoesGestor = () => {
     solicitacoes,
     loading,
     error,
+    fetchSolicitacoes, // This is the refresh function we need
     formatarDataBrasil,
     formatarDiasAbono,
     formatarStatus,
@@ -78,9 +80,27 @@ const SolicitacoesGestor = () => {
     endDate
   });
 
+  // SSE listener for real-time updates
+  useEffect(() => {
+    const handleSSEUpdate = (event) => {
+      console.log('🎯 SSE update received - calling fetchSolicitacoes');
+      
+      // Call the fetch function directly with a delay
+      setTimeout(() => {
+        console.log('🔄 Calling fetchSolicitacoes after delay');
+        fetchSolicitacoes();
+      }, 0);
+    };
+
+    // Listen for SSE events
+    window.addEventListener('sseDataUpdate', handleSSEUpdate);
+
+    return () => {
+      window.removeEventListener('sseDataUpdate', handleSSEUpdate);
+    };
+  }, [fetchSolicitacoes]);
 
   // Ajusta a página se não houveer mais solicitações
-
   useEffect(() => {
     if (solicitacoes === null || (solicitacoes.content.length === 0 && pagina > 0)) {
       setPagina(p => Math.max(p - 1, 0));
@@ -154,11 +174,14 @@ const SolicitacoesGestor = () => {
 
   return (
     <motion.div
+      key={refreshKey} // This forces remount when refreshKey changes
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="mt-16 min-h-screen p-4 md:p-6 poppins"
     >
+      {/* Remove the SSE indicator since you didn't want it */}
+
       <div className="max-w-7xl mx-auto">
         <motion.h1
           initial={{ y: -20, opacity: 0 }}
@@ -210,6 +233,12 @@ const SolicitacoesGestor = () => {
               className="p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-lg shadow-md"
             >
               <p className="font-medium">Erro: {error}</p>
+              <button
+                onClick={fetchSolicitacoes}
+                className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Tentar Novamente
+              </button>
             </motion.div>
           ) : solicitacoes?.content.length === 0 ? (
             <motion.div
