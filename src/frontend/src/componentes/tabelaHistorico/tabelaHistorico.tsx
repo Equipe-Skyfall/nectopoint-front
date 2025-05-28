@@ -216,13 +216,13 @@ export default function ConteudoHistorico() {
     const { fetchTodosRegistros, isLoading: isExporting, error: exportError } = useExportacaoHistorico();
     const exportarParaPDF = async () => {
         try {
-            // Busca todos os registros com os mesmos filtros atuais
             const todosRegistros = await fetchTodosRegistros({
                 nome_colaborador: searchQuery,
                 lista_status: statusTurno,
                 startDate: startDate?.toISOString(),
                 endDate: endDate?.toISOString()
             });
+
             const doc = new jsPDF();
 
             doc.setFontSize(18)
@@ -230,7 +230,6 @@ export default function ConteudoHistorico() {
             doc.setFontSize(12)
             doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 30)
 
-            //Caso tenha filtro aplicado
             let filtersText = 'Filtros aplicados: ';
             if (searchQuery) filtersText += `Nome: ${searchQuery}, `;
             if (statusTurno) filtersText += `Status: ${statusTurno}, `;
@@ -242,17 +241,18 @@ export default function ConteudoHistorico() {
                 doc.text(filtersText.slice(0, -2), 14, 38);
             }
 
-            // Cabeçalhos da tabela
             const headers = [
                 ['Nome', 'Status', 'Início do Turno', 'Fim do Turno']
             ];
 
-            // Dados da tabela
             const dados = todosRegistros.map(item => [
                 item.nome_colaborador,
-                item.status_turno,
+                item.status_turno === 'NAO_COMPARECEU' && item.abono ? 'Abonado' : item.status_turno,
                 formatarDataHora(item.inicio_turno),
-                obterFimTurno(item.pontos_marcados)
+                item.status_turno === 'NAO_COMPARECEU' && item.abono ? 'Abonado' :
+                    (item.pontos_marcados?.length > 0 ?
+                        formatarDataHora(item.pontos_marcados[item.pontos_marcados.length - 1].data_hora) :
+                        'N/A')
             ]);
 
             autoTable(doc, {
@@ -277,7 +277,6 @@ export default function ConteudoHistorico() {
             doc.save(`historico_pontos_${new Date().toISOString().slice(0, 10)}.pdf`);
         } catch (err) {
             console.error('Erro na exportação:', err);
-            // O erro já está capturado pelo hook e disponível em exportError
         }
     }
     return (
