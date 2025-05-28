@@ -167,32 +167,42 @@ export default function ConteudoHistorico() {
         );
     };
 
-    const traduzirStatusTurno = useCallback((status: string) => {
+    const traduzirStatusTurno = useCallback((status: string, abono?: any) => {
+        const temAbono = !!abono;
         const statusStyles = {
             'TRABALHANDO': { text: 'Trabalhando', shortText: 'Trabalhando', color: 'bg-green-100 text-green-800' },
             'INTERVALO': { text: 'Intervalo', shortText: 'Intervalo', color: 'bg-yellow-100 text-yellow-800' },
             'ENCERRADO': { text: 'Encerrado', shortText: 'Encerrado', color: 'bg-blue-100 text-blue-800' },
-            'NAO_COMPARECEU': { text: 'Não Compareceu', shortText: 'N/Compareceu', color: 'bg-red-100 text-red-800' },
+            'NAO_COMPARECEU': {
+                text: temAbono ? 'Abonado' : 'Não Compareceu',
+                shortText: temAbono ? 'Abonado' : 'N/Compareceu',
+                color: temAbono ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            },
             'IRREGULAR': { text: 'Irregular', shortText: 'Irregular', color: 'bg-purple-100 text-purple-800' },
             'NAO_INICIADO': { text: 'Não Iniciado', shortText: 'N/Iniciado', color: 'bg-gray-100 text-gray-800' }
         };
+
         return (
             <span className={`px-2 py-1 rounded-full text-[0.65rem] font-medium ${statusStyles[status]?.color || 'bg-gray-100 text-gray-800'}`}>
-                {/* Texto completo em telas médias para cima */}
                 <span className="hidden md:inline">{statusStyles[status]?.text || status}</span>
-                {/* Texto abreviado em telas pequenas */}
                 <span className="md:hidden">{statusStyles[status]?.shortText || status}</span>
             </span>
         );
     }, []);
 
-    const obterFimTurno = useCallback((pontos_marcados: { data_hora: string }[]) => {
+    const obterFimTurno = useCallback((pontos_marcados: { data_hora: string }[], status_turno: string, abono?: any) => {
+        if (status_turno === 'NAO_COMPARECEU' && abono) {
+            return (
+                <span className="px-2 py-1 rounded-full text-[0.65rem] font-medium bg-green-100 text-green-800">
+                    Abonado
+                </span>
+            );
+        }
         if (pontos_marcados?.length > 0) {
             return formatarDataHora(pontos_marcados[pontos_marcados.length - 1].data_hora);
         }
         return 'N/A';
     }, [formatarDataHora]);
-
 
     const limparFiltros = useCallback(() => {
         setSearchQuery('');
@@ -378,13 +388,13 @@ export default function ConteudoHistorico() {
                                                     {item.nome_colaborador}
                                                 </td>
                                                 <td className="p-2 sm:p-4 poppins text-[0.65rem] sm:text-base text-center">
-                                                    {traduzirStatusTurno(item.status_turno)}
+                                                    {traduzirStatusTurno(item.status_turno, item.abono)}
                                                 </td>
                                                 <td className="p-2 sm:p-4 poppins text-[0.65rem] sm:text-base text-center text-gray-600">
                                                     {formatarDataHora(item.inicio_turno)}
                                                 </td>
                                                 <td className="p-2 sm:p-4 poppins text-[0.65rem] sm:text-base text-center text-gray-600">
-                                                    {obterFimTurno(item.pontos_marcados)}
+                                                    {obterFimTurno(item.pontos_marcados, item.status_turno, item.abono)}
                                                 </td>
                                             </motion.tr>
                                         ))}

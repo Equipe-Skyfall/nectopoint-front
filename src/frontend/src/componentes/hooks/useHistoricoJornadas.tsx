@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, JSX } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axios from 'axios';
@@ -95,7 +95,7 @@ export default function useHistoricoJornadas({
     // @param status Status do turno.
     // @returns Objeto com componente JSX e texto do status.
 
-    const formatarStatus = useCallback((status: string) => {
+    const formatarStatus = useCallback((status: string, temAbono?: boolean) => {
         const statusStyles = {
             [StatusTurno.ENCERRADO]: {
                 text: 'Encerrado',
@@ -103,9 +103,9 @@ export default function useHistoricoJornadas({
                 color: 'bg-green-100 text-green-800',
             },
             [StatusTurno.NAO_COMPARECEU]: {
-                text: 'Não Compareceu',
-                shortText: 'N/Compareceu',
-                color: 'bg-red-100 text-red-800',
+                text: temAbono ? 'Abonado' : 'Não Compareceu',
+                shortText: temAbono ? 'Abonado' : 'N/Compareceu',
+                color: temAbono ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
             },
             [StatusTurno.IRREGULAR]: {
                 text: 'Irregular',
@@ -136,6 +136,7 @@ export default function useHistoricoJornadas({
         (jornada: any): HistoricoJornada => {
             const dataInicio = new Date(jornada.inicio_turno);
             const dataFim = jornada.fim_turno ? new Date(jornada.fim_turno) : null;
+            const temAbono = !!jornada.abono;
 
             const pontosFormatados = jornada.pontos_marcados?.map((ponto: any) => ({
                 tipo: ponto.tipo_ponto === 'ENTRADA' ? 'Entrada' : 'Saída',
@@ -152,11 +153,12 @@ export default function useHistoricoJornadas({
                     hour: '2-digit',
                     minute: '2-digit',
                 }),
-                fimTurno: dataFim
-                    ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                    : 'N/A',
-                statusTurno: formatarStatus(jornada.status_turno).component,
-                statusText: formatarStatus(jornada.status_turno).text,
+                fimTurno: temAbono ? 'Abonado' :
+                    (dataFim
+                        ? dataFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        : 'N/A'),
+                statusTurno: formatarStatus(jornada.status_turno, temAbono).component,
+                statusText: formatarStatus(jornada.status_turno, temAbono).text,
                 pontos: pontosFormatados,
                 idRegistro: jornada.id_registro,
             };
